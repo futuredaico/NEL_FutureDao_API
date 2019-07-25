@@ -151,12 +151,12 @@ namespace NEL_FutureDao_API.Service
         //a.
         //b.send.reset
         //c.
-        public JArray resetPassword(string username, string email)
+        public JArray resetPassword(string email)
         {
             string findStr = new JObject { { "email", email } }.ToString();
             string fieldStr = new JObject { { "username", 1},{ "emailVerifyState",1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
-            if(queryRes.Count == 0 || queryRes[0]["username"].ToString() != username)
+            if(queryRes.Count == 0)
             {
                 return new JArray { new JObject { { "res", false},{ "code", UserReturnCode.notFindUserInfo } } };
             }

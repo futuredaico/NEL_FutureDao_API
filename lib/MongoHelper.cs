@@ -14,6 +14,14 @@ namespace NEL.NNS.lib
         public string dao_mongodbDatabase_testnet = string.Empty;
         public string dao_mongodbConnStr_mainnet = string.Empty;
         public string dao_mongodbDatabase_mainnet = string.Empty;
+        public string endpoint = string.Empty;
+        public string accessKeyId = string.Empty;
+        public string accessKeySecret = string.Empty;
+        public string bucketName_testnet = string.Empty;
+        public string bucketName_mainnet = string.Empty;
+        public string ossUrlPrefix = string.Empty;
+        public string defaultHeadIconUrl = string.Empty;
+        public string prefixPassword = string.Empty;
         //
         public string startMonitorFlag = string.Empty;
 
@@ -29,7 +37,14 @@ namespace NEL.NNS.lib
             dao_mongodbDatabase_testnet = config["dao_mongodbDatabase_testnet"];
             dao_mongodbConnStr_mainnet = config["dao_mongodbConnStr_mainnet"];
             dao_mongodbDatabase_mainnet = config["dao_mongodbDatabase_mainnet"];
-
+            endpoint = config["endpoint"];
+            accessKeyId = config["accessKeyId"];
+            accessKeySecret = config["accessKeySecret"];
+            bucketName_testnet = config["bucketName_testnet"];
+            bucketName_mainnet = config["bucketName_mainnet"];
+            ossUrlPrefix = config["ossUrlPrefix"];
+            defaultHeadIconUrl = config["defaultHeadIconUrl"];
+            prefixPassword = config["prefixPassword"];
             //
             startMonitorFlag = config["startMonitorFlag"];
         }

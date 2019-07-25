@@ -1,65 +1,57 @@
 ﻿using Aliyun.OSS;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace NEL_FutureDao_API
 {
     public class OssHelper
     {
-        private OssClient client;
-        private string bucketName;
+        public string endpoint { get; set; }
+        public string accessKeyId { get; set; }
+        public string accessKeySecret { get; set; }
+        public string bucketName { get; set; }
+        public string bucketName_testnet { get; set; }
+        public string bucketName_mainnet { get; set; }
+        public string ossUrlPrefix { get; set; }
 
-        public OssHelper(string endpoint, string accessKeyId, string accessKeySecret, string bucketName)
+        public string PutObjectTestnet(string fileName, Stream stream)
         {
-            client = new OssClient(endpoint, accessKeyId, accessKeySecret);
-            if (!client.ListBuckets().Any(p => bucketName == p.Name))
+            getOss().PutStream(bucketName_testnet, fileName, stream);
+            return ossUrlPrefix;
+        }
+        public string PutObjectMainnet(string fileName, Stream stream)
+        {
+            getOss().PutStream(bucketName_mainnet, fileName, stream);
+            return ossUrlPrefix;
+        }
+        public void CopyObject(string bucketName, string source, string target)
+        {
+            getOss().CopyObject(bucketName, source, target);
+        }
+
+        private OssWraper getOss()
+        {
+            return new OssWraper(endpoint, accessKeyId, accessKeySecret);
+        }
+        private class OssWraper
+        {
+            private OssClient client;
+
+            public OssWraper(string endpoint, string accessKeyId, string accessKeySecret)
             {
-                client.CreateBucket(bucketName);
+                client = new OssClient(endpoint, accessKeyId, accessKeySecret);
             }
-            this.bucketName = bucketName;
-        }
 
-        public string PutObject(string filename, string content)
-        {
-            byte[] binaryData = Encoding.UTF8.GetBytes(content);
-            var stream = new MemoryStream(binaryData);
-            client.PutObject(bucketName, filename, stream);
-            return "true";
-        }
-        public string PutObject(string filename, byte[] binaryData)
-        {
-            var stream = new MemoryStream(binaryData);
-            client.PutObject(bucketName, filename, stream);
-            return "true";
-        }
-        public string GetObject(string filename)
-        {
-            StringBuilder sb = new StringBuilder();
-            var result = client.GetObject(bucketName, filename);
-            using (var requestStream = result.Content)
+            public string PutStream(string bucketName, string filename, Stream stream)
             {
-                int length = 4 * 1024;
-                var buf = new byte[length];
-                while (true)
-                {
-                    length = requestStream.Read(buf, 0, length);
-                    if (length == 0) break;
-                    sb.Append(Encoding.UTF8.GetString(buf.Take(length).ToArray()));
-                }
+                client.PutObject(bucketName, filename, stream);
+                return "true";
             }
-            return sb.ToString();
+            public string CopyObject(string bucketName, string source, string target)
+            {
+                client.CopyObject(new CopyObjectRequest(bucketName, source, bucketName, target) { NewObjectMetadata = new ObjectMetadata() });
+                return "true";
+            }
         }
-
-        public OssHelper()
-        {
-        }
-        
-        public string PutStream(string filename, Stream stream)
-        {
-            client.PutObject(bucketName, filename, stream);
-            return "true";
-        }
-
     }
+    
 }

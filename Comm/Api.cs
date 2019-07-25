@@ -1,8 +1,10 @@
 ﻿using NEL.API.RPC;
 using NEL.NNS.lib;
+using NEL_FutureDao_API;
 using NEL_FutureDao_API.Service;
 using Newtonsoft.Json.Linq;
 using System;
+using System.IO;
 
 namespace NEL.Comm
 {
@@ -14,14 +16,13 @@ namespace NEL.Comm
         public static Api getTestApi() { return testApi; }
         public static Api getMainApi() { return mainApi; }
         //
-        private HttpHelper hh = new HttpHelper();
         private MongoHelper mh = new MongoHelper();
         //
         private UserService us;
 
-
         public Api(string node)
         {
+            initOss();
             netnode = node;
             switch (netnode)
             {
@@ -30,7 +31,11 @@ namespace NEL.Comm
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_testnet,
+                        defaultHeadIconUrl = mh.defaultHeadIconUrl,
+                        prefixPassword = mh.prefixPassword
                     };
                     break;
                 case "mainnet":
@@ -38,7 +43,11 @@ namespace NEL.Comm
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_mainnet,
+                        defaultHeadIconUrl = mh.defaultHeadIconUrl,
+                        prefixPassword = mh.prefixPassword
                     };
                     break;
             }
@@ -63,7 +72,7 @@ namespace NEL.Comm
                         result = us.modifyUserBrief(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());
                         break;
                     case "modifyUserIcon":
-                        result = us.modifyUserIcon(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        result = us.modifyUserIcon(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());
                         break;
                     case "getUserInfo":
                         result = us.getUserInfo(req.@params[0].ToString(), req.@params[1].ToString());
@@ -112,6 +121,29 @@ namespace NEL.Comm
             res.id = req.id;
             res.result = result;
             return res;
+        }
+
+        //
+        private OssHelper oss;
+        private void initOss()
+        {
+            oss = new OssHelper
+            {
+                endpoint = mh.endpoint,
+                accessKeyId = mh.accessKeyId,
+                accessKeySecret = mh.accessKeySecret,
+                bucketName_testnet = mh.bucketName_testnet,
+                bucketName_mainnet = mh.bucketName_mainnet,
+                ossUrlPrefix = mh.ossUrlPrefix
+            };
+        }
+        public string PutTestStream(string fileName, Stream stream)
+        {
+            return oss.PutObjectTestnet(fileName, stream);
+        }
+        public string PutMainStream(string fileName, Stream stream)
+        {
+            return oss.PutObjectMainnet(fileName, stream);
         }
     }
 }

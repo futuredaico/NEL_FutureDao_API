@@ -1,4 +1,5 @@
 ﻿using NEL.NNS.lib;
+using NEL_FutureDao_API.lib;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Security.Cryptography;
@@ -12,11 +13,19 @@ namespace NEL_FutureDao_API.Service
         public string dao_mongodbConnStr { get; set; }
         public string dao_mongodbDatabase { get; set; }
         public string userInfoCol { get; set; } = "daoUserInfo";
+        public OssHelper oss { get; set;}
+        public string bucketName { get; set; }
+        //
+        public static int usernameLenMin { get; set; } = 2;
+        public static int usernameLenMax { get; set; } = 24;
+        public static int passwordLenMin { get; set; } = 8;
+        public string defaultHeadIconUrl { get; set; }
+        public string prefixPassword { get; set; }
 
         //
         public JArray checkUsername(string username)
         {
-            if(!UserInfoHelper.checkUsernameLen(username))
+            if(!checkUsernameLen(username))
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidUsernameLen } } };
             }
@@ -45,7 +54,7 @@ namespace NEL_FutureDao_API.Service
         //a.
         //b.send.register
         //c.
-        public JArray register(string username, string email, string password, string headIconUrl="", string brief="")
+        public JArray register(string username, string email, string password)
         {
             var checkRes = checkUsername(username);
             if (!(bool)checkRes[0]["res"])
@@ -58,21 +67,21 @@ namespace NEL_FutureDao_API.Service
                 return checkRes;
             }
 
-            if(!UserInfoHelper.checkPasswordLen(password))
+            if(!checkPasswordLen(password))
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidPasswordLen } } };
             }
-
+            //
             var time = TimeHelper.GetTimeStamp();
             var newdata = new JObject {
                 {"userId", "" },
                 {"username", username },
-                {"password", UserInfoHelper.toPasswordHash(password) },
+                {"password", toPasswordHash(password) },
                 {"email", email },
                 {"emailVerifyCode", ""},
                 {"emailVerifyState", EmailState.sendBeforeState},
-                {"headIconUrl", UserInfoHelper.toHeadIconUrl(headIconUrl) },
-                {"brief", brief},
+                {"headIconUrl", defaultHeadIconUrl },
+                {"brief", ""},
                 {"time",  time},
                 {"lastUpdateTime", time },
             }.ToString();
@@ -104,14 +113,41 @@ namespace NEL_FutureDao_API.Service
 
         public JArray login(string username, string email, string password)
         {
-            string findStr = new JObject { { "email", email },{ "username", username },{ "password", UserInfoHelper.toPasswordHash(password)} }.ToString();
+            string findStr = new JObject { { "email", email },{ "username", username },{ "password", toPasswordHash(password)} }.ToString();
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr) == 0)
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidLoginInfo } } };
             }
             return new JArray { new JObject { { "res", true }, { "code", "" } } };
         }
-        
+
+        private bool checkUsernameLen(string username)
+        {
+            return username.Length > usernameLenMin && username.Length <= usernameLenMax;
+        }
+        private bool checkPasswordLen(string password)
+        {
+            return password.Length >= passwordLenMin;
+        }
+        private string toPasswordHash(string password)
+        {
+            byte[] binaryData = Encoding.UTF8.GetBytes(prefixPassword + password);
+            var stream = new MemoryStream(binaryData);
+
+            MD5 md5 = new MD5CryptoServiceProvider();
+            byte[] retVal = md5.ComputeHash(stream);
+            return toStr(retVal);
+        }
+        private string toStr(byte[] retVal)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < retVal.Length; i++)
+            {
+                sb.Append(retVal[i].ToString("x2"));
+            }
+            return sb.ToString();
+        }
+
         //a.
         //b.send.reset
         //c.
@@ -146,11 +182,11 @@ namespace NEL_FutureDao_API.Service
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidVerifyCode } } };
             }
-            if(!UserInfoHelper.checkPasswordLen(password))
+            if(!checkPasswordLen(password))
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidPasswordLen } } };
             }
-            var pswd = UserInfoHelper.toPasswordHash(password);
+            var pswd = toPasswordHash(password);
             if (queryRes[0]["password"].ToString() != pswd
                 || queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtResetPassword)
             {
@@ -175,9 +211,40 @@ namespace NEL_FutureDao_API.Service
             if (queryRes[0]["username"].ToString() != username) return new JArray { };
             return queryRes;
         }
-        public JArray modifyUserIcon(string username, string email, string password)
+        public JArray modifyUserIcon(string username, string email, string password, string headIconUrl)
         {
-            return null;
+            string findStr = new JObject { { "email", email } }.ToString();
+            string fieldStr = new JObject { { "username", 1 }, { "password", 1 }, { "headIconUrl", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0
+                || queryRes[0]["username"].ToString() != username
+                || queryRes[0]["password"].ToString() != toPasswordHash(password))
+            {
+                return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.notFindUserInfo } } };
+            }
+
+            //
+            var fileName = queryRes[0]["headIconUrl"].ToString().toFileName();
+            if(!defaultHeadIconUrl.EndsWith(fileName))
+            {
+                try
+                {
+                    oss.CopyObject(bucketName, fileName, fileName.toBak());
+                }
+                catch { }
+            }
+            fileName = headIconUrl.toFileName();
+            oss.CopyObject(bucketName, fileName.toTemp(), fileName);
+            //
+            if (queryRes[0]["headIconUrl"].ToString() != headIconUrl)
+            {
+                var updateStr = new JObject { "$set", new JObject{
+                    { "headIconUrl", headIconUrl},
+                    { "lastUpdateTime", TimeHelper.GetTimeStamp() }
+                }}.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
+            }
+            return new JArray { new JObject { { "res", true }, { "code", "" } } };
         }
         public JArray modifyUserBrief(string username, string email, string password, string brief)
         {
@@ -202,7 +269,7 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray modifyPassword(string username, string email, string password, string newpassword)
         {
-            if(!UserInfoHelper.checkPasswordLen(newpassword))
+            if(!checkPasswordLen(newpassword))
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidPasswordLen } } };
             }
@@ -215,13 +282,12 @@ namespace NEL_FutureDao_API.Service
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.notFindUserInfo } } };
             }
 
-            var pswd = UserInfoHelper.toPasswordHash(password);
+            var pswd = toPasswordHash(password);
             if (queryRes[0]["password"].ToString() != pswd)
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.passwordError } } };
             }
-
-            if(password != newpassword)
+            if (password != newpassword)
             {
                 var updateStr = new JObject { { "$set", new JObject {
                     { "password", pswd },
@@ -242,7 +308,7 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if(queryRes.Count == 0 
                 || queryRes[0]["username"].ToString() != username
-                || queryRes[0]["password"].ToString() != UserInfoHelper.toPasswordHash(password))
+                || queryRes[0]["password"].ToString() != toPasswordHash(password))
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.notFindUserInfo } } };
             }
@@ -318,44 +384,4 @@ namespace NEL_FutureDao_API.Service
         public const string notFindEmail = "10210";
         public const string notFindUserInfo = "10211";
     }
-    class UserInfoHelper
-    {
-        private static int usernameLenMin = 2;
-        private static int usernameLenMax = 24;
-        private static int passwordLenMin = 8;
-        private static string defaultHeadIconUrl = "https://dao-user.oss-cn-beijing.aliyuncs.com/default.jpg";
-        private static string prefixPassword = "TOZmk87OEnPZJE3a";
-        public static bool checkUsernameLen(string username)
-        {
-            return username.Length > usernameLenMin && username.Length <= usernameLenMax;
-        }
-        public static bool checkPasswordLen(string password)
-        {
-            return password.Length >= passwordLenMin;
-        }
-        public static string toPasswordHash(string password)
-        {
-            byte[] binaryData = Encoding.UTF8.GetBytes(prefixPassword + password);
-            var stream = new MemoryStream(binaryData);
-
-            MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] retVal = md5.ComputeHash(stream);
-            return toStr(retVal);
-        }
-        private static string toStr(byte[] retVal)
-        {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < retVal.Length; i++)
-            {
-                sb.Append(retVal[i].ToString("x2"));
-            }
-            return sb.ToString();
-        }
-        public static string toHeadIconUrl(string headIconUrl)
-        {
-            if (headIconUrl.Trim().Length == 0) return defaultHeadIconUrl;
-            return headIconUrl;
-        }
-    }
-    
 }

@@ -111,9 +111,9 @@ namespace NEL_FutureDao_API.Service
             return new JArray { new JObject { { "res", true},{ "code", ""} } };
         }
 
-        public JArray login(string username, string email, string password)
+        public JArray login(string email, string password)
         {
-            string findStr = new JObject { { "email", email },{ "username", username },{ "password", toPasswordHash(password)} }.ToString();
+            string findStr = new JObject { { "email", email }, { "password", toPasswordHash(password)} }.ToString();
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr) == 0)
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidLoginInfo } } };
@@ -369,6 +369,9 @@ namespace NEL_FutureDao_API.Service
         public const string sendBeforeStateAtChangeEmail = "10106";
         public const string sendAfterStateAtChangeEmail = "10107";
         public const string hasVerifyAtChangeEmail = "10108";
+        public const string sendBeforeStateAtInvited = "10109";
+        public const string sendAfterStateAtInvited = "10110";
+        public const string hasVerifyAtInvited = "10111";
     }
     class UserReturnCode
     {

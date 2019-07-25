@@ -84,7 +84,7 @@ namespace NEL.Comm
                         result = us.resetPassword(req.@params[0].ToString(), req.@params[1].ToString());
                         break;
                     case "login":
-                        result = us.login(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        result = us.login(req.@params[0].ToString(), req.@params[1].ToString());
                         break;
                     case "verifyRegister":
                         result = us.verifyRegister(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());

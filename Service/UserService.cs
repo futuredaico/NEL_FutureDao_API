@@ -27,7 +27,7 @@ namespace NEL_FutureDao_API.Service
         {
             if(!checkUsernameLen(username))
             {
-                return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidUsernameLen } } };
+                return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.invalidUsername } } };
             }
             
             string findStr = new JObject { { "username", username} }.ToString();
@@ -252,7 +252,8 @@ namespace NEL_FutureDao_API.Service
             string fieldStr = new JObject { { "username", 1 }, { "brief", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0 
-                || queryRes[0]["username"].ToString() != username)
+                || queryRes[0]["username"].ToString() != username
+                || queryRes[0]["password"].ToString() != toPasswordHash(password))
             {
                 return new JArray { new JObject { { "res", false }, { "code", UserReturnCode.notFindUserInfo } } };
             }
@@ -371,17 +372,14 @@ namespace NEL_FutureDao_API.Service
     }
     class UserReturnCode
     {
-        public const string invalidUsernameLen = "10200";
-        public const string invalidUsernameFmt = "10201";
-        public const string usernameHasRegisted = "10202";
-        public const string invalidEmail = "10203";
-        public const string emailHasRegisted = "10204";
-        public const string invalidPasswordLen = "10205";
-        public const string passwordError = "10206";
-        public const string invalidVerifyCode = "10207";
-        public const string invalidLoginInfo = "10208";
-        public const string notFindUsername = "10209";
-        public const string notFindEmail = "10210";
-        public const string notFindUserInfo = "10211";
+        public const string invalidUsername = "10200";      // 不合法用户名
+        public const string usernameHasRegisted = "10201";  // 用户名已注册
+        public const string invalidEmail = "10202";         // 不合法的邮箱
+        public const string emailHasRegisted = "10203";     // 邮箱已注册
+        public const string invalidPasswordLen = "10204";   // 不合法的密码
+        public const string passwordError = "10205";        // 密码错误
+        public const string invalidVerifyCode = "10206";    // 不合法的验证码
+        public const string invalidLoginInfo = "10207";     // 无效的登录信息(即用户名/邮箱/密码错误)
+        public const string notFindUserInfo = "10208";      // 没有找到用户信息
     }
 }

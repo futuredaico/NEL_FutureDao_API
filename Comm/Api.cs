@@ -63,16 +63,16 @@ namespace NEL.Comm
                         result = us.verifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
                     case "modifyEmail":
-                        result = us.modifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());
+                        result = us.modifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
                     case "modifyPassword":
                         result = us.modifyPassword(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());
                         break;
                     case "modifyUserBrief":
-                        result = us.modifyUserBrief(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());
+                        result = us.modifyUserBrief(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
                     case "modifyUserIcon":
-                        result = us.modifyUserIcon(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());
+                        result = us.modifyUserIcon(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
                     case "getUserInfo":
                         result = us.getUserInfo(req.@params[0].ToString(), req.@params[1].ToString());

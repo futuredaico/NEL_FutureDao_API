@@ -63,7 +63,7 @@ namespace NEL.Comm
                         result = us.verifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
                     case "modifyEmail":
-                        result = us.modifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        result = us.modifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());
                         break;
                     case "modifyPassword":
                         result = us.modifyPassword(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString(), req.@params[3].ToString());

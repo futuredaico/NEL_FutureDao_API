@@ -327,18 +327,22 @@ namespace NEL_FutureDao_API.Service
         // a.
         // b.send.modifyEmail
         // c.
-        public JArray modifyEmail(string userId, string accessToken, string newemail)
+        public JArray modifyEmail(string userId, string accessToken, string newemail, string password)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);
             }
             string findStr = new JObject { { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "email", 1 } }.ToString();
+            string fieldStr = new JObject { { "email", 1 },{ "password",1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if(queryRes.Count == 0)
             {
                 return getErrorRes(UserReturnCode.notFindUserInfo);
+            }
+            if(queryRes[0]["password"].ToString() != toPasswordHash(password))
+            {
+                return getErrorRes(UserReturnCode.passwordError);
             }
             var email = queryRes[0]["email"].ToString();
             if (email == newemail) return getRes();

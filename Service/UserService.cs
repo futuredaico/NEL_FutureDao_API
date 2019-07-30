@@ -467,13 +467,15 @@ namespace NEL_FutureDao_API.Service
             string data = string.Format("{0}.{1}.{2},{3}", now, username, email, pswd);
             return hash(data);
         }
-        public static string genProjId(string name, string tile)
+        public static string genProjId(string name, string title)
         {
-            return "";
+            string data = string.Format("{0}.{1}.{2}", now, name, title);
+            return hash(data);
         }
         public static string genProjUpdateId(string projId, string updateTile)
         {
-            return "";
+            string data = string.Format("{0}.{1}.{2}", now, projId, updateTile);
+            return hash(data);
         }
         private static string hash(string data)
         {

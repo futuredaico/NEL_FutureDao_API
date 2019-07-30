@@ -39,7 +39,7 @@ namespace NEL_FutureDao_API.Service
                 { "projId", projId},
                 { "projName", projName},
                 { "projTitle", projTitle},
-                { "projType", projType},
+                { "projType", projType.ToLower()},
                 { "projConverUrl", projCoverUrl},
                 { "projBrief", projBrief},
                 { "platform", projType},
@@ -80,7 +80,7 @@ namespace NEL_FutureDao_API.Service
                 { "lastUpdateTime", now},
             }.ToString();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, newdata);
-            return getRes();
+            return getRes(new JObject { {"projId", projId} });
         }
         public JArray modifyProj(string userId, string accessToken, string projId, string projName, string projTitle, string projType, string projCoverUrl, string projBrief, string videoBriefUrl, string projDetail, string connectEmail, string officialWeb, string community)
         {

@@ -301,22 +301,66 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
 
-
-        // 查询项目(all/管理中/关注中/支持中)
-        public JArray queryProjList()
-        {
-            return null;
-        }
         public JArray queryProj(string userId, string accessToken, string projId)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);
             }
-            string findStr = new JObject { { "projId", projId } }.ToString();
+
+            string findStr = new JObject { { "projId", projId},{ "userId", userId} }.ToString();
+            if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
+            {
+                return getErrorRes(ProjReturnCode.HaveNotPermissionQueryProjInfo);
+            }
+
+            findStr = new JObject { { "projId", projId } }.ToString();
             string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId","projName","projTitle", "projType", "projConverUrl","projBrief", "videoBriefUrl","projDetail","projState","projSubState","connectEmail","officialWeb", "community"}).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
-            return queryRes;
+            return getRes(queryRes);
+        }
+
+        public JArray queryProjTeam(string userId, string accessToken, string projId, int pageNum=1, int pageSize=10)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
+            if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
+            {
+                return getErrorRes(ProjReturnCode.HaveNotPermissionQueryProjInfo);
+            }
+            //
+            findStr = new JObject { { "projId", projId } }.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "username","headIcon","role","state"}).ToString();
+            string sortStr = new JObject { { "role", 1 } }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize, fieldStr);
+            return getRes(new JObject { { "count", count },{ "list", queryRes} });
+        }
+
+        public JArray modifyUserRole(string userId, string accessToken, string projId, string targetUserId, string roleType)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
+            string fieldStr = new JObject { { "role", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
+            if(queryRes.Count == 0 || queryRes[0]["role"].ToString() != TeamRoleType.Admin)
+            {
+                return getErrorRes(ProjReturnCode.HaveNotPermissionModifyTeamRole);
+            }
+
+            return getRes();
+        }
+        // 查询项目(all/管理中/关注中/支持中)
+        public JArray queryProjList()
+        {
+            return null;
         }
         public JArray queryProjDetail()
         {
@@ -371,6 +415,8 @@ namespace NEL_FutureDao_API.Service
         public const string HaveNotPermissionInviteMember = "10214"; // 没有权限邀请成员
         public const string InvalidTargetUserId = "10215";           // 不合法的用户id
         public const string HaveNotPermissionCreateUpdate = "10216"; // 没有权限创建项目更新
+        public const string HaveNotPermissionQueryProjInfo = "10217"; // 没有权限查看项目信息
+        public const string HaveNotPermissionModifyTeamRole = "10217"; // 没有权限修改成员角色
     }
 
 }

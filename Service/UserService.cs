@@ -127,7 +127,7 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0) return getErrorRes(UserReturnCode.invalidLoginInfo);
 
             var userId = queryRes[0]["userId"].ToString();
-            var accessToken = TokenHelper.applyAccessToken(tokenUrl, email);
+            var accessToken = TokenHelper.applyAccessToken(tokenUrl, userId);
             return getRes(new JObject { { "userId", userId},{"accessToken", accessToken } });
         }
 
@@ -429,11 +429,11 @@ namespace NEL_FutureDao_API.Service
     class TokenHelper
     {
         // 供临时测试使用
-        public static string applyAccessToken(string url, string email)
+        public static string applyAccessToken(string url, string userId)
         {
             return "123456789012";
         }
-        public static bool checkAccessToken(string url, string email, string accessToken, out string code)
+        public static bool checkAccessToken(string url, string userId, string accessToken, out string code)
         {
             code = "";
             return true;

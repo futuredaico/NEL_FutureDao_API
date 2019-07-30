@@ -281,7 +281,8 @@ namespace NEL_FutureDao_API.Service
             string findStr = new JObject { {"projId", projId },{ "userId", userId} }.ToString();
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
             {
-                // 该项目没有访问权限
+                // 用户无操作该项目的创建更新权限
+                return getErrorRes(ProjReturnCode.HaveNotPermissionCreateUpdate);
             }
 
             var updateId = DaoInfoHelper.genProjUpdateId(projId, updateTitle);
@@ -357,7 +358,8 @@ namespace NEL_FutureDao_API.Service
         public const string RepeatProjNameOrProjTitle = "10212";     // 重复的项目名称或项目标题
         public const string HaveNotPermissionModifyProj = "10213";   // 没有权限修改项目
         public const string HaveNotPermissionInviteMember = "10214"; // 没有权限邀请成员
-        public const string InvalidTargetUserId = "10215";         // 用户未注册
+        public const string InvalidTargetUserId = "10215";           // 不合法的用户id
+        public const string HaveNotPermissionCreateUpdate = "10216"; // 没有权限创建项目更新
     }
 
 }

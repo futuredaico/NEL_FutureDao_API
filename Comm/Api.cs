@@ -19,6 +19,7 @@ namespace NEL.Comm
         private MongoHelper mh = new MongoHelper();
         //
         private UserService us;
+        private ProjService ps;
 
         public Api(string node)
         {
@@ -27,6 +28,12 @@ namespace NEL.Comm
             switch (netnode)
             {
                 case "testnet":
+                    ps = new ProjService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet
+                    };
                     us = new UserService
                     {
                         mh = mh,
@@ -59,6 +66,68 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "createUpdate":
+                        result = ps.createUpdate(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString());
+                        break;
+                    case "verifyInvite":
+                        result = ps.verifyInvite(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString());
+                        break;
+                    case "inviteMember":
+                        result = ps.inviteMember(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString());
+                        break;
+                    case "queryMember":
+                        result = ps.queryMember(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString());
+                        break;
+                    case "modifyProj":
+                        result = ps.modifyProj(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            req.@params[8].ToString(),
+                            req.@params[9].ToString(),
+                            req.@params[10].ToString(),
+                            req.@params[11].ToString(),
+                            req.@params[12].ToString());
+                        break;
+                    case "createProj":
+                        result = ps.createProj(
+                            req.@params[0].ToString(), 
+                            req.@params[1].ToString(), 
+                            req.@params[2].ToString(), 
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            req.@params[8].ToString(),
+                            req.@params[9].ToString(), 
+                            req.@params[10].ToString(), 
+                            req.@params[11].ToString());
+                        break;
+                    //
                     case "verifyEmail":
                         result = us.verifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;

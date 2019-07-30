@@ -406,7 +406,8 @@ namespace NEL_FutureDao_API.Service
         public const string hasVerifyAtChangeEmail = "10108";
         public const string sendBeforeStateAtInvited = "10109";
         public const string sendAfterStateAtInvited = "10110";
-        public const string hasVerifyAtInvited = "10111";
+        public const string hasVerifyAtInvitedYes = "10111";
+        public const string hasVerifyAtInvitedNot = "10112";
     }
     class UserReturnCode
     {

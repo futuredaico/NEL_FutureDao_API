@@ -40,7 +40,7 @@ namespace NEL_FutureDao_API.Service
                 { "projId", projId},
                 { "projName", projName},
                 { "projTitle", projTitle},
-                { "projType", projType.ToLower()},
+                { "projType", ProjType.to(projType)},
                 { "projConverUrl", projCoverUrl},
                 { "projBrief", projBrief},
                 { "platform", projType},
@@ -73,6 +73,7 @@ namespace NEL_FutureDao_API.Service
                 { "username", item["username"]},
                 { "email", item["email"]},
                 { "headIconUrl", item["headIconUrl"]},
+                { "authenticationState", TeamAuthenticationState.Init},
                 { "role", TeamRoleType.Admin},
                 { "state", EmailState.hasVerifyAtInvitedYes},
                 { "verifyCode","" },
@@ -83,6 +84,7 @@ namespace NEL_FutureDao_API.Service
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, newdata);
             return getRes(new JObject { {"projId", projId} });
         }
+        
         public JArray modifyProj(string userId, string accessToken, string projId, string projName, string projTitle, string projType, string projCoverUrl, string projBrief, string videoBriefUrl, string projDetail, string connectEmail, string officialWeb, string community)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
@@ -218,6 +220,7 @@ namespace NEL_FutureDao_API.Service
                     { "email", nEmail},
                     { "username", nUsername},
                     { "headIconUrl", nIconUrl},
+                    { "authenticationState", TeamAuthenticationState.Init},
                     { "role", TeamRoleType.Member},
                     { "state", EmailState.sendBeforeStateAtInvited},
                     { "verifyCode","" },
@@ -335,7 +338,7 @@ namespace NEL_FutureDao_API.Service
             findStr = new JObject { { "projId", projId } }.ToString();
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
 
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "username","headIcon","role","state"}).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "username","headIconUrl","authenticationState", "role" }).ToString();
             string sortStr = new JObject { { "role", 1 } }.ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize, fieldStr);
             return getRes(new JObject { { "count", count },{ "list", queryRes} });
@@ -355,6 +358,16 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(ProjReturnCode.HaveNotPermissionModifyTeamRole);
             }
 
+            findStr = new JObject { { "projId", projId }, { "userId", targetUserId } }.ToString();
+            queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+            if(queryRes.Count > 0 && queryRes[0]["role"].ToString() != roleType)
+            {
+                string updateStr = new JObject { { "$set", new JObject {
+                    { "role", roleType == TeamRoleType.Admin ? roleType:TeamRoleType.Member},
+                    { "lastUpdateTime", TimeHelper.GetTimeStamp()}
+                } } }.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, updateStr, findStr);
+            }
             return getRes();
         }
         // 查询项目(all/管理中/关注中/支持中)
@@ -379,6 +392,19 @@ namespace NEL_FutureDao_API.Service
         public const string COMIC = "comic"; // 动漫
         public const string MOVIE = "movie"; // 电影
         public const string OTHER = "other"; // 其他
+
+        public static string to(string type)
+        {
+            type = type.ToLower();
+            if(GAME == type
+                || COMIC == type
+                || MOVIE == type
+                || OTHER == type)
+            {
+                return type;
+            }
+            return OTHER;
+        }
     }
     class ProjState
     {
@@ -407,6 +433,12 @@ namespace NEL_FutureDao_API.Service
     {
         public const string Admin = "admin";
         public const string Member = "member";
+    }
+    class TeamAuthenticationState
+    {
+        public const string Init = "not"; // 初始状态，未认证
+        public const string Person = "person"; // 个人认证
+        public const string Company = "company"; // 企业认证
     }
     class ProjReturnCode
     {

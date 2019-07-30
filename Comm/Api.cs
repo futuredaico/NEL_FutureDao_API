@@ -66,6 +66,24 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "modifyUserRole":
+                        result = ps.modifyUserRole(
+                                req.@params[0].ToString(),
+                                req.@params[1].ToString(),
+                                req.@params[2].ToString(),
+                                req.@params[3].ToString(),
+                                req.@params[4].ToString()
+                            );
+                        break;
+                    case "queryProjTeam":
+                        result = ps.queryProjTeam(
+                                req.@params[0].ToString(),
+                                req.@params[1].ToString(),
+                                req.@params[2].ToString(),
+                                int.Parse(req.@params[3].ToString()),
+                                int.Parse(req.@params[4].ToString())
+                            );
+                        break;
                     case "queryProj":
                         result = ps.queryProj(
                                 req.@params[0].ToString(),

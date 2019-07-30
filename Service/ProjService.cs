@@ -314,7 +314,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
             string findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId","projName","projTitle", "projType", "projConverUrl","projBrief", "videoBriefUrl","projDetail","projState","projSubState","connectEmail","officailWeb", "community"}).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId","projName","projTitle", "projType", "projConverUrl","projBrief", "videoBriefUrl","projDetail","projState","projSubState","connectEmail","officialWeb", "community"}).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
             return queryRes;
         }

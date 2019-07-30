@@ -181,6 +181,7 @@ namespace NEL.Comm
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.StackTrace);
                 JsonPRCresponse_Error resE = new JsonPRCresponse_Error(req.id, -100, "Parameter Error", e.Message);
                 return resE;
             }

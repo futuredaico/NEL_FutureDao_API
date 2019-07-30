@@ -303,9 +303,20 @@ namespace NEL_FutureDao_API.Service
 
 
         // 查询项目(all/管理中/关注中/支持中)
-        public JArray queryProj()
+        public JArray queryProjList()
         {
             return null;
+        }
+        public JArray queryProj(string userId, string accessToken, string projId)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "projId", projId } }.ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId","projName","projTitle", "projType", "projConverUrl","projBrief", "videoBriefUrl","projDetail","projState","projSubState","connectEmail","officailWeb", "community"}).ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            return queryRes;
         }
         public JArray queryProjDetail()
         {

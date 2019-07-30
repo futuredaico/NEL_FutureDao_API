@@ -61,6 +61,7 @@ namespace NEL.NNS.lib
             {
                 obj.Add(field, 1);
             }
+            obj.Add("_id",0);
             return obj;
         }
         public static JObject toSort(string[] fieldArr, bool order = false)

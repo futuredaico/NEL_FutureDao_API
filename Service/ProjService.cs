@@ -75,8 +75,8 @@ namespace NEL_FutureDao_API.Service
                 { "headIconUrl", item["headIconUrl"]},
                 { "authenticationState", TeamAuthenticationState.Init},
                 { "role", TeamRoleType.Admin},
-                { "state", EmailState.hasVerifyAtInvitedYes},
-                { "verifyCode","" },
+                { "emailVerifyState", EmailState.hasVerifyAtInvitedYes},
+                { "emailVerifyCode","" },
                 { "invitorId","" },
                 { "time", now},
                 { "lastUpdateTime", now},
@@ -222,8 +222,8 @@ namespace NEL_FutureDao_API.Service
                     { "headIconUrl", nIconUrl},
                     { "authenticationState", TeamAuthenticationState.Init},
                     { "role", TeamRoleType.Member},
-                    { "state", EmailState.sendBeforeStateAtInvited},
-                    { "verifyCode","" },
+                    { "emailVerifyState", EmailState.sendBeforeStateAtInvited},
+                    { "emailVerifyCode","" },
                     { "invitorId", userId },
                     { "time", now},
                     { "lastUpdateTime", now}
@@ -231,15 +231,15 @@ namespace NEL_FutureDao_API.Service
                 mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, newdata);
             } else
             {
-                var oldState = queryRes[0]["state"].ToString();
+                var oldState = queryRes[0]["emailVerifyState"].ToString();
                 if ( oldState == EmailState.hasVerifyAtInvitedNot)
                 {
                     var updateStr = new JObject { { "$set", new JObject {
                         {"email", nEmail },
                         {"username", nUsername },
                         {"headIconUrl", nIconUrl },
-                        { "state", EmailState.sendBeforeStateAtInvited},
-                        { "verifyCode","" },
+                        { "emailVerifyState", EmailState.sendBeforeStateAtInvited},
+                        { "emailVerifyCode","" },
                         { "invitorId", userId },
                         { "lastUpdateTime", now}
                     } } }.ToString();
@@ -251,15 +251,15 @@ namespace NEL_FutureDao_API.Service
         public JArray verifyInvite(string username, string email, string projId, string verifyCode, string agreeOrNot)
         {
             string findStr = new JObject { { "projId", projId }, { "email", email } }.ToString();
-            string fieldStr = new JObject { { "state",1 },{ "verifyCode", 1},{ "username",1 } }.ToString();
+            string fieldStr = new JObject { { "emailVerifyState", 1 },{ "emailVerifyCode", 1},{ "username",1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
             if(queryRes.Count == 0
-                || queryRes[0]["verifyCode"].ToString() != verifyCode
+                || queryRes[0]["emailVerifyCode"].ToString() != verifyCode
                 || queryRes[0]["username"].ToString() != username)
             {
                 return getErrorRes(UserReturnCode.invalidVerifyCode);
             }
-            string oldState = queryRes[0]["state"].ToString();
+            string oldState = queryRes[0]["emailVerifyState"].ToString();
             if(oldState == EmailState.hasVerifyAtInvitedYes
                 || oldState == EmailState.hasVerifyAtInvitedNot)
             {
@@ -268,7 +268,7 @@ namespace NEL_FutureDao_API.Service
 
             string state = agreeOrNot == "1" ? EmailState.hasVerifyAtInvitedYes : EmailState.hasVerifyAtInvitedNot;
             var updateStr = new JObject { { "$set", new JObject {
-                    { "state", state },
+                    { "emailVerifyState", state },
                     { "lastUpdateTime", TimeHelper.GetTimeStamp() }
                 } } }.ToString();
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, updateStr, findStr);

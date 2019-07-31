@@ -448,7 +448,7 @@ namespace NEL_FutureDao_API.Service
         public const string InvalidTargetUserId = "10215";           // 不合法的用户id
         public const string HaveNotPermissionCreateUpdate = "10216"; // 没有权限创建项目更新
         public const string HaveNotPermissionQueryProjInfo = "10217"; // 没有权限查看项目信息
-        public const string HaveNotPermissionModifyTeamRole = "10217"; // 没有权限修改成员角色
+        public const string HaveNotPermissionModifyTeamRole = "10218"; // 没有权限修改成员角色
     }
 
 }

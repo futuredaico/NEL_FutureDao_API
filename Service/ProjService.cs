@@ -319,9 +319,12 @@ namespace NEL_FutureDao_API.Service
             }
 
             findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId","projName","projTitle", "projType", "projConverUrl","projBrief", "videoBriefUrl","projDetail","projState","projSubState","connectEmail","officialWeb", "community"}).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId","projName","projTitle", "projType", "projConverUrl","projBrief", "videoBriefUrl","projDetail","projState","projSubState","connectEmail","officialWeb", "community", "creatorId"}).ToString();
+
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
-            return getRes(queryRes);
+            var item = queryRes[0];
+            item["role"] = item["creatorId"].ToString() == userId ? TeamRoleType.Admin : TeamRoleType.Member;
+            return getRes(item);
         }
 
         public JArray queryProjTeam(string userId, string accessToken, string projId, int pageNum=1, int pageSize=10)

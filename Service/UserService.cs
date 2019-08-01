@@ -16,14 +16,14 @@ namespace NEL_FutureDao_API.Service
         public string dao_mongodbDatabase { get; set; }
         public string userInfoCol { get; set; } = "daoUserInfo";
         public OssHelper oss { get; set;}
-        public string bucketName { get; set; } = "";
+        public string bucketName { get; set; }
         //
         public static int usernameLenMin { get; set; } = 2;
         public static int usernameLenMax { get; set; } = 24;
         public static int passwordLenMin { get; set; } = 8;
         public string defaultHeadIconUrl { get; set; }
         public string prefixPassword { get; set; }
-        public string tokenUrl { get; set; }
+        public string tokenUrl { get; set; } = "";
 
         //
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);

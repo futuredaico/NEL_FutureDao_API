@@ -1,4 +1,7 @@
 ﻿
+using NEL.NNS.lib;
+using System;
+
 namespace NEL_FutureDao_API.lib
 {
     public static class FileExtension
@@ -17,5 +20,9 @@ namespace NEL_FutureDao_API.lib
             return path.Substring(index+1);
         }
         
+        public static string toRandomFileName(this string fileName)
+        {
+            return string.Format("{0}_{1}_{2}", TimeHelper.GetTimeStamp(), new Random().Next(1000), fileName);
+        }
     }
 }

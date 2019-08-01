@@ -1,7 +1,8 @@
 ﻿using NEL.NNS.lib;
 using NEL_FutureDao_API.lib;
+using NEL_FutureDao_API.Service.Help;
+using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
-using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,7 +16,7 @@ namespace NEL_FutureDao_API.Service
         public string dao_mongodbDatabase { get; set; }
         public string userInfoCol { get; set; } = "daoUserInfo";
         public OssHelper oss { get; set;}
-        public string bucketName { get; set; }
+        public string bucketName { get; set; } = "";
         //
         public static int usernameLenMin { get; set; } = 2;
         public static int usernameLenMax { get; set; } = 24;
@@ -33,13 +34,13 @@ namespace NEL_FutureDao_API.Service
         {
             if(!checkUsernameLen(username))
             {
-                return getErrorRes(UserReturnCode.invalidUsername);
+                return getErrorRes(DaoReturnCode.invalidUsername);
             }
             
             string findStr = new JObject { { "username", username} }.ToString();
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr) > 0)
             {
-                return getErrorRes(UserReturnCode.usernameHasRegisted);
+                return getErrorRes(DaoReturnCode.usernameHasRegisted);
             }
             return getRes();
         }
@@ -47,12 +48,12 @@ namespace NEL_FutureDao_API.Service
         {
             if(!EmailHelper.checkEmail(email))
             {
-                return getErrorRes(UserReturnCode.invalidEmail);
+                return getErrorRes(DaoReturnCode.invalidEmail);
             }
             string findStr = new JObject { { "email", email } }.ToString();
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr) > 0)
             {
-                return getErrorRes(UserReturnCode.emailHasRegisted);
+                return getErrorRes(DaoReturnCode.emailHasRegisted);
             }
             return getRes();
         }
@@ -75,7 +76,7 @@ namespace NEL_FutureDao_API.Service
 
             if(!checkPasswordLen(password))
             {
-                return getErrorRes(UserReturnCode.invalidPasswordLen);
+                return getErrorRes(DaoReturnCode.invalidPasswordLen);
             }
             //
             var pswd = toPasswordHash(password);
@@ -106,7 +107,7 @@ namespace NEL_FutureDao_API.Service
                 || queryRes[0]["username"].ToString() != username
                 || queryRes[0]["emailVerifyCode"].ToString() != verifyCode)
             {
-                return getErrorRes(UserReturnCode.invalidVerifyCode);
+                return getErrorRes(DaoReturnCode.invalidVerifyCode);
             }
             if(queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerify)
             {
@@ -124,7 +125,7 @@ namespace NEL_FutureDao_API.Service
             string findStr = new JObject { { "email", email }, { "password", toPasswordHash(password)} }.ToString();
             string fieldStr = new JObject { { "userId", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
-            if(queryRes.Count == 0) return getErrorRes(UserReturnCode.invalidLoginInfo);
+            if(queryRes.Count == 0) return getErrorRes(DaoReturnCode.invalidLoginInfo);
 
             var userId = queryRes[0]["userId"].ToString();
             var accessToken = TokenHelper.applyAccessToken(tokenUrl, userId);
@@ -168,7 +169,7 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if(queryRes.Count == 0)
             {
-                return getErrorRes(UserReturnCode.notFindUserInfo);
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
             }
 
             if(queryRes[0]["emailVerifyState"].ToString() != EmailState.sendBeforeStateAtResetPassword)
@@ -190,11 +191,11 @@ namespace NEL_FutureDao_API.Service
                 || queryRes[0]["username"].ToString() != username
                 || queryRes[0]["emailVerifyCode"].ToString() != emailVerifyCode)
             {
-                return getErrorRes(UserReturnCode.invalidVerifyCode);
+                return getErrorRes(DaoReturnCode.invalidVerifyCode);
             }
             if(!checkPasswordLen(password))
             {
-                return getErrorRes(UserReturnCode.invalidPasswordLen);
+                return getErrorRes(DaoReturnCode.invalidPasswordLen);
             }
             var pswd = toPasswordHash(password);
             if (queryRes[0]["password"].ToString() != pswd
@@ -234,7 +235,7 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0)
             {
-                return getErrorRes(UserReturnCode.notFindUserInfo);
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
             }
 
             // 
@@ -253,7 +254,7 @@ namespace NEL_FutureDao_API.Service
                 oss.CopyObject(bucketName, fileName.toTemp(), fileName);
             } catch
             {
-                return getErrorRes(UserReturnCode.headIconNotUpload);
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
             }
             //
             if (queryRes[0]["headIconUrl"].ToString() != headIconUrl)
@@ -277,7 +278,7 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0)
             {
-                return getErrorRes(UserReturnCode.notFindUserInfo);
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
             }
 
             if(queryRes[0]["brief"].ToString() != brief)
@@ -298,20 +299,20 @@ namespace NEL_FutureDao_API.Service
             }
             if (!checkPasswordLen(newpassword))
             {
-                return getErrorRes(UserReturnCode.invalidPasswordLen);
+                return getErrorRes(DaoReturnCode.invalidPasswordLen);
             }
             string findStr = new JObject { { "userId", userId } }.ToString();
             string fieldStr = new JObject { { "username", 1 }, { "password", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0)
             {
-                return getErrorRes(UserReturnCode.notFindUserInfo);
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
             }
 
             var pswd = toPasswordHash(password);
             if (queryRes[0]["password"].ToString() != pswd)
             {
-                return getErrorRes(UserReturnCode.passwordError);
+                return getErrorRes(DaoReturnCode.passwordError);
             }
             if (password != newpassword)
             {
@@ -338,11 +339,11 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if(queryRes.Count == 0)
             {
-                return getErrorRes(UserReturnCode.notFindUserInfo);
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
             }
             if(queryRes[0]["password"].ToString() != toPasswordHash(password))
             {
-                return getErrorRes(UserReturnCode.passwordError);
+                return getErrorRes(DaoReturnCode.passwordError);
             }
             var email = queryRes[0]["email"].ToString();
             if (email == newemail) return getRes();
@@ -368,7 +369,7 @@ namespace NEL_FutureDao_API.Service
         {
             if(verifyCode.Trim().Length == 0)
             {
-                return getErrorRes(UserReturnCode.invalidVerifyCode);
+                return getErrorRes(DaoReturnCode.invalidVerifyCode);
             }
             string findStr = new JObject { {"email", email } }.ToString();
             string fieldStr = new JObject { { "username", 1 }, { "emailVerifyCode", 1 }, { "emailVerifyState", 1 } }.ToString();
@@ -376,11 +377,11 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0
                 || queryRes[0]["username"].ToString() != username)
             {
-                return getErrorRes(UserReturnCode.notFindUserInfo);
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
             }
             if(queryRes[0]["emailVerifyCode"].ToString() != verifyCode)
             {
-                return getErrorRes(UserReturnCode.invalidVerifyCode);
+                return getErrorRes(DaoReturnCode.invalidVerifyCode);
             }
             if(queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtChangeEmail)
             {
@@ -392,110 +393,5 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
-    }
-    class EmailState
-    {
-        public const string sendBeforeState = "10100";
-        public const string sendAfterState = "10101";
-        public const string hasVerify = "10102";
-        public const string sendBeforeStateAtResetPassword = "10103";
-        public const string sendAfterStateAtResetPassword = "10104";
-        public const string hasVerifyAtResetPassword = "10105";
-        public const string sendBeforeStateAtChangeEmail = "10106";
-        public const string sendAfterStateAtChangeEmail = "10107";
-        public const string hasVerifyAtChangeEmail = "10108";
-        public const string sendBeforeStateAtInvited = "10109";
-        public const string sendAfterStateAtInvited = "10110";
-        public const string hasVerifyAtInvitedYes = "10111";
-        public const string hasVerifyAtInvitedNot = "10112";
-    }
-    class UserReturnCode
-    {
-        public const string success = "00000";      
-        public const string invalidUsername = "10200";      // 不合法用户名
-        public const string usernameHasRegisted = "10201";  // 用户名已注册
-        public const string invalidEmail = "10202";         // 不合法的邮箱
-        public const string emailHasRegisted = "10203";     // 邮箱已注册
-        public const string invalidPasswordLen = "10204";   // 不合法的密码
-        public const string passwordError = "10205";        // 密码错误
-        public const string invalidVerifyCode = "10206";    // 不合法的验证码
-        public const string invalidLoginInfo = "10207";     // 无效的登录信息(即用户名/邮箱/密码错误)
-        public const string notFindUserInfo = "10208";      // 没有找到用户信息
-        public const string invalidAccessToken = "10209";      // 无效token
-        public const string expireAccessToken = "10210";       // token过期
-        public const string headIconNotUpload = "10211";       // 头像未上传
-    }
-
-    class TokenHelper
-    {
-        // 供临时测试使用
-        public static string applyAccessToken(string url, string userId)
-        {
-            return "123456789012";
-        }
-        public static bool checkAccessToken(string url, string userId, string accessToken, out string code)
-        {
-            code = "";
-            return true;
-        }
-
-    }
-    class RespHelper
-    {
-        public static JObject defaultData = new JObject();
-        public static JArray getErrorRes(string code)
-        {
-            return new JArray { new JObject { { "resultCode", code }, { "data", defaultData } } };
-        }
-
-        public static JArray getRes(JToken res = null)
-        {
-            return new JArray { new JObject { { "resultCode", UserReturnCode.success }, { "data", res ?? defaultData } } };
-        }
-        public static bool checkResCode(JArray res)
-        {
-            return res[0]["resultCode"].ToString() == UserReturnCode.success;
-        }
-
-    }
-
-    class DaoInfoHelper
-    {
-        public static string now => DateTime.Now.ToString("u");
-        public static string genUserId(string username, string email, string pswd)
-        {
-            string data = string.Format("{0}.{1}.{2},{3}", now, username, email, pswd);
-            return hash(data);
-        }
-        public static string genProjId(string name, string title)
-        {
-            string data = string.Format("{0}.{1}.{2}", now, name, title);
-            return hash(data);
-        }
-        public static string genProjUpdateId(string projId, string updateTile)
-        {
-            string data = string.Format("{0}.{1}.{2}", now, projId, updateTile);
-            return hash(data);
-        }
-        private static string hash(string data)
-        {
-            byte[] binaryData = Encoding.UTF8.GetBytes(data);
-            var stream = new MemoryStream(binaryData);
-
-            MD5 md5 = new MD5CryptoServiceProvider();
-            byte[] retVal = md5.ComputeHash(stream);
-            return toStr(retVal);
-        }
-        private static string toStr(byte[] retVal)
-        {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < retVal.Length; i++)
-            {
-                sb.Append(retVal[i].ToString("x2"));
-            }
-            return sb.ToString();
-        }
-
-
     }
 }

@@ -1,6 +1,8 @@
 ﻿using NEL.NNS.lib;
+using NEL_FutureDao_API.lib;
+using NEL_FutureDao_API.Service.Help;
+using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
-using System.Linq;
 
 namespace NEL_FutureDao_API.Service
 {
@@ -13,11 +15,10 @@ namespace NEL_FutureDao_API.Service
         public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
         public string userInfoCol { get; set; } = "daoUserInfo";
         public string projUpdateInfoCol { get; set; } = "daoProjUpdateInfo";
-        public string tokenUrl { get; set; }
+        public string tokenUrl { get; set; } = "";
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
         private JArray getRes(JToken res = null) => RespHelper.getRes(res);
-        private bool checkResCode(JArray res) => RespHelper.checkResCode(res);
 
         public JArray createProj(string userId, string accessToken, string projName, string projTitle, string projType, string projCoverUrl, string projBrief, string videoBriefUrl, string projDetail, string connectEmail, string officialWeb, string community)
         {
@@ -32,7 +33,7 @@ namespace NEL_FutureDao_API.Service
             if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr) > 0)
             {
                 // 重复的项目名称/项目标题
-                return getErrorRes(ProjReturnCode.RepeatProjNameOrProjTitle);
+                return getErrorRes(DaoReturnCode.RepeatProjNameOrProjTitle);
             }
             string projId = DaoInfoHelper.genProjId(projName, projTitle);
             var now = TimeHelper.GetTimeStamp();
@@ -95,7 +96,7 @@ namespace NEL_FutureDao_API.Service
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
             {
                 // 非项目成员不能修改项目
-                return getErrorRes(ProjReturnCode.HaveNotPermissionModifyProj);
+                return getErrorRes(DaoReturnCode.HaveNotPermissionModifyProj);
             }
             findStr = new JObject { { "projId", projId } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
@@ -196,7 +197,7 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0 || queryRes[0]["role"].ToString() != TeamRoleType.Admin)
             {
                 // 用户无操作该项目的权限
-                return getErrorRes(ProjReturnCode.HaveNotPermissionInviteMember);
+                return getErrorRes(DaoReturnCode.HaveNotPermissionInviteMember);
             }
             findStr = new JObject { { "userId", targetUserId } }.ToString();
             fieldStr = new JObject { { "email", 1 }, { "username", 1 }, { "headIconUrl", 1 } }.ToString();
@@ -204,7 +205,7 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0)
             {
                 // 无效目标用户id
-                return getErrorRes(ProjReturnCode.InvalidTargetUserId);
+                return getErrorRes(DaoReturnCode.InvalidTargetUserId);
             }
             string nEmail = queryRes[0]["email"].ToString();
             string nUsername = queryRes[0]["username"].ToString();
@@ -257,13 +258,13 @@ namespace NEL_FutureDao_API.Service
                 || queryRes[0]["emailVerifyCode"].ToString() != verifyCode
                 || queryRes[0]["username"].ToString() != username)
             {
-                return getErrorRes(UserReturnCode.invalidVerifyCode);
+                return getErrorRes(DaoReturnCode.invalidVerifyCode);
             }
             string oldState = queryRes[0]["emailVerifyState"].ToString();
             if(oldState == EmailState.hasVerifyAtInvitedYes
                 || oldState == EmailState.hasVerifyAtInvitedNot)
             {
-                return getErrorRes(UserReturnCode.invalidVerifyCode);
+                return getErrorRes(DaoReturnCode.invalidVerifyCode);
             }
 
             string state = agreeOrNot == "1" ? EmailState.hasVerifyAtInvitedYes : EmailState.hasVerifyAtInvitedNot;
@@ -285,7 +286,7 @@ namespace NEL_FutureDao_API.Service
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
             {
                 // 用户无操作该项目的创建更新权限
-                return getErrorRes(ProjReturnCode.HaveNotPermissionCreateUpdate);
+                return getErrorRes(DaoReturnCode.HaveNotPermissionCreateUpdate);
             }
 
             var updateId = DaoInfoHelper.genProjUpdateId(projId, updateTitle);
@@ -314,7 +315,7 @@ namespace NEL_FutureDao_API.Service
             string findStr = new JObject { { "projId", projId},{ "userId", userId} }.ToString();
             if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
             {
-                return getErrorRes(ProjReturnCode.HaveNotPermissionQueryProjInfo);
+                return getErrorRes(DaoReturnCode.HaveNotPermissionQueryProjInfo);
             }
 
             findStr = new JObject { { "projId", projId } }.ToString();
@@ -332,13 +333,13 @@ namespace NEL_FutureDao_API.Service
             string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
             if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
             {
-                return getErrorRes(ProjReturnCode.HaveNotPermissionQueryProjInfo);
+                return getErrorRes(DaoReturnCode.HaveNotPermissionQueryProjInfo);
             }
             //
             findStr = new JObject { { "projId", projId } }.ToString();
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
 
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "username","headIconUrl","authenticationState", "role" }).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "userId", "username","headIconUrl","authenticationState", "role" }).ToString();
             string sortStr = new JObject { { "role", 1 } }.ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize, fieldStr);
             return getRes(new JObject { { "count", count },{ "list", queryRes} });
@@ -355,7 +356,7 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
             if(queryRes.Count == 0 || queryRes[0]["role"].ToString() != TeamRoleType.Admin)
             {
-                return getErrorRes(ProjReturnCode.HaveNotPermissionModifyTeamRole);
+                return getErrorRes(DaoReturnCode.HaveNotPermissionModifyTeamRole);
             }
 
             findStr = new JObject { { "projId", projId }, { "userId", targetUserId } }.ToString();
@@ -370,6 +371,12 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
+        
+        public JArray deleteTeamUser(string userId, string accessToken, string targetUserId)
+        {
+            return null;
+        }
+
         // 查询项目(all/管理中/关注中/支持中)
         public JArray queryProjList()
         {
@@ -440,15 +447,4 @@ namespace NEL_FutureDao_API.Service
         public const string Person = "person"; // 个人认证
         public const string Company = "company"; // 企业认证
     }
-    class ProjReturnCode
-    {
-        public const string RepeatProjNameOrProjTitle = "10212";     // 重复的项目名称或项目标题
-        public const string HaveNotPermissionModifyProj = "10213";   // 没有权限修改项目
-        public const string HaveNotPermissionInviteMember = "10214"; // 没有权限邀请成员
-        public const string InvalidTargetUserId = "10215";           // 不合法的用户id
-        public const string HaveNotPermissionCreateUpdate = "10216"; // 没有权限创建项目更新
-        public const string HaveNotPermissionQueryProjInfo = "10217"; // 没有权限查看项目信息
-        public const string HaveNotPermissionModifyTeamRole = "10218"; // 没有权限修改成员角色
-    }
-
 }

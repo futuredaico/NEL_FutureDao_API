@@ -27,7 +27,7 @@ namespace NEL_FutureDao_API.Controllers
                 var file = Request.Form.Files[0];
                 using (var stream = file.OpenReadStream())
                 {
-                    var fileName = file.FileName;
+                    var fileName = file.FileName.toRandomFileName();
                     var ossUrl = api.PutTestStream(fileName.toTemp(), stream);
                     return Json(toRes(ossUrl, fileName));
                 }
@@ -47,7 +47,7 @@ namespace NEL_FutureDao_API.Controllers
                 var file = Request.Form.Files[0];
                 using (var stream = file.OpenReadStream())
                 {
-                    var fileName = file.FileName;
+                    var fileName = file.FileName.toRandomFileName();
                     var ossUrl = api.PutMainStream(fileName.toTemp(), stream);
                     return Json(toRes(ossUrl, fileName));
                 }

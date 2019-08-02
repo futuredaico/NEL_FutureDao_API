@@ -219,10 +219,13 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
             string findStr = new JObject { { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "username",1},{ "email",1},{ "headIconUrl",1},{ "brief",1},{ "_id",0} }.ToString();
+            string fieldStr = new JObject { { "username",1},{ "email",1}, { "emailVerifyState", 1 }, { "headIconUrl",1},{ "brief",1},{ "_id",0} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
-            return getRes(queryRes[0]);
+
+            var item = queryRes[0];
+            item["emailVerifyState"] = DaoInfoHelper.toEmailState(item["emailVerifyState"].ToString());
+            return getRes(item);
         }
         public JArray modifyUserIcon(string userId, string accessToken, string headIconUrl)
         {

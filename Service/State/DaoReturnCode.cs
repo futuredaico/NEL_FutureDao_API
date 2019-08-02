@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+﻿
 namespace NEL_FutureDao_API.Service.State
 {
     public class DaoReturnCode
@@ -28,5 +24,10 @@ namespace NEL_FutureDao_API.Service.State
         public const string HaveNotPermissionCreateUpdate = "10216"; // 没有权限创建项目更新
         public const string HaveNotPermissionQueryProjInfo = "10217"; // 没有权限查看项目信息
         public const string HaveNotPermissionModifyTeamRole = "10218"; // 没有权限修改成员角色
+
+        public const string EmailNotVerify = "10219";   // 邮箱未验证
+        public const string EmailVerifying = "10220";   // 邮箱验证中
+        public const string EmailVerifySucc = "10221"; // 邮箱验证成功 
+        public const string EmailVerifyFail = "10222"; // 邮箱验证失败
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NEL_FutureDao_API.Service.State;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,6 +8,28 @@ namespace NEL_FutureDao_API.Service.Help
 {
     public class DaoInfoHelper
     {
+        public static string toEmailState(string emailVerifyState)
+        {
+            if(emailVerifyState == EmailState.sendBeforeState
+                || emailVerifyState == EmailState.sendBeforeStateAtResetPassword
+                || emailVerifyState == EmailState.sendBeforeStateAtChangeEmail)
+            {
+                return DaoReturnCode.EmailNotVerify;
+            }
+            if (emailVerifyState == EmailState.sendAfterState
+                || emailVerifyState == EmailState.sendAfterStateAtResetPassword
+                || emailVerifyState == EmailState.sendAfterStateAtChangeEmail)
+            {
+                return DaoReturnCode.EmailVerifying;
+            }
+            if (emailVerifyState == EmailState.hasVerify
+                || emailVerifyState == EmailState.hasVerifyAtResetPassword
+                || emailVerifyState == EmailState.hasVerifyAtChangeEmail)
+            {
+                return DaoReturnCode.EmailVerifySucc;
+            }
+            return DaoReturnCode.EmailVerifyFail;
+        }
         public static string now => DateTime.Now.ToString("u");
         public static string genUserId(string username, string email, string pswd)
         {

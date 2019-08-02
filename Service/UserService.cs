@@ -100,7 +100,7 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray verifyRegister(string username, string email, string verifyCode)
         {
-            string findStr = new JObject { { email, "email" } }.ToString();
+            string findStr = new JObject { { "email", email } }.ToString();
             string fieldStr = new JObject { { "username",1},{ "emailVerifyCode", 1},{ "emailVerifyState",1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if(queryRes.Count == 0

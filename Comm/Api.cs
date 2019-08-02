@@ -69,6 +69,14 @@ namespace NEL.Comm
                     case "getProjInfo":
                         result = ps.getProjInfo(req.@params[0].ToString());
                         break;
+                    case "deleteProjTeam":
+                        result = ps.deleteProjTeam(
+                                req.@params[0].ToString(),
+                                req.@params[1].ToString(),
+                                req.@params[2].ToString(),
+                                req.@params[3].ToString()
+                                );
+                        break;
                     case "modifyUserRole":
                         result = ps.modifyUserRole(
                                 req.@params[0].ToString(),

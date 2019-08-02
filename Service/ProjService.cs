@@ -3,6 +3,7 @@ using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace NEL_FutureDao_API.Service
 {
@@ -375,9 +376,45 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
         
-        public JArray deleteTeamUser(string userId, string accessToken, string targetUserId)
+        public JArray deleteProjTeam(string userId, string accessToken, string projId, string targetUserId)
         {
-            return null;
+            if(userId == targetUserId)
+            {
+                return getErrorRes(DaoReturnCode.HaveNotPermissionDeleteYourSelf);
+            }
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+
+            string findStr = new JObject { {"$or", new JArray { 
+                new JObject{{"projId", projId},{ "userId", userId} },
+                new JObject{{"projId", projId},{ "userId", targetUserId } }
+            } } }.ToString();
+            string fieldStr = new JObject { { "userId", 1},{ "role", 1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
+            if(queryRes.Count == 0)
+            {
+                return getErrorRes(DaoReturnCode.HaveNotPermissionDeleteTeamUser);
+            }
+
+            bool isAdmin = queryRes.Any(p => p["userId"].ToString() == userId && p["role"].ToString() == TeamRoleType.Admin);
+            if(!isAdmin)
+            {
+                return getErrorRes(DaoReturnCode.HaveNotPermissionDeleteTeamUser);
+            }
+            bool hasTarget = queryRes.Any(p => p["userId"].ToString() == targetUserId);
+            if(hasTarget)
+            {
+                isAdmin = queryRes.Any(p => p["userId"].ToString() == targetUserId && p["role"].ToString() == TeamRoleType.Admin);
+                if(isAdmin)
+                {
+                    return getErrorRes(DaoReturnCode.HaveNotPermissionDeleteTeamAdmin);
+                }
+                findStr = new JObject { { "projId", projId }, { "userId", targetUserId } }.ToString();
+                mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+            }
+            return getRes() ;
         }
 
         public JArray getProjInfo(string projId)

@@ -29,5 +29,11 @@ namespace NEL_FutureDao_API.Service.State
         public const string EmailVerifying = "10220";   // 邮箱验证中
         public const string EmailVerifySucc = "10221"; // 邮箱验证成功 
         public const string EmailVerifyFail = "10222"; // 邮箱验证失败
+
+        public const string HaveNotPermissionDeleteProj = "10223"; // 没有权限删除项目
+        public const string HaveNotPermissionDeleteUpdate = "10224"; // 没有权限删除项目更新
+        public const string HaveNotPermissionDeleteTeamUser = "10225"; // 没有权限删除项目团队成员
+        public const string HaveNotPermissionDeleteTeamAdmin = "10226"; // 没有权限删除项目团队管理员
+        public const string HaveNotPermissionDeleteYourSelf = "10227"; // 没有权限删除项目团队成员自己
     }
 }

@@ -339,7 +339,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.HaveNotPermissionQueryProjInfo);
             }
             //
-            findStr = new JObject { { "projId", projId } }.ToString();
+            findStr = new JObject { { "projId", projId },{ "emailVerifyState", EmailState.hasVerifyAtInvitedYes} }.ToString();
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
 
             string fieldStr = MongoFieldHelper.toReturn(new string[] { "userId", "username","headIconUrl","authenticationState", "role" }).ToString();

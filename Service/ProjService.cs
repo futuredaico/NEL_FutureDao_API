@@ -380,6 +380,30 @@ namespace NEL_FutureDao_API.Service
             return null;
         }
 
+        public JArray getProjInfo(string projId)
+        {
+            //管理员头像、管理员名称、项目名称
+            string findStr = new JObject { { "projId", projId } }.ToString();
+            string fieldStr = new JObject { { "creatorId", 1},{ "projName", 1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if(queryRes.Count == 0)
+            {
+                return getRes();
+            }
+            var creatorId = queryRes[0]["creatorId"].ToString();
+            var projName = queryRes[0]["projName"].ToString();
+
+            findStr = new JObject { { "userId", creatorId } }.ToString();
+            fieldStr = new JObject { { "headIconUrl", 1 }, { "username", 1 } }.ToString();
+            queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
+            var adminHeadIconUrl = queryRes[0]["headIconUrl"].ToString();
+            var adminUsername = queryRes[0]["username"].ToString();
+
+            var res = new JObject { {"projName", projName},{ "adminHeadIconUrl", adminHeadIconUrl},{ "adminUsername", adminUsername} };
+            return getRes(res); 
+        }
+        
+        
         // 查询项目(all/管理中/关注中/支持中)
         public JArray queryProjList()
         {

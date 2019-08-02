@@ -66,6 +66,9 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "getProjInfo":
+                        result = ps.getProjInfo(req.@params[0].ToString());
+                        break;
                     case "modifyUserRole":
                         result = ps.modifyUserRole(
                                 req.@params[0].ToString(),

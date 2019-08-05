@@ -67,6 +67,13 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     //
+                    case "queryProjDetail":
+                        result = ps.queryProjDetail(req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
+                    case "queryProjList":
+                        result = ps.queryProjList(int.Parse(req.@params[0].ToString()), int.Parse(req.@params[1].ToString()));
+                        break;
+                    //
                     case "queryUpdate":
                         result = ps.queryUpdate(
                             req.@params[0].ToString(),

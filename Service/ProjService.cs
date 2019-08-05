@@ -552,16 +552,32 @@ namespace NEL_FutureDao_API.Service
             JArray queryRes = new JArray();
             if(count > 0)
             {
-                string sortStr = "{'time',-1}";
+                string sortStr = "{'time':-1}";
                 string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "supportCount" }).ToString();
                 queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
             }
             var res = new JObject { { "count", count }, { "list", queryRes } };
             return getRes(res);
         }
-        public JArray queryProjDetail()
+        public JArray queryProjDetail(string projId, string userId="")
         {
-            return null;
+            string findStr = new JObject { {"projId", projId } }.ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName","projTitle","projType", "projConverUrl","projBrief", "projDetail", "supportCount"}).ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            item["isSupport"] = userId == null ? false: checkIsSupport(projId, userId);
+            item["isStar"] = userId == null ? false : checkIsStar(projId, userId);
+            return getRes(item);
+        }
+        private bool checkIsSupport(string projId, string userId)
+        {
+            return false;
+        }
+        private bool checkIsStar(string projId, string userId)
+        {
+            return false;
         }
         public JArray queryUpdateDetail()
         {

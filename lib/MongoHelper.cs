@@ -219,6 +219,16 @@ namespace NEL.NNS.lib
 
             client = null;
         }
+        public void DeleteDataMany(string mongodbConnStr, string mongodbDatabase, string coll, string whereStr)
+        {
+            var client = new MongoClient(mongodbConnStr);
+            var database = client.GetDatabase(mongodbDatabase);
+            var collection = database.GetCollection<BsonDocument>(coll);
+
+            collection.DeleteMany(BsonDocument.Parse(whereStr));
+
+            client = null;
+        }
 
         //
         public void setIndex(string mongodbConnStr, string mongodbDatabase, string coll, string indexDefinition, string indexName, bool isUnique = false)

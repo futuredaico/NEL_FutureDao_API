@@ -66,16 +66,51 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
-                    case "getProjInfo":
-                        result = ps.getProjInfo(req.@params[0].ToString());
+                    //
+                    case "queryUpdate":
+                        result = ps.queryUpdate(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
                         break;
-                    case "deleteProjTeam":
-                        result = ps.deleteProjTeam(
+                    case "modifyUpdate":
+                        result = ps.modifyUpdate(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString()
+                            );
+                        break;
+                    case "deleteUpdate":
+                        result = ps.deleteUpdate(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
+                        break;
+                    case "createUpdate":
+                        result = ps.createUpdate(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString()
+                            );
+                        break;
+                    //
+                    case "queryProjTeam":
+                        result = ps.queryProjTeam(
                                 req.@params[0].ToString(),
                                 req.@params[1].ToString(),
                                 req.@params[2].ToString(),
-                                req.@params[3].ToString()
-                                );
+                                int.Parse(req.@params[3].ToString()),
+                                int.Parse(req.@params[4].ToString())
+                            );
                         break;
                     case "modifyUserRole":
                         result = ps.modifyUserRole(
@@ -86,29 +121,13 @@ namespace NEL.Comm
                                 req.@params[4].ToString()
                             );
                         break;
-                    case "queryProjTeam":
-                        result = ps.queryProjTeam(
+                    case "deleteProjTeam":
+                        result = ps.deleteProjTeam(
                                 req.@params[0].ToString(),
                                 req.@params[1].ToString(),
                                 req.@params[2].ToString(),
-                                int.Parse(req.@params[3].ToString()),
-                                int.Parse(req.@params[4].ToString())
-                            );
-                        break;
-                    case "queryProj":
-                        result = ps.queryProj(
-                                req.@params[0].ToString(),
-                                req.@params[1].ToString(),
-                                req.@params[2].ToString()
-                            );
-                        break;
-                    case "createUpdate":
-                        result = ps.createUpdate(
-                            req.@params[0].ToString(),
-                            req.@params[1].ToString(),
-                            req.@params[2].ToString(),
-                            req.@params[3].ToString(),
-                            req.@params[4].ToString());
+                                req.@params[3].ToString()
+                                );
                         break;
                     case "verifyInvite":
                         result = ps.verifyInvite(
@@ -134,6 +153,17 @@ namespace NEL.Comm
                             int.Parse(req.@params[4].ToString())
                             );
                         break;
+                    //
+                    case "getProjInfo":
+                        result = ps.getProjInfo(req.@params[0].ToString());
+                        break;
+                    case "queryProj":
+                        result = ps.queryProj(
+                                req.@params[0].ToString(),
+                                req.@params[1].ToString(),
+                                req.@params[2].ToString()
+                            );
+                        break;
                     case "modifyProj":
                         result = ps.modifyProj(
                             req.@params[0].ToString(),
@@ -149,6 +179,13 @@ namespace NEL.Comm
                             req.@params[10].ToString(),
                             req.@params[11].ToString(),
                             req.@params[12].ToString());
+                        break;
+                    case "deleteProj":
+                        result = ps.deleteProj(
+                                req.@params[0].ToString(),
+                                req.@params[1].ToString(),
+                                req.@params[2].ToString()
+                            );
                         break;
                     case "createProj":
                         result = ps.createProj(

@@ -470,7 +470,7 @@ namespace NEL_FutureDao_API.Service
                 { "lastUpdateTime", now},
             }.ToString();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, newdata);
-            return getRes();
+            return getRes(new JObject { {"updateId", updateId} });
         }
         public JArray deleteUpdate(string userId, string accessToken, string projId, string updateId)
         {
@@ -544,9 +544,20 @@ namespace NEL_FutureDao_API.Service
         
         
         // 查询项目(all/管理中/关注中/支持中)
-        public JArray queryProjList()
+        public JArray queryProjList(int pageNum=1, int pageSize=10)
         {
-            return null;
+            string findStr = "{}";
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
+
+            JArray queryRes = new JArray();
+            if(count > 0)
+            {
+                string sortStr = "{'time',-1}";
+                string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "supportCount" }).ToString();
+                queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            }
+            var res = new JObject { { "count", count }, { "list", queryRes } };
+            return getRes(res);
         }
         public JArray queryProjDetail()
         {

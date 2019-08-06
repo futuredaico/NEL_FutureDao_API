@@ -132,6 +132,7 @@ namespace NEL_FutureDao_API.Service
             findStr = new JObject { { "projId", projId } }.ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
             var item = queryRes[0];
+            
             var isUpdate = false;
             var updateJo = new JObject();
             if (item["projName"].ToString() != projName && projName.Trim().Length > 0)
@@ -543,6 +544,49 @@ namespace NEL_FutureDao_API.Service
         }
         
         
+        public JArray commitProjAudit(string userId, string accessToken, string projId)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
+            string fieldStr = new JObject { { "emailVerifyState", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0 || queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtInvitedYes)
+            {
+                return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyProj);
+            }
+            findStr = new JObject { { "projId", projId }}.ToString();
+            fieldStr = MongoFieldHelper.toReturn(new string[] { "projName","projTitle", "projConverUrl", "projSubState", "projBrief", "projDetail","connectEmail"}).ToString();
+            queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if(queryRes.Count == 0)
+            {
+                return getErrorRes(DaoReturnCode.projRequiredFieldIsEmpty);
+            }
+            var item = queryRes[0];
+            if(item["projName"].ToString().Trim() == ""
+                || item["projTitle"].ToString().Trim() == ""
+                || item["projConverUrl"].ToString().Trim() == ""
+                || item["projBrief"].ToString().Trim() == ""
+                || item["projDetail"].ToString().Trim() == ""
+                || item["connectEmail"].ToString().Trim() == "")
+            {
+                return getErrorRes(DaoReturnCode.projRequiredFieldIsEmpty);
+            }
+            //
+            if(item["projSubState"].ToString() != ProjSubState.Auditing)
+            {
+                var updateStr = new JObject { { "$set", new JObject {
+                {"projSubState", ProjSubState.Auditing},
+                {"lastUpdatorId",  userId},
+                {"lastUpdateTime", TimeHelper.GetTimeStamp() }
+            } } }.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, updateStr, findStr);
+            }
+            return getRes();
+        }
+
         // 查询项目(all/管理中/关注中/支持中)
         public JArray queryProjList(int pageNum=1, int pageSize=10)
         {

@@ -18,22 +18,7 @@ namespace NEL_FutureDao_API.Service.State
         public const string headIconNotUpload = "10211";       // 头像未上传
         public const string projBriefNotUpload = "10212";      // 项目封面未上传
         public const string projVideoNotUpload = "10213";      // 项目视频未上传
-
-        /*
-        public const string RepeatProjNameOrProjTitle = "10212";     // 重复的项目名称或项目标题
-        public const string HaveNotPermissionModifyProj = "10213";   // 没有权限修改项目
-        public const string HaveNotPermissionInviteMember = "10214"; // 没有权限邀请成员
-        public const string InvalidTargetUserId = "10215";           // 不合法的用户id
-        public const string HaveNotPermissionCreateUpdate = "10216"; // 没有权限创建项目更新
-        public const string HaveNotPermissionQueryProjInfo = "10217"; // 没有权限查看项目信息
-        public const string HaveNotPermissionModifyTeamRole = "10218"; // 没有权限修改成员角色
-
-        public const string HaveNotPermissionDeleteProj = "10223"; // 没有权限删除项目
-        public const string HaveNotPermissionDeleteUpdate = "10224"; // 没有权限删除项目更新
-        public const string HaveNotPermissionDeleteTeamUser = "10225"; // 没有权限删除项目团队成员
-        public const string HaveNotPermissionDeleteTeamAdmin = "10226"; // 没有权限删除项目团队管理员
-        public const string HaveNotPermissionDeleteYourSelf = "10227"; // 没有权限删除项目团队成员自己
-        */
+        public const string projRequiredFieldIsEmpty = "10214";// 项目必选项为空
 
         public const string EmailNotVerify = "10219";   // 邮箱未验证
         public const string EmailVerifying = "10220";   // 邮箱验证中
@@ -56,5 +41,6 @@ namespace NEL_FutureDao_API.Service.State
         public const string T_HaveNotPermissionQueryTeamMember = "102344";  // 没有权限[查询]项目成员
         public const string T_HaveNotPermissionDeleteTeamAdmin = "102345";  // 没有权限删除项目团队管理员
         public const string T_HaveNotPermissionDeleteYourSelf = "102346";   // 没有权限删除项目团队成员自己
+
     }
 }

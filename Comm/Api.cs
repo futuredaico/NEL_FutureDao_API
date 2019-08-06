@@ -66,6 +66,10 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // 
+                    case "commitProjAudit":
+                        result = ps.commitProjAudit(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        break;
                     //
                     case "queryProjDetail":
                         result = ps.queryProjDetail(req.@params[0].ToString(), req.@params[1].ToString());

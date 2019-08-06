@@ -38,21 +38,21 @@ namespace NEL.NNS.lib
         {
             return new JObject() { { key, new JObject() { { "$regex", regex }, { "$options", "i" } } } };
         }
-        public static JObject toFilter(long[] blockindexArr, string field, string logicalOperator = "$or")
+        public static JObject toFilter(long[] arr, string field, string logicalOperator = "$or")
         {
-            if (blockindexArr.Count() == 1)
+            if (arr.Count() == 1)
             {
-                return new JObject() { { field, blockindexArr[0] } };
+                return new JObject() { { field, arr[0] } };
             }
-            return new JObject() { { logicalOperator, new JArray() { blockindexArr.Select(item => new JObject() { { field, item } }).ToArray() } } };
+            return new JObject() { { logicalOperator, new JArray() { arr.Select(item => new JObject() { { field, item } }).ToArray() } } };
         }
-        public static JObject toFilter(string[] blockindexArr, string field, string logicalOperator = "$or")
+        public static JObject toFilter(string[] arr, string field, string logicalOperator = "$or")
         {
-            if (blockindexArr.Count() == 1)
+            if (arr.Count() == 1)
             {
-                return new JObject() { { field, blockindexArr[0] } };
+                return new JObject() { { field, arr[0] } };
             }
-            return new JObject() { { logicalOperator, new JArray() { blockindexArr.Select(item => new JObject() { { field, item } }).ToArray() } } };
+            return new JObject() { { logicalOperator, new JArray() { arr.Select(item => new JObject() { { field, item } }).ToArray() } } };
         }
         public static JObject toReturn(string[] fieldArr)
         {

@@ -84,6 +84,12 @@ namespace NEL.Comm
                     case "queryProjDetail":
                         result = ps.queryProjDetail(req.@params[0].ToString(), req.@params[1].ToString());
                         break;
+                    case "queryProjListAtManage":
+                        result = ps.queryProjListAtManage(req.@params[0].ToString(), req.@params[1].ToString(), int.Parse(req.@params[2].ToString()), int.Parse(req.@params[3].ToString()));
+                        break;
+                    case "queryProjListAtStar":
+                        result = ps.queryProjListAtStar(req.@params[0].ToString(), req.@params[1].ToString(), int.Parse(req.@params[2].ToString()), int.Parse(req.@params[3].ToString()));
+                        break;
                     case "queryProjList":
                         result = ps.queryProjList(int.Parse(req.@params[0].ToString()), int.Parse(req.@params[1].ToString()));
                         break;

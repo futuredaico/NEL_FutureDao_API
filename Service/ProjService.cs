@@ -592,14 +592,38 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
 
+
         // 查询项目(all/管理中/关注中/支持中)
         public JArray queryProjList(int pageNum=1, int pageSize=10)
         {
-            string findStr = "{}";
-            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
-
+            return queryProjListPrivate(pageNum, pageSize);
+        }
+        public JArray queryProjListAtManage(string userId, string accessToken, int pageNum=1, int pageSize=10)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            return queryProjListPrivate(pageNum, pageSize, userId, ProjMangeSortType.Managing);
+        }
+        public JArray queryProjListAtStar(string userId, string accessToken, int pageNum = 1, int pageSize = 10)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            return queryProjListPrivate(pageNum, pageSize, userId, ProjMangeSortType.Staring);
+        }
+        public JArray queryProjListPrivate(int pageNum, int pageSize, string userId="", string manageOrStar="")
+        {
             JArray queryRes = new JArray();
-            if(count > 0)
+            if (!getListFilter(pageNum, pageSize, userId, manageOrStar, out string findStr, out long count))
+            {
+                return getRes(new JObject { {"count", count},{ "list", queryRes } });
+            }
+            //long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
+            //JArray queryRes = new JArray();
+            //if(count > 0)
             {
                 string sortStr = "{'time':-1}";
                 string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "supportCount" }).ToString();
@@ -607,6 +631,44 @@ namespace NEL_FutureDao_API.Service
             }
             var res = new JObject { { "count", count }, { "list", queryRes } };
             return getRes(res);
+        }
+        private bool getListFilter(int pageNum, int pageSize, string userId, string manageOrStar, out string filter, out long count)
+        {
+            filter = "{}";
+            count = 0;
+            if (manageOrStar == ProjMangeSortType.Managing)
+            {
+                string findStr = new JObject { { "userId", userId },{ "emailVerifyState", EmailState.hasVerifyAtInvitedYes} }.ToString();
+                count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+                if (count == 0) return false;
+                string sortStr = "{'time':1}";
+                string fieldStr = new JObject { { "projId",1},{ "_id",0} }.ToString();
+                var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize, fieldStr);
+                if (queryRes.Count == 0) return false;
+                var arr = queryRes.Select(p => p["projId"].ToString()).ToArray();
+                filter = MongoFieldHelper.toFilter(arr, "projId").ToString();
+                return true;
+            }
+            else if(manageOrStar == ProjMangeSortType.Staring)
+            {
+                string findStr = new JObject { { "userId", userId }, { "starState", StarAndSupportState.StarYes } }.ToString();
+                count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
+                if (count == 0) return false;
+                string sortStr = "{'time':1}";
+                string fieldStr = new JObject { { "projId", 1 }, { "_id", 0 } }.ToString();
+                var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize, fieldStr);
+                if (queryRes.Count == 0) return false;
+                var arr = queryRes.Select(p => p["projId"].ToString()).ToArray();
+                filter = MongoFieldHelper.toFilter(arr, "projId").ToString();
+                return true;
+            }
+            else
+            {
+                string findStr = "{}";
+                count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
+                if (count == 0) return false;
+                return true;
+            }
         }
         public JArray queryProjDetail(string projId, string userId="")
         {
@@ -636,12 +698,18 @@ namespace NEL_FutureDao_API.Service
             isSupport = queryRes[0]["supportState"].ToString() == StarAndSupportState.SupportYes;
             return;
         }
-        public JArray queryUpdateDetail()
+
+        // 查询项目更新
+        public JArray queryUpdateList(string projId)
+        {
+            return null;
+        }
+        public JArray queryUpdateDetail(string projId, string updateId)
         {
             return null;
         }
         
-        //
+        // 
         public JArray startStarProj(string userId, string accessToken, string projId)
         {
             return starAndSupportProj(userId, accessToken, projId, StarAndSupportState.StarYes); ;
@@ -801,5 +869,9 @@ namespace NEL_FutureDao_API.Service
 
         }
     }
-
+    class ProjMangeSortType
+    {
+        public const string Managing = "10137";
+        public const string Staring = "10138";
+    }
 }

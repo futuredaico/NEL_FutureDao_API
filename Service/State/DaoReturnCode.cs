@@ -19,6 +19,7 @@ namespace NEL_FutureDao_API.Service.State
         public const string projBriefNotUpload = "10212";      // 项目封面未上传
         public const string projVideoNotUpload = "10213";      // 项目视频未上传
         public const string projRequiredFieldIsEmpty = "10214";// 项目必选项为空
+        public const string projNotSupportOp = "10215";    // 项目不支持此操作
 
         public const string EmailNotVerify = "10219";   // 邮箱未验证
         public const string EmailVerifying = "10220";   // 邮箱验证中

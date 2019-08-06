@@ -67,6 +67,16 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // 
+                    case "startSupportProj":
+                        result = ps.startSupportProj(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        break;
+                    case "cancelStarProj":
+                        result = ps.cancelStarProj(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        break;
+                    case "startStarProj":
+                        result = ps.startStarProj(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        break;
+                    // 
                     case "commitProjAudit":
                         result = ps.commitProjAudit(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;

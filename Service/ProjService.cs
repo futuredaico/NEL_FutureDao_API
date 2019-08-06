@@ -16,6 +16,8 @@ namespace NEL_FutureDao_API.Service
         public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
         public string userInfoCol { get; set; } = "daoUserInfo";
         public string projUpdateInfoCol { get; set; } = "daoProjUpdateInfo";
+        public string projStarInfoCol { get; set; } = "daoProjStarInfo";
+        public string projSupportInfoCol { get; set; } = "daoProjSupportInfo";
         public string tokenUrl { get; set; } = "";
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
@@ -132,7 +134,10 @@ namespace NEL_FutureDao_API.Service
             findStr = new JObject { { "projId", projId } }.ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
             var item = queryRes[0];
-            
+            if(item[0]["projSubState"].ToString() == ProjSubState.Auditing)
+            {
+                return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyProj);
+            }
             var isUpdate = false;
             var updateJo = new JObject();
             if (item["projName"].ToString() != projName && projName.Trim().Length > 0)
@@ -611,23 +616,94 @@ namespace NEL_FutureDao_API.Service
             if (queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
-            item["isSupport"] = userId == null ? false: checkIsSupport(projId, userId);
-            item["isStar"] = userId == null ? false : checkIsStar(projId, userId);
+            getStarState(projId, userId, out bool isStar, out bool isSupport);
+            item["isSupport"] = isStar;
+            item["isStar"] = isSupport;
             return getRes(item);
         }
-        private bool checkIsSupport(string projId, string userId)
+        private void getStarState(string projId, string userId, out bool isStar, out bool isSupport)
         {
-            return false;
-        }
-        private bool checkIsStar(string projId, string userId)
-        {
-            return false;
+            isStar = false;
+            isSupport = false;
+            if (userId == "") return;
+
+            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
+            string fieldStr = new JObject { { "starState", 1 }, { "supportState", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return;
+
+            isStar = queryRes[0]["starState"].ToString() == StarAndSupportState.StarYes;
+            isSupport = queryRes[0]["supportState"].ToString() == StarAndSupportState.SupportYes;
+            return;
         }
         public JArray queryUpdateDetail()
         {
             return null;
         }
+        
+        //
+        public JArray startStarProj(string userId, string accessToken, string projId)
+        {
+            return starAndSupportProj(userId, accessToken, projId, StarAndSupportState.StarYes); ;
+        }
+        public JArray cancelStarProj(string userId, string accessToken, string projId)
+        {
+            return starAndSupportProj(userId, accessToken, projId, StarAndSupportState.StarNot); ;
+        }
+        public JArray startSupportProj(string userId, string accessToken, string projId)
+        {
+            return starAndSupportProj(userId, accessToken, projId, StarAndSupportState.SupportYes);
+        }
+        private JArray starAndSupportProj(string userId, string accessToken, string projId, string starOrSupportState)
+        {
+            // [看好/关注]: 看好自动关注项目, 看好不能取消
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            if (!StarAndSupportState.toState(starOrSupportState, out string starState, out string supportState))
+            {
+                return getErrorRes(DaoReturnCode.projNotSupportOp);
+            }
+            // 关注 + 取关 + 看好[看好+关注]
+            string findStr = new JObject { {"projId", projId},{"userId", userId} }.ToString();
+            string fieldStr = new JObject { { "starState",1},{ "supportState",1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr, fieldStr);
 
+            var now = TimeHelper.GetTimeStamp();
+            if(queryRes.Count == 0)
+            {
+                var newdata = new JObject {
+                    {"projId", projId},
+                    {"userId", userId},
+                    {"starState", starState},
+                    {"supportState", supportState},
+                    {"time", now},
+                    {"lastUpdateTime", now},
+                }.ToString();
+                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, newdata);
+            }
+            else
+            {
+                var item = queryRes[0];
+                var updateJo = new JObject();
+                if(starState != "" && starState != item["starState"].ToString())
+                {
+                    updateJo.Add("starState", starState);
+                }
+                if (supportState != "" && supportState != item["supportState"].ToString())
+                {
+                    updateJo.Add("supportState", supportState);
+                }
+                if(updateJo.Count > 0)
+                {
+                    updateJo.Add("lastUpdateTime", now);
+                    var updateStr = new JObject { { "$set", updateJo } }.ToString();
+                    mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, updateStr, findStr);
+                }
+            }
+            return getRes();
+        }
     }
 
     class ProjType
@@ -684,4 +760,46 @@ namespace NEL_FutureDao_API.Service
         public const string Person = "person"; // 个人认证
         public const string Company = "company"; // 企业认证
     }
+
+    class StarAndSupportState
+    {
+        public const string StarYes = "10131";
+        public const string StarNot = "10132";
+        public const string SupportYes = "10133";
+        public const string SupportNot = "10134";
+
+        public static bool toState(string state, out string starState, out string supportState)
+        {
+            if(state == StarYes)
+            {
+                starState = StarYes;
+                supportState = "";
+                return true;
+            }
+            if (state == StarNot)
+            {
+                starState = StarNot;
+                supportState = "";
+                return true;
+            }
+            if (state == SupportYes)
+            {
+                starState = StarYes;
+                supportState = SupportYes;
+                return true;
+            }
+            if (state == SupportNot)
+            {
+                // 不支持该操作
+                starState = StarNot;
+                supportState = SupportNot;
+                return false;
+            }
+            starState = "";
+            supportState = "";
+            return false;
+
+        }
+    }
+
 }

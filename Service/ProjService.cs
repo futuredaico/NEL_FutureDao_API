@@ -470,6 +470,8 @@ namespace NEL_FutureDao_API.Service
                 { "updateId", updateId},
                 { "updateTitle", updateTitle},
                 { "updateDetail", updateDetail},
+                { "discussCount",0 },
+                { "zanCount",0 },
                 { "creatorId",  userId},
                 { "lastUpdatorId",  userId},
                 { "time",  now},
@@ -539,7 +541,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionQueryProj);
             }
             findStr = new JObject { { "projId", projId }, { "updateId", updateId } }.ToString();
-            fieldStr = new JObject { { "updateTitle", 1 }, { "updateDetail", 1 }, { "_id", 1 } }.ToString();
+            fieldStr = new JObject { { "updateTitle", 1 }, { "updateDetail", 1 }, {"discussCount",1 },{"zanCount",1 },{ "_id", 1 } }.ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0)
             {
@@ -700,13 +702,18 @@ namespace NEL_FutureDao_API.Service
         }
 
         // 查询项目更新
-        public JArray queryUpdateList(string projId)
+        public JArray queryUpdateList(string projId, int pageNum=1, int pageSize=10)
         {
-            return null;
-        }
-        public JArray queryUpdateDetail(string projId, string updateId)
-        {
-            return null;
+            string findStr = new JObject { { "projId", projId} }.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
+            if(count == 0)
+            {
+                return getRes(new JObject { { "count",0},{ "list", new JArray()} });
+            }
+            string sortStr = "{'time':-1}";
+            string fieldStr = new JObject { { "updateId",1},{ "updateTitle",1},{ "updateDetail",1},{ "discussCount",1},{"zanCount",1 },{ "lastUpdateTime",1},{ "_id",0} }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            return getRes(new JObject { { "count", count }, { "list", queryRes }});
         }
         
         // 

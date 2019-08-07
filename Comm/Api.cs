@@ -85,6 +85,9 @@ namespace NEL.Comm
                         result = ps.queryUpdateList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
                         break;
                     //
+                    case "queryProjTeamBrief":
+                        result = ps.queryProjTeamBrief(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
+                        break;
                     case "queryProjDetail":
                         result = ps.queryProjDetail(req.@params[0].ToString(), req.@params[1].ToString());
                         break;

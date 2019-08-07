@@ -705,7 +705,30 @@ namespace NEL_FutureDao_API.Service
             isSupport = queryRes[0]["supportState"].ToString() == StarState.SupportYes;
             return;
         }
+        public JArray queryProjTeamBrief(string projId, int pageNum=1, int pageSize=10)
+        {
+            string findStr = new JObject { { "projId", projId},{ "emailVerifyState", EmailState.hasVerifyAtInvitedYes} }.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+            if (count == 0)
+            {
+                return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+            }
+            
+            string sortStr = "{'role':1}";
+            string fieldStr = new JObject { { "userId",1} }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize, fieldStr);
+            if (queryRes.Count == 0)
+            {
+                return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+            }
+            var arr = queryRes.Select(p => p["userId"].ToString()).Distinct().ToArray();
+            findStr = MongoFieldHelper.toFilter(arr, "userId").ToString();
+            fieldStr = new JObject { { "username",1},{ "headIconUrl",1},{ "brief",1},{ "_id",0} }.ToString();
+            sortStr = "{}";
+            queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, sortStr, 0, pageSize, fieldStr);
 
+            return getRes(new JObject { { "count", count},{ "list", queryRes} }) ;
+        }
         // 查询项目更新
         public JArray queryUpdateList(string projId, int pageNum=1, int pageSize=10)
         {

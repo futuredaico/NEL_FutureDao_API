@@ -627,9 +627,14 @@ namespace NEL_FutureDao_API.Service
             //JArray queryRes = new JArray();
             //if(count > 0)
             {
+                int skip = 0;
+                if(findStr == "{}")
+                {
+                    skip = pageSize * (pageNum - 1);
+                }
                 string sortStr = "{'time':-1}";
                 string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projState","projSubState","supportCount", "lastUpdateTime" }).ToString();
-                queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, pageSize, fieldStr);
+                queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, skip, pageSize, fieldStr);
             }
             var res = new JObject { { "count", count }, { "list", queryRes } };
             return getRes(res);
@@ -653,7 +658,7 @@ namespace NEL_FutureDao_API.Service
             }
             else if(manageOrStar == ProjMangeSortType.Staring)
             {
-                string findStr = new JObject { { "userId", userId }, { "starState", StarAndSupportState.StarYes } }.ToString();
+                string findStr = new JObject { { "userId", userId }, { "starState", StarState.StarYes } }.ToString();
                 count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
                 if (count == 0) return false;
                 string sortStr = "{'time':1}";
@@ -696,8 +701,8 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return;
 
-            isStar = queryRes[0]["starState"].ToString() == StarAndSupportState.StarYes;
-            isSupport = queryRes[0]["supportState"].ToString() == StarAndSupportState.SupportYes;
+            isStar = queryRes[0]["starState"].ToString() == StarState.StarYes;
+            isSupport = queryRes[0]["supportState"].ToString() == StarState.SupportYes;
             return;
         }
 
@@ -719,15 +724,15 @@ namespace NEL_FutureDao_API.Service
         // 
         public JArray startStarProj(string userId, string accessToken, string projId)
         {
-            return starAndSupportProj(userId, accessToken, projId, StarAndSupportState.StarYes); ;
+            return starAndSupportProj(userId, accessToken, projId, StarState.StarYes); ;
         }
         public JArray cancelStarProj(string userId, string accessToken, string projId)
         {
-            return starAndSupportProj(userId, accessToken, projId, StarAndSupportState.StarNot); ;
+            return starAndSupportProj(userId, accessToken, projId, StarState.StarNot); ;
         }
         public JArray startSupportProj(string userId, string accessToken, string projId)
         {
-            return starAndSupportProj(userId, accessToken, projId, StarAndSupportState.SupportYes);
+            return starAndSupportProj(userId, accessToken, projId, StarState.SupportYes);
         }
         private JArray starAndSupportProj(string userId, string accessToken, string projId, string starOrSupportState)
         {
@@ -736,7 +741,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            if (!StarAndSupportState.toState(starOrSupportState, out string starState, out string supportState))
+            if (!StarState.toState(starOrSupportState, out string starState, out string supportState))
             {
                 return getErrorRes(DaoReturnCode.projNotSupportOp);
             }
@@ -836,7 +841,7 @@ namespace NEL_FutureDao_API.Service
         public const string Company = "company"; // 企业认证
     }
 
-    class StarAndSupportState
+    class StarState
     {
         public const string StarYes = "10131";
         public const string StarNot = "10132";

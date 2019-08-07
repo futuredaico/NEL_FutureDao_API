@@ -628,7 +628,7 @@ namespace NEL_FutureDao_API.Service
             //if(count > 0)
             {
                 string sortStr = "{'time':-1}";
-                string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "supportCount", "lastUpdateTime" }).ToString();
+                string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projState","projSubState","supportCount", "lastUpdateTime" }).ToString();
                 queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
             }
             var res = new JObject { { "count", count }, { "list", queryRes } };

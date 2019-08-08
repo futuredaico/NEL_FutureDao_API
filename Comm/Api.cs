@@ -32,7 +32,9 @@ namespace NEL.Comm
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_testnet,
                     };
                     us = new UserService
                     {

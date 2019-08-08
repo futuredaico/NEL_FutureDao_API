@@ -27,6 +27,11 @@ namespace NEL_FutureDao_API
         {
             getOss().CopyObject(bucketName, source, target);
         }
+        public bool ExistKey(string bucketName, string filename)
+        {
+            return getOss().ExistKey(bucketName, filename);
+        }
+
 
         private OssWraper getOss()
         {
@@ -50,6 +55,10 @@ namespace NEL_FutureDao_API
             {
                 client.CopyObject(new CopyObjectRequest(bucketName, source, bucketName, target) { NewObjectMetadata = new ObjectMetadata() });
                 return "true";
+            }
+            public bool ExistKey(string bucketName, string filename)
+            {
+                return client.DoesObjectExist(bucketName, filename);
             }
         }
     }

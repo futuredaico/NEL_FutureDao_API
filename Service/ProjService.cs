@@ -19,6 +19,8 @@ namespace NEL_FutureDao_API.Service
         public string projStarInfoCol { get; set; } = "daoProjStarInfo";
         public string projSupportInfoCol { get; set; } = "daoProjSupportInfo";
         public string tokenUrl { get; set; } = "";
+        public OssHelper oss { get; set; }
+        public string bucketName { get; set; }
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
         private JArray getRes(JToken res = null) => RespHelper.getRes(res);
@@ -155,8 +157,20 @@ namespace NEL_FutureDao_API.Service
                 updateJo.Add("projType", projType);
                 isUpdate = true;
             }
+            /*
             if (item["projConverUrl"].ToString() != projCoverUrl && projCoverUrl.Trim().Length > 0)
             {
+                updateJo.Add("projCoverUrl", projCoverUrl);
+                isUpdate = true;
+            }*/
+            var oldUrl = item["projConverUrl"].ToString();
+            if(oldUrl != projCoverUrl && projCoverUrl.Trim().Length > 0)
+            {
+
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, oldUrl, projCoverUrl, "defaultHeadIconUrl"))
+                {
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
                 updateJo.Add("projCoverUrl", projCoverUrl);
                 isUpdate = true;
             }
@@ -165,8 +179,20 @@ namespace NEL_FutureDao_API.Service
                 updateJo.Add("projBrief", projBrief);
                 isUpdate = true;
             }
+            /*
             if (item["videoBriefUrl"].ToString() != videoBriefUrl && videoBriefUrl.Trim().Length > 0)
             {
+                updateJo.Add("videoBriefUrl", videoBriefUrl);
+                isUpdate = true;
+            }*/
+            oldUrl = item["videoBriefUrl"].ToString();
+            if (oldUrl != videoBriefUrl && videoBriefUrl.Trim().Length > 0)
+            {
+
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, oldUrl, videoBriefUrl, "defaultHeadIconUrl"))
+                {
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
                 updateJo.Add("videoBriefUrl", videoBriefUrl);
                 isUpdate = true;
             }

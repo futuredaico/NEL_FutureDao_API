@@ -241,7 +241,13 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.notFindUserInfo);
             }
 
-            // 
+            //
+            string oldHeadIconUrl = queryRes[0]["headIconUrl"].ToString();
+            if(!DaoInfoHelper.StoreFile(oss, bucketName, oldHeadIconUrl, headIconUrl, defaultHeadIconUrl))
+            {
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
+            }
+            /*
             var fileName = queryRes[0]["headIconUrl"].ToString().toFileName();
             if(!defaultHeadIconUrl.EndsWith(fileName))
             {
@@ -259,6 +265,9 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.headIconNotUpload);
             }
+            */
+
+
             //
             if (queryRes[0]["headIconUrl"].ToString() != headIconUrl)
             {

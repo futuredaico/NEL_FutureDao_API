@@ -1,4 +1,5 @@
-﻿using NEL_FutureDao_API.Service.State;
+﻿using NEL_FutureDao_API.lib;
+using NEL_FutureDao_API.Service.State;
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -63,6 +64,41 @@ namespace NEL_FutureDao_API.Service.Help
                 sb.Append(retVal[i].ToString("x2"));
             }
             return sb.ToString();
+        }
+
+        public static bool StoreFile(OssHelper oss, string bucketName, string oldHeadIconUrl, string headIconUrl, string defaultHeadIconUrl)
+        {
+            bool flag = true; if (flag) return flag;
+            // old -> bak
+            string fileName = oldHeadIconUrl.toFileName();
+            if (!defaultHeadIconUrl.EndsWith(fileName) && fileName != "")
+            {
+                try
+                {
+                    oss.CopyObject(bucketName, fileName, fileName.toBak());
+                }
+                catch { }
+            }
+
+            // tmp -> origin
+            fileName = headIconUrl.toFileName();
+            if (!oss.ExistKey(bucketName, fileName.toTemp()))
+            {
+                return false;
+            }
+            if(oss.ExistKey(bucketName, fileName))
+            {
+                return true;
+            }
+            try
+            {
+                oss.CopyObject(bucketName, fileName.toTemp(), fileName);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

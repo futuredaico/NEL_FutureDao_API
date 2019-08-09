@@ -342,3 +342,4 @@ healthchecksdb
 *.json
 *.html
 /Service/ProjService.cs
+/Service/DiscussService.cs

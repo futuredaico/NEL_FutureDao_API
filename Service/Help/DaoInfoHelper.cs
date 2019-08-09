@@ -47,6 +47,16 @@ namespace NEL_FutureDao_API.Service.Help
             string data = string.Format("{0}.{1}.{2}", now, projId, updateTile);
             return hash(data);
         }
+        public static string genProjDiscussId(string projId, string preId, string content, string userId)
+        {
+            string data = string.Format("{0}.{1}.{2}.{3}.{4}", now, projId, preId, content, userId);
+            return hash(data);
+        }
+        public static string genProjUpdateDiscussId(string updateId, string preId, string content, string userId)
+        {
+            string data = string.Format("{0}.{1}.{2}.{3}.{4}", now, updateId, preId, content, userId);
+            return hash(data);
+        }
         private static string hash(string data)
         {
             byte[] binaryData = Encoding.UTF8.GetBytes(data);

@@ -107,8 +107,7 @@ namespace NEL.Comm
                         result = ps.queryUpdate(
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
-                            req.@params[2].ToString(),
-                            req.@params[3].ToString()
+                            req.@params[2].ToString()
                             );
                         break;
                     case "modifyUpdate":

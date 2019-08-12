@@ -609,7 +609,7 @@ namespace NEL_FutureDao_API.Service
             var updateJo = new JObject();
             if(updateTitle.Trim() != "")
             {
-                updateJo.Add("updateTitel", updateTitle);
+                updateJo.Add("updateTitle", updateTitle);
             }
             if(updateDetail.Trim() != "")
             {

@@ -138,6 +138,15 @@ namespace NEL.Comm
                             );
                         break;
                     //
+                    case "queryProjTeamNew":
+                        result = ps.queryProjTeamNew(
+                                req.@params[0].ToString(),
+                                req.@params[1].ToString(),
+                                req.@params[2].ToString(),
+                                int.Parse(req.@params[3].ToString()),
+                                int.Parse(req.@params[4].ToString())
+                            );
+                        break;
                     case "queryProjTeam":
                         result = ps.queryProjTeam(
                                 req.@params[0].ToString(),

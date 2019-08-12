@@ -3,6 +3,7 @@ using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace NEL_FutureDao_API.Service
@@ -270,7 +271,27 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "projName", projName }, { "adminHeadIconUrl", adminHeadIconUrl }, { "adminUsername", adminUsername } };
             return getRes(res);
         }
+        
+        private bool isProjMember(string projId, string userId, bool isNeedAdmin = false)
+        {
+            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
+            string fieldStr = new JObject { { "emailVerifyState", 1 }, { "role", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0 || queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtInvitedYes)
+            {
+                return false;
+            }
+            if (queryRes.Count == 0) return false;
 
+            var item = queryRes[0];
+            if (isNeedAdmin)
+            {
+                return item["emailVerifyState"].ToString() == EmailState.hasVerifyAtInvitedYes
+                    && item["role"].ToString() == TeamRoleType.Admin;
+            }
+            return item["emailVerifyState"].ToString() == EmailState.hasVerifyAtInvitedYes;
+        }
+        
 
         //0. query + invite + send + verify
         public JArray queryMember(string userId, string accessToken, string targetEmail/*模糊匹配*/, int pageNum=1, int pageSize=10)
@@ -451,6 +472,56 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
+        public JArray queryProjTeamNew(string userId, string accessToken, string projId, int pageNum = 1, int pageSize = 10)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            //
+            if(!isProjMember(projId, userId))
+            {
+                return getErrorRes(DaoReturnCode.T_HaveNotPermissionQueryTeamMember);
+            }
+            //
+            string findStr = new JObject { { "projId", projId }, { "emailVerifyState", EmailState.hasVerifyAtInvitedYes } }.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { {"count",count }, { "list", new JArray { } } });
+
+            var list = new List<string>();
+            var match = new JObject { { "$match", new JObject { { "projId", projId }, { "emailVerifyState", EmailState.hasVerifyAtInvitedYes } } } }.ToString();
+            var lookup = new JObject{{"$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "userId" },
+                {"foreignField", "userId" },
+                { "as", "us"}
+            } } }.ToString();
+            var project = new JObject { { "$project",
+                    MongoFieldHelper.toReturn(new string[] { "userId","authenticationState", "role", "us" })
+            } }.ToString();
+            var sort = new JObject { { "$sort",new JObject { { "role", 1 } } } }.ToString();
+            var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
+            var limit = new JObject { { "$limit", pageSize } }.ToString();
+            list.Add(match);
+            list.Add(lookup);
+            list.Add(project);
+            list.Add(sort);
+            list.Add(skip);
+            list.Add(limit);
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, list);
+            if(queryRes.Count == 0)
+            {
+                return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
+            }
+            var res = queryRes.Select(p => {
+                var jo = (JObject)p;
+                jo["username"] = jo["us"][0]["username"];
+                jo["headIconUrl"] = jo["us"][0]["headIconUrl"];
+                jo.Remove("us");
+                return jo;
+            }).ToArray();
+            return getRes(new JObject { { "count", count},{ "list", new JArray { res } } });
+        }
         public JArray queryProjTeam(string userId, string accessToken, string projId, int pageNum = 1, int pageSize = 10)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
@@ -473,8 +544,7 @@ namespace NEL_FutureDao_API.Service
             queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
             return getRes(new JObject { { "count", count }, { "list", queryRes } });
         }
-
-
+        
         public JArray createUpdate(string userId, string accessToken, string projId, string updateTitle, string updateDetail)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
@@ -588,17 +658,6 @@ namespace NEL_FutureDao_API.Service
             var item = queryRes[0];
             username = item["username"].ToString();
             headIconUrl = item["headIconUrl"].ToString();
-            return true;
-        }
-        private bool isProjMember(string projId, string userId)
-        {
-            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "emailVerifyState", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0 || queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtInvitedYes)
-            {
-                return false;
-            }
             return true;
         }
         private long getUpdateRank(string projId, long time)
@@ -743,8 +802,8 @@ namespace NEL_FutureDao_API.Service
 
             var item = queryRes[0];
             getStarState(projId, userId, out bool isStar, out bool isSupport);
-            item["isSupport"] = isStar;
-            item["isStar"] = isSupport;
+            item["isSupport"] = isSupport;
+            item["isStar"] = isStar;
             return getRes(item);
         }
         private void getStarState(string projId, string userId, out bool isStar, out bool isSupport)

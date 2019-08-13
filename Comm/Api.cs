@@ -86,9 +86,11 @@ namespace NEL.Comm
                     case "queryUpdateList":
                         result = ps.queryUpdateList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
                         break;
-                    //
                     case "queryProjTeamBrief":
                         result = ps.queryProjTeamBrief(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
+                        break;
+                    case "getProjInfo":
+                        result = ps.getProjInfo(req.@params[0].ToString());
                         break;
                     case "queryProjDetail":
                         result = ps.queryProjDetail(req.@params[0].ToString(), req.@params[1].ToString());
@@ -189,9 +191,6 @@ namespace NEL.Comm
                             );
                         break;
                     //
-                    case "getProjInfo":
-                        result = ps.getProjInfo(req.@params[0].ToString());
-                        break;
                     case "queryProj":
                         result = ps.queryProj(
                                 req.@params[0].ToString(),
@@ -245,6 +244,9 @@ namespace NEL.Comm
                             req.@params[6].ToString());
                         break;
                     //
+                    case "reSendVerify":
+                        result = us.reSendVerify(req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
                     case "verifyEmail":
                         result = us.verifyEmail(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;

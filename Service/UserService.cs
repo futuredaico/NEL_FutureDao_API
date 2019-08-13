@@ -405,5 +405,44 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
+
+
+        public JArray reSendVerify(string userId, string accessToken)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "userId", userId } }.ToString();
+            string fieldStr = new JObject { { "emailVerifyState", 1 },{ "lastUpdateTime",1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
+            if(queryRes.Count == 0)
+            {
+                return getErrorRes(DaoReturnCode.T_InvalidTargetUserId);
+            }
+            string state = queryRes[0]["emailVerifyState"].ToString();
+            string newState = "";
+            if(state == EmailState.sendAfterState)
+            {
+                newState = EmailState.sendBeforeState;
+            }
+            if (state == EmailState.sendAfterStateAtChangeEmail)
+            {
+                newState = EmailState.sendBeforeStateAtChangeEmail;
+            }
+
+            if (newState != "")
+            {
+                long now = TimeHelper.GetTimeStamp();
+                long lastUpdateTime = long.Parse(queryRes[0]["lastUpdateTime"].ToString());
+                if((now > lastUpdateTime + 60))
+                {
+                    // 60s 内不能重复操作
+                    var updateStr = new JObject { { "$set", new JObject { { "emailVerifyState", newState }, { "lastUpdateTime", now } } } }.ToString();
+                    mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
+                }
+            }
+            return getRes();
+        }
     }
 }

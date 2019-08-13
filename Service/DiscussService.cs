@@ -15,6 +15,7 @@ namespace NEL_FutureDao_API.Service
         public string dao_mongodbDatabase { get; set; }
         public string userInfoCol { get; set; } = "daoUserInfo";
         public string projInfoCol { get; set; } = "daoProjInfo";
+        public string projStarInfoCol { get; set; } = "daoProjStarInfo";
         public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
         public string projUpdateInfoCol { get; set; } = "daoProjUpdateInfo";
         public string projDiscussInfoCol { get; set; } = "daoProjDiscussInfo";
@@ -111,10 +112,27 @@ namespace NEL_FutureDao_API.Service
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) > 0;
         }
 
+        private bool checkLen(string content)
+        {
+            return content.Length <= 400;
+        }
+        private bool checkSupport(string projId, string userId)
+        {
+            string findStr = new JObject { { "projId", projId }, { "userId", userId }, { "supportState", StarState.SupportYes } }.ToString();
+            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr) > 0;
+        }
+
         //
         public JArray addProjDiscuss(string userId, string accessToken, string projId, string preDiscussId, string discussContent)
         {
-            // 内容长度检查
+            if(!checkLen(discussContent))
+            {
+                return getErrorRes(DaoReturnCode.lenExceedingThreshold);
+            }
+            if(!checkSupport(projId, userId))
+            {
+                return getErrorRes(DaoReturnCode.S_NoPermissionAddDiscuss);
+            }
             // 
             string code;
             if (!checkToken(userId, accessToken, out code))
@@ -259,7 +277,15 @@ namespace NEL_FutureDao_API.Service
         //
         public JArray addUpdateDiscuss(string userId, string accessToken, string projId, string updateId, string preDiscussId, string discussContent)
         {
-            // 内容长度检查
+            if(!checkLen(discussContent))
+            {
+                return getErrorRes(DaoReturnCode.lenExceedingThreshold);
+            }
+            if(!checkSupport(projId, userId))
+            {
+                return getErrorRes(DaoReturnCode.S_NoPermissionAddDiscuss);
+            }
+
             // 
             string code;
             if (!checkToken(userId, accessToken, out code))
@@ -292,7 +318,7 @@ namespace NEL_FutureDao_API.Service
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, newdata);
             return getRes(new JObject { { "discussId", discussId } });
         }
-        public JArray delUpdateDiscuss(string userId, string accessToken, string discussId, string projId = "")
+        public JArray delUpdateDiscuss(string userId, string accessToken, string discussId, string projId = ""/*admin删除时使用到*/)
         {
             // 
             if (!checkToken(userId, accessToken, out string code))
@@ -314,10 +340,74 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
-        public JArray getUpdateDiscuss(string projId, string updateId, string userId, int pageNum = 1, int pageSize = 10)
+        public JArray getUpdateDiscuss(string projId, string updateId, string curId, string userId= ""/*显示[修改/删除]时使用到*/)
         {
-            return null;
+            string findStr = new JObject { { "updateId", updateId }, { "discussId", curId } }.ToString();
+            string fieldStr = new JObject { { "preDiscussId", 1 }, { "discussContent", 1 }, { "zanCount", 1 }, { "time", 1 }, { "_id", 0 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            item["canModify"] = isProjMember(projId, userId);
+            return getRes(queryRes[0]);
         }
+        public JArray getUpdateSubDiscussList(string updateId, string curId, int pageNum = 1, int pageSize = 10)
+        {
+            var findJo = new JObject { { "updateId", updateId }, { "preDiscussId", curId } };
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, findJo.ToString());
+            if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
+
+            var match = new JObject { { "$match", findJo } }.ToString();
+            var lookup = new JObject{{"$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "userId" },
+                {"foreignField", "userId" },
+                { "as", "us"}
+            } } }.ToString();
+            var project = new JObject { { "$project", new JObject {
+                { "_id", 0 },
+                { "preDiscussId", 1 },
+                { "discussId", 1 },
+                { "discussContent", 1 },
+                { "userId", 1 },
+                { "zanCount", 1 },
+                { "time", 1 },
+                { "us.username", 1 },
+                { "us.headIconUrl", 1 },
+            } } }.ToString();
+            var sort = new JObject { { "$sort", new JObject { { "time", -1 } } } }.ToString();
+            var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
+            var limit = new JObject { { "$limit", pageSize } }.ToString();
+            var list = new List<string>
+            {
+                match, lookup, sort, skip, limit, project
+            };
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, list);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
+
+
+            var discussSubSizeDict = new Dictionary<string, long>();
+            var discussIdArr = queryRes.Select(p => p["discussId"].ToString()).Distinct().ToArray();
+            match = new JObject { { "$match", MongoFieldHelper.toFilter(discussIdArr, "preDiscussId") } }.ToString();
+            var group = new JObject { { "$group", new JObject { { "_id", "$preDiscussId" }, { "sum", new JObject { { "$sum", 1 } } } } } }.ToString();
+            list = new List<string> { match, group };
+            var subRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, list);
+            if (queryRes.Count > 0)
+            {
+                discussSubSizeDict = subRes.ToDictionary(k => k["_id"].ToString(), v => long.Parse(v["sum"].ToString()));
+            }
+            var res = queryRes.Select(p => {
+                var jo = (JObject)p;
+                jo["username"] = ((JArray)jo["us"])[0]["username"].ToString();
+                jo["headIconUrl"] = ((JArray)jo["us"])[0]["headIconUrl"].ToString();
+                jo.Remove("us");
+                jo["subSize"] = discussSubSizeDict.GetValueOrDefault(jo["discussId"].ToString(), 0);
+                return jo;
+            }).ToArray();
+
+            return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
+        }
+
         public JArray zanProjDiscuss(string userId, string accessToken, string projId, string discussId)
         {
             // 

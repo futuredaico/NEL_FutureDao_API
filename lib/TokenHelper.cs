@@ -26,7 +26,7 @@ namespace NEL_FutureDao_API.lib
         }
         public static bool checkAccessToken(string url, string userId, string accessToken, out string code)
         {
-            if (url == "")
+            if (url == "" || url == null)
             {
                 code = "";
                 return true;

@@ -28,14 +28,18 @@ namespace NEL_FutureDao_API.Service
 
         public JArray createProj(string userId, string accessToken, string projName, string projTitle, string projType, string projCoverUrl, string projBrief)
         {
+            if(!checkProjNameLen(projName) 
+                || !checkProjTitleLen(projTitle)
+                || !checkProjBriefLen(projBrief))
+            {
+                return getErrorRes(DaoReturnCode.lenExceedingThreshold);
+            }
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);
             }
-            // 各个字段长度检查
             if (hasRepeatProj(projName, projTitle))
             {
-                // 重复的项目名称/项目标题
                 return getErrorRes(DaoReturnCode.T_RepeatProjNameOrProjTitle);
             }
             if (!isValidUser(userId))
@@ -153,6 +157,12 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray modifyProjEmail(string userId, string accessToken, string projId, string connectEmail, string officialWeb, string community)
         {
+            if(!checkNormalLen(connectEmail)
+                || !checkNormalLen(officialWeb)
+                || !checkNormalLen(community))
+            {
+                return getErrorRes(DaoReturnCode.lenExceedingThreshold);
+            }
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);
@@ -201,6 +211,12 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray modifyProjName(string userId, string accessToken, string projId, string projName, string projTitle, string projType, string projConverUrl, string projBrief)
         {
+            if (!checkProjNameLen(projName)
+                || !checkProjTitleLen(projTitle)
+                || !checkProjBriefLen(projBrief))
+            {
+                return getErrorRes(DaoReturnCode.lenExceedingThreshold);
+            }
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);
@@ -317,7 +333,12 @@ namespace NEL_FutureDao_API.Service
             item["projId"] = item["projId"].ToString().toNormal();
             return getRes(item);
         }
-        
+
+        private bool checkProjNameLen(string name) => name.Length <= 20;
+        private bool checkProjTitleLen(string title) => title.Length <= 40;
+        private bool checkProjBriefLen(string brief) => brief.Length <= 400;
+        private bool checkNormalLen(string ss) => ss.Length <= 40;
+
         private bool isValidUser(string userId)
         {
             string findStr = new JObject { { "userId", userId } }.ToString();
@@ -597,6 +618,10 @@ namespace NEL_FutureDao_API.Service
 
         public JArray createUpdate(string userId, string accessToken, string projId, string updateTitle, string updateDetail)
         {
+            if(!checkUpdateLen(updateTitle))
+            {
+                return getErrorRes(DaoReturnCode.lenExceedingThreshold);
+            }
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);
@@ -605,6 +630,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionCreateUpdate);
             }
+            // TODO 是否需要检查项目的二级状态: 增删改查
 
             var updateId = DaoInfoHelper.genProjUpdateId(projId, updateTitle);
             var now = TimeHelper.GetTimeStamp();
@@ -629,14 +655,11 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "emailVerifyState", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0 || queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtInvitedYes)
+            if (!isProjMember(projId, userId))
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionDeleteUpdate);
             }
-            findStr = new JObject { { "projId", projId }, { "updateId", updateId } }.ToString();
+            string findStr = new JObject { { "projId", projId }, { "updateId", updateId } }.ToString();
             mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
             return getRes();
         }
@@ -690,6 +713,7 @@ namespace NEL_FutureDao_API.Service
             res.Remove("time");
             return getRes(res);
         }
+        private bool checkUpdateLen(string title) => title.Length <= 80;
         private bool getUserInfo(string userId, out string username, out string headIconUrl)
         {
             username = "";
@@ -710,6 +734,7 @@ namespace NEL_FutureDao_API.Service
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
             return count + 1;
         }
+
 
         public JArray commitProjAudit(string userId, string accessToken, string projId)
         {

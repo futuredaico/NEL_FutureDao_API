@@ -20,6 +20,7 @@ namespace NEL.Comm
         //
         private UserService us;
         private ProjService ps;
+        private DiscussService ds;
 
         public Api(string node)
         {
@@ -28,6 +29,12 @@ namespace NEL.Comm
             switch (netnode)
             {
                 case "testnet":
+                    ds = new DiscussService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                    };
                     ps = new ProjService
                     {
                         mh = mh,
@@ -68,6 +75,56 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // 
+                    case "getUpdateSubDiscussList":
+                        result = ds.getUpdateSubDiscussList(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString()));
+                        break;
+                    
+                    case "getUpdateDiscuss":
+                        result = ds.getUpdateDiscuss(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString());
+                        break;
+                    case "delUpdateDiscuss":
+                        result = ds.delUpdateDiscuss(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString());
+                        break;
+                    case "addUpdateDiscuss":
+                        result = ds.addUpdateDiscuss(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString());
+                        break;
+                    case "getProjSubDiscussList":
+                        result = ds.getProjSubDiscussList(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString()));
+                        break;
+                    case "getProjDiscuss":
+                        result = ds.getProjDiscuss(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        break;
+                    case "addProjDiscuss":
+                        result = ds.addProjDiscuss(
+                            req.@params[0].ToString(), 
+                            req.@params[1].ToString(), 
+                            req.@params[2].ToString(), 
+                            req.@params[3].ToString(), 
+                            req.@params[4].ToString());
+                        break;
                     // 
                     case "startSupportProj":
                         result = ps.startSupportProj(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());

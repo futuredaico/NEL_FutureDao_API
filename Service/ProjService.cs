@@ -463,11 +463,21 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
-        public JArray verifyInvite(string userId, string projId, string verifyCode, string agreeOrNot)
+        public JArray verifyInvite(string username, string email, string projId, string verifyCode, string agreeOrNot)
         {
-            string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "emailVerifyState", 1 }, { "emailVerifyCode", 1 }, { "username", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
+            string findStr = new JObject { { "email", email } }.ToString();
+            string fieldStr = new JObject { { "userId", 1 }, { "username", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0
+                || queryRes[0]["username"].ToString() != username)
+            {
+                return getErrorRes(DaoReturnCode.invalidVerifyCode);
+            }
+            var userId = queryRes[0]["userId"].ToString();
+
+            findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
+            fieldStr = new JObject { { "emailVerifyState", 1 }, { "emailVerifyCode", 1 }, { "username", 1 } }.ToString();
+            queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0
                 || queryRes[0]["emailVerifyCode"].ToString() != verifyCode)
             {

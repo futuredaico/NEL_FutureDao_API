@@ -6,6 +6,11 @@ namespace NEL_FutureDao_API.lib
 {
     public static class FileExtension
     {
+        public static string toNormal(this string fileName)
+        {
+            if (!fileName.StartsWith("temp_")) return fileName;
+            return fileName.Substring(5);
+        }
         public static string toTemp(this string fileName)
         {
             return "temp_" + fileName;

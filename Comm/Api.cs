@@ -138,15 +138,6 @@ namespace NEL.Comm
                             );
                         break;
                     //
-                    case "queryProjTeamNew":
-                        result = ps.queryProjTeamNew(
-                                req.@params[0].ToString(),
-                                req.@params[1].ToString(),
-                                req.@params[2].ToString(),
-                                int.Parse(req.@params[3].ToString()),
-                                int.Parse(req.@params[4].ToString())
-                            );
-                        break;
                     case "queryProjTeam":
                         result = ps.queryProjTeam(
                                 req.@params[0].ToString(),
@@ -178,8 +169,7 @@ namespace NEL.Comm
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
                             req.@params[2].ToString(),
-                            req.@params[3].ToString(),
-                            req.@params[4].ToString());
+                            req.@params[3].ToString());
                         break;
                     case "inviteMember":
                         result = ps.inviteMember(
@@ -208,22 +198,6 @@ namespace NEL.Comm
                                 req.@params[2].ToString()
                             );
                         break;
-                    case "modifyProj":
-                        result = ps.modifyProj(
-                            req.@params[0].ToString(),
-                            req.@params[1].ToString(),
-                            req.@params[2].ToString(),
-                            req.@params[3].ToString(),
-                            req.@params[4].ToString(),
-                            req.@params[5].ToString(),
-                            req.@params[6].ToString(),
-                            req.@params[7].ToString(),
-                            req.@params[8].ToString(),
-                            req.@params[9].ToString(),
-                            req.@params[10].ToString(),
-                            req.@params[11].ToString(),
-                            req.@params[12].ToString());
-                        break;
                     case "deleteProj":
                         result = ps.deleteProj(
                                 req.@params[0].ToString(),
@@ -231,20 +205,43 @@ namespace NEL.Comm
                                 req.@params[2].ToString()
                             );
                         break;
-                    case "createProj":
-                        result = ps.createProj(
-                            req.@params[0].ToString(), 
-                            req.@params[1].ToString(), 
-                            req.@params[2].ToString(), 
+                    case "modifyProjName":
+                        result = ps.modifyProjName(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
                             req.@params[3].ToString(),
                             req.@params[4].ToString(),
                             req.@params[5].ToString(),
                             req.@params[6].ToString(),
-                            req.@params[7].ToString(),
-                            req.@params[8].ToString(),
-                            req.@params[9].ToString(), 
-                            req.@params[10].ToString(), 
-                            req.@params[11].ToString());
+                            req.@params[7].ToString());
+                        break;
+                    case "modifyProjEmail":
+                        result = ps.modifyProjEmail(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString());
+                        break;
+                    case "modifyProjVideo":
+                        result = ps.modifyProjVideo(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString());
+                        break;
+                    case "createProj":
+                        result = ps.createProj(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString());
                         break;
                     //
                     case "verifyEmail":

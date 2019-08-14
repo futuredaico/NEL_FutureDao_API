@@ -92,7 +92,7 @@ namespace NEL_FutureDao_API.Service
                 }
             } else
             {
-                if(!checkUpdateDiscussExist(projId, updateId, preDiscussId, true))
+                if(!checkUpdateDiscussExist(projId, updateId, preDiscussId))
                 {
                     code = DaoReturnCode.S_InvalidUpdateIdOrDiscussId;
                     return false;
@@ -403,7 +403,7 @@ namespace NEL_FutureDao_API.Service
             var match = new JObject { { "$match", MongoFieldHelper.toFilter(childrenIdArr, "childrenId") } }.ToString();
             var group = new JObject { { "$group", new JObject { { "_id", "$childrenId" }, { "sum", new JObject { { "$sum", 1 } } } } } }.ToString();
             var list = new List<string> { match, group };
-            var subRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, list);
+            var subRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, coll, list);
             if (subRes.Count == 0) return new Dictionary<string, long>();
             return subRes.ToDictionary(k => k["_id"].ToString(), v => long.Parse(v["sum"].ToString()));
         }
@@ -517,9 +517,10 @@ namespace NEL_FutureDao_API.Service
                 { "discussContent", 1 },
                 { "userId", 1 },
                 { "zanCount", 1 },
+                { "childrenId", 1 },
                 { "time", 1 },
                 { "us.username", 1 },
-                { "us.headIconUrl", 1 },
+                { "us.headIconUrl", 1 }
             } } }.ToString();
             var sort = new JObject { { "$sort", new JObject { { "time", -1 } } } }.ToString();
             var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();

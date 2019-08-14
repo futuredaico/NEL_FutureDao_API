@@ -47,7 +47,6 @@ namespace NEL_FutureDao_API.Service
             return true;
         }
 
-        
         private bool checkProjPreDiscussId(string projId, string preDiscussId, out string code)
         {
             code = "";
@@ -61,7 +60,7 @@ namespace NEL_FutureDao_API.Service
             }
             else
             {
-                if (!checkProjDiscussExist(projId, preDiscussId, true))
+                if (!checkProjDiscussExist(projId, preDiscussId))
                 {
                     code = DaoReturnCode.S_InvalidProjIdOrDiscussId;
                     return false;
@@ -157,6 +156,7 @@ namespace NEL_FutureDao_API.Service
             }
             //
             string discussId = DaoInfoHelper.genProjDiscussId(projId, preDiscussId, discussContent, userId);
+            string childrenId = getChildrenId(preDiscussId, discussId);
             var now = TimeHelper.GetTimeStamp();
             var newdata = new JObject {
                 {"projId", projId },
@@ -165,21 +165,23 @@ namespace NEL_FutureDao_API.Service
                 {"discussContent", discussContent },
                 {"userId", userId },
                 {"zanCount", 0 },
+                {"childrenId", childrenId },
                 {"time", now },
                 {"lastUpdateTime", now },
             }.ToString();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, newdata);
             return getRes(new JObject { { "discussId", discussId } });
         }
-        private string getDiscussIdLevelOne(string preDiscussId, string discussId="")
+        private string getChildrenId(string preDiscussId, string discussId="", bool isUpdate=false)
         {
             if (preDiscussId == "") return discussId;
 
+            string coll = isUpdate ? projUpdateDiscussInfoCol : projDiscussInfoCol;
             string findStr = new JObject { { "discussId", preDiscussId} }.ToString();
-            string fieldStr = new JObject { {"discussIdLevelOne",1} }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, findStr, fieldStr);
+            string fieldStr = new JObject { {"childrenId",1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, coll, findStr, fieldStr);
             if (queryRes.Count == 0) return discussId;
-            return queryRes[0]["discussIdLevelOne"].ToString();
+            return queryRes[0]["childrenId"].ToString();
         }
         public JArray delProjDiscuss(string userId, string accessToken, string discussId, string projId=""/*admin删除时使用到*/)
         {
@@ -236,10 +238,11 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray getProjSubDiscussList(string projId, string curId, string userId, int pageNum = 1, int pageSize = 10)
         {
+            //
             var findJo = new JObject { { "projId", projId }, { "preDiscussId", curId } };
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, findJo.ToString());
             if (count == 0) return getRes(new JObject { { "count",count},{ "list",new JArray { } } });
-
+            //
             var match = new JObject { { "$match", findJo } }.ToString();
             var lookup = new JObject{{"$lookup", new JObject {
                 {"from", userInfoCol },
@@ -254,6 +257,7 @@ namespace NEL_FutureDao_API.Service
                 { "discussContent", 1 },
                 { "userId", 1 },
                 { "zanCount", 1 },
+                { "childrenId", 1 },
                 { "time", 1 },
                 { "us.username", 1 },
                 { "us.headIconUrl", 1 },
@@ -267,36 +271,153 @@ namespace NEL_FutureDao_API.Service
             };
             var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, list);
             if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
-
-
-            var discussSubSizeDict = new Dictionary<string, long>();
-            var discussIdArr = queryRes.Select(p => p["discussId"].ToString()).Distinct().ToArray();
-            match = new JObject { { "$match", MongoFieldHelper.toFilter(discussIdArr, "preDiscussId") } }.ToString();
-            var group = new JObject { { "$group", new JObject { { "_id", "$preDiscussId" }, { "sum", new JObject { { "$sum", 1 } } } } } }.ToString();
-            list = new List<string> { match, group };
-            var subRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, list);
-            if(queryRes.Count > 0)
-            {
-                discussSubSizeDict = subRes.ToDictionary(k => k["_id"].ToString(), v => long.Parse(v["sum"].ToString()));
-            }
-
+            
             // 是否已点赞
             var idArr = queryRes.Select(p => p["discussId"].ToString()).Distinct().ToArray();
             var zanDict = getIsZanDict(idArr, userId);
 
+            // 子评论数量
+            var childrenIdArr = queryRes.Select(p => p["childrenId"].ToString()).Distinct().ToArray();
+            var childrenIdDict = getSubSizeDict(childrenIdArr);
+
             var res = queryRes.Select(p => {
                 var jo = (JObject)p;
                 var id = jo["discussId"].ToString();
+                var cid = jo["childrenId"].ToString();
                 jo["username"] = ((JArray)jo["us"])[0]["username"].ToString();
                 jo["headIconUrl"] = ((JArray)jo["us"])[0]["headIconUrl"].ToString();
                 jo.Remove("us");
                 jo["isZan"] = zanDict.GetValueOrDefault(id, false);
-                jo["subSize"] = discussSubSizeDict.GetValueOrDefault(id, 0);
+                var subSize = childrenIdDict.GetValueOrDefault(cid, 0);
+                if (subSize > 0) subSize -= 1;
+                jo["subSize"] = subSize;
                 return jo;
             }).ToArray();
 
             return getRes(new JObject { { "count", count},{ "list", new JArray { res } } });
         }
+        public JArray getProjSubChildDiscussList(string childrenId, string userId, int pageNum=1, int pageSize=10)
+        {
+            var findJo = new JObject { { "childrenId", childrenId }, { "preDiscussId", new JObject { { "$ne", "" } } } };
+            var findStr = findJo.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", 0},{ "list", new JArray()} });
+
+            var match = new JObject { { "$match",  findJo} }.ToString();
+            var lookup = new JObject{{"$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "userId" },
+                {"foreignField", "userId" },
+                { "as", "us"}
+            } } }.ToString();
+            var project = new JObject { { "$project", new JObject {
+                { "_id", 0 },
+                { "preDiscussId", 1 },
+                { "discussId", 1 },
+                { "discussContent", 1 },
+                { "userId", 1 },
+                { "zanCount", 1 },
+                { "childrenId", 1 },
+                { "time", 1 },
+                { "us.username", 1 },
+                { "us.headIconUrl", 1 },
+            } } }.ToString();
+            var list = new List<string> { match, lookup, project};
+            // 
+            lookup = new JObject{{"$lookup", new JObject {
+                {"from", projDiscussInfoCol },
+                {"localField", "preDiscussId" },
+                {"foreignField", "discussId" },
+                { "as", "preUserId"}
+            } } }.ToString();
+            project = new JObject { { "$project", new JObject {
+                { "_id", 0 },
+                { "preDiscussId", 1 },
+                { "discussId", 1 },
+                { "discussContent", 1 },
+                { "userId", 1 },
+                { "zanCount", 1 },
+                { "childrenId", 1 },
+                { "time", 1 },
+                { "us.username", 1 },
+                { "us.headIconUrl", 1 },
+                { "preUserId.userId",1}
+            } } }.ToString();
+            list.Add(lookup);
+            list.Add(project);
+            //
+            lookup = new JObject{{"$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "preUserId.userId" },
+                {"foreignField", "userId" },
+                { "as", "preUs"}
+            } } }.ToString();
+            project = new JObject { { "$project", new JObject {
+                { "_id", 0 },
+                //{ "preDiscussId", 1 },
+                { "discussId", 1 },
+                { "discussContent", 1 },
+                { "userId", 1 },
+                { "zanCount", 1 },
+                //{ "childrenId", 1 },
+                { "time", 1 },
+                { "us.username", 1 },
+                { "us.headIconUrl", 1 },
+                //{ "preUserId.userId",1},
+                { "preUs.userId",1},
+                { "preUs.username",1}
+            } } }.ToString();
+            list.Add(lookup);
+            list.Add(project);
+            var sort = new JObject { { "$sort", new JObject { { "time", -1 } } } }.ToString();
+            var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
+            var limit = new JObject { { "$limit", pageSize } }.ToString();
+            list.Add(sort);
+            list.Add(skip);
+            list.Add(limit);
+
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, list);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
+
+            // 是否已点赞
+            var idArr = queryRes.Select(p => p["discussId"].ToString()).Distinct().ToArray();
+            var zanDict = getIsZanDict(idArr, userId);
+
+            var res = queryRes.Select(p =>
+            {
+                var jo = (JObject)p;
+                jo["username"] = ((JArray)jo["us"])[0]["username"].ToString();
+                jo["headIconUrl"] = ((JArray)jo["us"])[0]["headIconUrl"].ToString();
+                jo["isZan"] = zanDict.GetValueOrDefault(jo["discussId"].ToString(), false);
+                jo["preUserId"] = ((JArray)jo["preUs"])[0]["userId"].ToString();
+                jo["preUsername"] = ((JArray)jo["preUs"])[0]["username"].ToString();
+                jo.Remove("us");
+                jo.Remove("preUs");
+                return jo;
+            }).ToArray();
+            return getRes(new JObject { { "count", count},{ "list", new JArray { res } } });
+        }
+        private Dictionary<string, long> getSubSizeDict(string[] childrenIdArr, bool isUpdate = false)
+        {
+            string coll = isUpdate ? projUpdateDiscussInfoCol : projDiscussInfoCol;
+            var match = new JObject { { "$match", MongoFieldHelper.toFilter(childrenIdArr, "childrenId") } }.ToString();
+            var group = new JObject { { "$group", new JObject { { "_id", "$childrenId" }, { "sum", new JObject { { "$sum", 1 } } } } } }.ToString();
+            var list = new List<string> { match, group };
+            var subRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, list);
+            if (subRes.Count == 0) return new Dictionary<string, long>();
+            return subRes.ToDictionary(k => k["_id"].ToString(), v => long.Parse(v["sum"].ToString()));
+        }
+        private Dictionary<string, bool> getIsZanDict(string[] discussIdArr, string userId, bool isUpdateZan = false)
+        {
+            var coll = isUpdateZan ? projUpdateDiscussZanInfoCol : projDiscussZanInfoCol;
+            var joArr = discussIdArr.Select(p => new JObject { { "discussId", p }, { "userId", userId } }).ToArray();
+            var findStr = new JObject { { "$or", new JArray { joArr } } }.ToString();
+            var fieldStr = new JObject { { "discussId", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, coll, findStr, fieldStr);
+            if (queryRes.Count == 0) return new Dictionary<string, bool>();
+            return queryRes.ToDictionary(k => k["discussId"].ToString(), v => true);
+        }
+
         //
         public JArray addUpdateDiscuss(string userId, string accessToken, string projId, string updateId, string preDiscussId, string discussContent)
         {
@@ -326,6 +447,7 @@ namespace NEL_FutureDao_API.Service
             }
             
             string discussId = DaoInfoHelper.genProjUpdateDiscussId(updateId, preDiscussId, discussContent, userId);
+            string childrenId = getChildrenId(preDiscussId, discussId, true);
             var now = TimeHelper.GetTimeStamp();
             var newdata = new JObject {
                 {"projId", projId },
@@ -335,6 +457,7 @@ namespace NEL_FutureDao_API.Service
                 {"discussContent", discussContent },
                 {"userId", userId },
                 {"zanCount", 0 },
+                {"childrenId", childrenId },
                 {"time", now },
                 {"lastUpdateTime", now },
             }.ToString();
@@ -408,21 +531,13 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, list);
             if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
 
-
-            var discussSubSizeDict = new Dictionary<string, long>();
-            var discussIdArr = queryRes.Select(p => p["discussId"].ToString()).Distinct().ToArray();
-            match = new JObject { { "$match", MongoFieldHelper.toFilter(discussIdArr, "preDiscussId") } }.ToString();
-            var group = new JObject { { "$group", new JObject { { "_id", "$preDiscussId" }, { "sum", new JObject { { "$sum", 1 } } } } } }.ToString();
-            list = new List<string> { match, group };
-            var subRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, list);
-            if (queryRes.Count > 0)
-            {
-                discussSubSizeDict = subRes.ToDictionary(k => k["_id"].ToString(), v => long.Parse(v["sum"].ToString()));
-            }
-
             // 是否已点赞
             var idArr = queryRes.Select(p => p["discussId"].ToString()).Distinct().ToArray();
             var zanDict = getIsZanDict(idArr, userId, true);
+            
+            // 子评论数量
+            var childrenIdArr = queryRes.Select(p => p["childrenId"].ToString()).Distinct().ToArray();
+            var childrenIdDict = getSubSizeDict(childrenIdArr, true);
 
             var res = queryRes.Select(p => {
                 var jo = (JObject)p;
@@ -431,21 +546,114 @@ namespace NEL_FutureDao_API.Service
                 jo["headIconUrl"] = ((JArray)jo["us"])[0]["headIconUrl"].ToString();
                 jo.Remove("us");
                 jo["isZan"] = zanDict.GetValueOrDefault(id, false);
-                jo["subSize"] = discussSubSizeDict.GetValueOrDefault(id, 0);
+                var subSize = childrenIdDict.GetValueOrDefault(id, 0);
+                if (subSize > 0) subSize -= 1;
+                jo["subSize"] = subSize;
                 return jo;
             }).ToArray();
 
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
         }
-        private Dictionary<string, bool> getIsZanDict(string[] discussIdArr, string userId, bool isUpdateZan=false)
+        public JArray getUpdateSubChildDiscussList(string childrenId, string userId, int pageNum = 1, int pageSize = 10)
         {
-            var coll = isUpdateZan ? projUpdateDiscussZanInfoCol : projDiscussZanInfoCol;
-            var joArr = discussIdArr.Select(p => new JObject { { "discussId", p },{ "userId", userId} }).ToArray();
-            var findStr = new JObject { { "$or", new JArray { joArr } } }.ToString();
-            var fieldStr = new JObject { { "discussId", 1} }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, coll, findStr, fieldStr);
-            if (queryRes.Count == 0) return new Dictionary<string, bool>();
-            return queryRes.ToDictionary(k=>k["discussId"].ToString(), v=> true);
+            var findJo = new JObject { { "childrenId", childrenId }, { "preDiscussId", new JObject { { "$ne", "" } } } };
+            var findStr = findJo.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+            //
+            var match = new JObject { { "$match", findJo } }.ToString();
+            var lookup = new JObject{{"$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "userId" },
+                {"foreignField", "userId" },
+                { "as", "us"}
+            } } }.ToString();
+            var project = new JObject { { "$project", new JObject {
+                { "_id", 0 },
+                { "preDiscussId", 1 },
+                { "discussId", 1 },
+                { "discussContent", 1 },
+                { "userId", 1 },
+                { "zanCount", 1 },
+                { "childrenId", 1 },
+                { "time", 1 },
+                { "us.username", 1 },
+                { "us.headIconUrl", 1 },
+            } } }.ToString();
+            var list = new List<string> { match, lookup, project };
+            // 
+            lookup = new JObject{{"$lookup", new JObject {
+                {"from", projUpdateDiscussInfoCol },
+                {"localField", "preDiscussId" },
+                {"foreignField", "discussId" },
+                { "as", "preUserId"}
+            } } }.ToString();
+            project = new JObject { { "$project", new JObject {
+                { "_id", 0 },
+                { "preDiscussId", 1 },
+                { "discussId", 1 },
+                { "discussContent", 1 },
+                { "userId", 1 },
+                { "zanCount", 1 },
+                { "childrenId", 1 },
+                { "time", 1 },
+                { "us.username", 1 },
+                { "us.headIconUrl", 1 },
+                { "preUserId.userId",1}
+            } } }.ToString();
+            list.Add(lookup);
+            list.Add(project);
+            //
+            lookup = new JObject{{"$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "preUserId.userId" },
+                {"foreignField", "userId" },
+                { "as", "preUs"}
+            } } }.ToString();
+            project = new JObject { { "$project", new JObject {
+                { "_id", 0 },
+                //{ "preDiscussId", 1 },
+                { "discussId", 1 },
+                { "discussContent", 1 },
+                { "userId", 1 },
+                { "zanCount", 1 },
+                //{ "childrenId", 1 },
+                { "time", 1 },
+                { "us.username", 1 },
+                { "us.headIconUrl", 1 },
+                //{ "preUserId.userId",1},
+                { "preUs.userId",1},
+                { "preUs.username",1}
+            } } }.ToString();
+            list.Add(lookup);
+            list.Add(project);
+            var sort = new JObject { { "$sort", new JObject { { "time", -1 } } } }.ToString();
+            var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
+            var limit = new JObject { { "$limit", pageSize } }.ToString();
+            list.Add(sort);
+            list.Add(skip);
+            list.Add(limit);
+
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, list);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
+
+            // 是否已点赞
+            var idArr = queryRes.Select(p => p["discussId"].ToString()).Distinct().ToArray();
+            var zanDict = getIsZanDict(idArr, userId);
+
+            var res = queryRes.Select(p =>
+            {
+                var jo = (JObject)p;
+                jo["username"] = ((JArray)jo["us"])[0]["username"].ToString();
+                jo["headIconUrl"] = ((JArray)jo["us"])[0]["headIconUrl"].ToString();
+                jo["isZan"] = zanDict.GetValueOrDefault(jo["discussId"].ToString(), false);
+                jo["preUserId"] = ((JArray)jo["preUs"])[0]["userId"].ToString();
+                jo["preUsername"] = ((JArray)jo["preUs"])[0]["username"].ToString();
+                jo.Remove("us");
+                jo.Remove("preUs");
+                return jo;
+            }).ToArray();
+            return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
         }
 
         public JArray zanProjDiscuss(string userId, string accessToken, string projId, string discussId)

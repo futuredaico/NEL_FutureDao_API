@@ -91,6 +91,13 @@ namespace NEL.Comm
                             req.@params[3].ToString());
                         break;
                     // 
+                    case "getUpdateSubChildDiscussList":
+                        result = ds.getUpdateSubChildDiscussList(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString()));
+                        break;
                     case "getUpdateSubDiscussList":
                         result = ds.getUpdateSubDiscussList(
                             req.@params[0].ToString(),
@@ -122,6 +129,13 @@ namespace NEL.Comm
                             req.@params[3].ToString(),
                             req.@params[4].ToString(),
                             req.@params[5].ToString());
+                        break;
+                    case "getProjSubChildDiscussList":
+                        result = ds.getProjSubChildDiscussList(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString()));
                         break;
                     case "getProjSubDiscussList":
                         result = ds.getProjSubDiscussList(

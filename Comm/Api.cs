@@ -95,8 +95,9 @@ namespace NEL.Comm
                         result = ds.getUpdateSubDiscussList(
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
-                            int.Parse(req.@params[2].ToString()),
-                            int.Parse(req.@params[3].ToString()));
+                            req.@params[2].ToString(),
+                            int.Parse(req.@params[3].ToString()),
+                            int.Parse(req.@params[4].ToString()));
                         break;
                     
                     case "getUpdateDiscuss":
@@ -126,8 +127,9 @@ namespace NEL.Comm
                         result = ds.getProjSubDiscussList(
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
-                            int.Parse(req.@params[2].ToString()),
-                            int.Parse(req.@params[3].ToString()));
+                            req.@params[2].ToString(),
+                            int.Parse(req.@params[3].ToString()),
+                            int.Parse(req.@params[4].ToString()));
                         break;
                     case "getProjDiscuss":
                         result = ds.getProjDiscuss(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());

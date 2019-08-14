@@ -36,7 +36,10 @@ namespace NEL_FutureDao_API.Service
             string findStr = new JObject { { "userId", userId } }.ToString();
             string fieldStr = new JObject { { "emailVerifyState", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0 || queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerify)
+            if (queryRes.Count == 0 
+                || (queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerify
+                    && queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtResetPassword
+                    && queryRes[0]["emailVerifyState"].ToString() != EmailState.hasVerifyAtChangeEmail))
             {
                 code = DaoReturnCode.S_NoPermissionAddDiscuss;
                 return false;
@@ -44,7 +47,8 @@ namespace NEL_FutureDao_API.Service
             return true;
         }
 
-        private bool checkProjDiscussId(string projId, string preDiscussId, out string code)
+        
+        private bool checkProjPreDiscussId(string projId, string preDiscussId, out string code)
         {
             code = "";
             if (preDiscussId == "")
@@ -57,7 +61,7 @@ namespace NEL_FutureDao_API.Service
             }
             else
             {
-                if (!checkProjDiscussExist(projId, preDiscussId))
+                if (!checkProjDiscussExist(projId, preDiscussId, true))
                 {
                     code = DaoReturnCode.S_InvalidProjIdOrDiscussId;
                     return false;
@@ -70,13 +74,14 @@ namespace NEL_FutureDao_API.Service
             string findStr = new JObject { { "projId", projId } }.ToString();
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr) > 0;
         }
-        private bool checkProjDiscussExist(string projId, string preDiscussId)
+        private bool checkProjDiscussExist(string projId, string discussId, bool checkPre=false)
         {
-            string findStr = new JObject { { "projId", projId }, { "preDiscussId", preDiscussId } }.ToString();
+            string key = checkPre ? "preDiscussId" : "discussId";
+            string findStr = new JObject { { "projId", projId }, { key, discussId } }.ToString();
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, findStr) > 0;
         }
 
-        private bool checkUpdateDiscussId(string projId, string updateId, string preDiscussId, out string code)
+        private bool checkUpdatePreDiscussId(string projId, string updateId, string preDiscussId, out string code)
         {
             code = "";
             if(preDiscussId == "")
@@ -88,7 +93,7 @@ namespace NEL_FutureDao_API.Service
                 }
             } else
             {
-                if(!checkUpdateDiscussExist(updateId, preDiscussId))
+                if(!checkUpdateDiscussExist(projId, updateId, preDiscussId, true))
                 {
                     code = DaoReturnCode.S_InvalidUpdateIdOrDiscussId;
                     return false;
@@ -101,17 +106,18 @@ namespace NEL_FutureDao_API.Service
             string findStr = new JObject { { "projId", projId},{ "updateId", updateId } }.ToString();
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr) > 0;
         }
-        private bool checkUpdateDiscussExist(string updateId, string preDiscussId)
+        private bool checkUpdateDiscussExist(string projId, string updateId, string discussId, bool checkPre=false)
         {
-            string findStr = new JObject { { "updateId", updateId }, { "preDiscussId", preDiscussId } }.ToString();
-            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, findStr) > 0;
+            string key = checkPre ? "preDiscussId" : "discussId";
+            string findStr = new JObject { { "projId", projId},{ "updateId", updateId }, { key, discussId } }.ToString();
+            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, findStr) > 0;
         }
+
         private bool checkIsAdmin(string projId, string userId)
         {
             string findStr = new JObject { { "projId", projId},{ "userId", userId},{ "role", TeamRoleType.Admin} }.ToString();
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) > 0;
         }
-
         private bool checkLen(string content)
         {
             return content.Length <= 400;
@@ -145,7 +151,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
             //
-            if (!checkProjDiscussId(projId, preDiscussId, out code))
+            if (!checkProjPreDiscussId(projId, preDiscussId, out code))
             {
                 return getErrorRes(code);
             }
@@ -297,7 +303,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            if(!checkUpdateDiscussId(projId, updateId, preDiscussId, out code))
+            if(!checkUpdatePreDiscussId(projId, updateId, preDiscussId, out code))
             {
                 return getErrorRes(code);
             }
@@ -421,17 +427,21 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            if (!checkProjDiscussId(projId, discussId, out code))
+            if (!checkProjDiscussExist(projId, discussId))
             {
-                return getErrorRes(code);
+                return getErrorRes(DaoReturnCode.S_InvalidProjIdOrDiscussId);
             }
-            var newdata = new JObject {
-                {"projId", projId },
-                {"discussId", discussId },
-                {"userId", userId },
-                {"time", TimeHelper.GetTimeStamp() },
-            }.ToString();
-            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussZanInfoCol, newdata);
+            string findStr = new JObject { { "discussId", discussId} }.ToString();
+            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussZanInfoCol, findStr) == 0)
+            {
+                var newdata = new JObject {
+                    {"projId", projId },
+                    {"discussId", discussId },
+                    {"userId", userId },
+                    {"time", TimeHelper.GetTimeStamp() },
+                }.ToString();
+                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussZanInfoCol, newdata);
+            }
             return getRes() ;
         }
         public JArray zanUpdateDiscuss(string userId, string accessToken, string projId, string updateId, string discussId)
@@ -447,17 +457,21 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            if (!checkUpdateDiscussId(projId, updateId, discussId, out code))
+            if (!checkUpdateDiscussExist(projId, updateId, discussId))
             {
-                return getErrorRes(code);
+                return getErrorRes(DaoReturnCode.S_InvalidUpdateIdOrDiscussId);
             }
-            var newdata = new JObject {
-                {"projId", projId },
-                {"discussId", discussId },
-                {"userId", userId },
-                {"time", TimeHelper.GetTimeStamp() },
-            }.ToString();
-            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussZanInfoCol, newdata);
+            string findStr = new JObject { { "discussId", discussId } }.ToString();
+            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussZanInfoCol, findStr) == 0)
+            {
+                var newdata = new JObject {
+                    {"projId", projId },
+                    {"discussId", discussId },
+                    {"userId", userId },
+                    {"time", TimeHelper.GetTimeStamp() },
+                }.ToString();
+                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussZanInfoCol, newdata);
+            }
             return getRes();
         }
     }

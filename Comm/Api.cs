@@ -80,15 +80,15 @@ namespace NEL.Comm
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
                             req.@params[2].ToString(),
-                            req.@params[4].ToString(),
-                            req.@params[5].ToString());
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString());
                         break;
                     case "zanProjDiscuss":
                         result = ds.zanProjDiscuss(
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
                             req.@params[2].ToString(),
-                            req.@params[4].ToString());
+                            req.@params[3].ToString());
                         break;
                     // 
                     case "getUpdateSubDiscussList":

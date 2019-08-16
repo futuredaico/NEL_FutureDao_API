@@ -863,7 +863,7 @@ namespace NEL_FutureDao_API.Service
         public JArray queryProjDetail(string projId, string userId = "")
         {
             string findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "projBrief", "projDetail", "supportCount" }).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "videoBriefUrl", "projBrief", "projDetail", "supportCount","discussCount", "updateCount" }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
 
@@ -1012,7 +1012,11 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
+
+        // 
+
     }
+    
 
     class ProjType
     {

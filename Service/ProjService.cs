@@ -2,6 +2,7 @@
 using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace NEL_FutureDao_API.Service
         public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
         public string userInfoCol { get; set; } = "daoUserInfo";
         public string projUpdateInfoCol { get; set; } = "daoProjUpdateInfo";
+        public string projUpdateStarInfoCol { get; set; } = "daoProjUpdateStarInfo";
         public string projStarInfoCol { get; set; } = "daoProjStarInfo";
         public string projSupportInfoCol { get; set; } = "daoProjSupportInfo";
         public string tokenUrl { get; set; } = "";
@@ -362,6 +364,7 @@ namespace NEL_FutureDao_API.Service
         }
         private bool isProjMember(string projId, string userId, bool isNeedAdmin = false)
         {
+            if (userId == "") return false;
             string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
             string fieldStr = new JObject { { "emailVerifyState", 1 }, { "role", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
@@ -691,7 +694,7 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
-        public JArray queryUpdate(string projId, string updateId, string userId/*游客为空串*/)
+        public JArray queryUpdateOld(string projId, string updateId, string userId/*游客为空串*/)
         {
             string findStr = new JObject { { "projId", projId }, { "updateId", updateId } }.ToString();
             string fieldStr = new JObject { { "updateTitle", 1 }, { "updateDetail", 1 }, { "lastUpdatorId", 1 }, { "lastUpdateTime", 1 }, { "time", 1 }, { "discussCount", 1 }, { "zanCount", 1 }, { "_id", 0 } }.ToString();
@@ -714,7 +717,56 @@ namespace NEL_FutureDao_API.Service
             res.Remove("time");
             return getRes(res);
         }
-        
+        public JArray queryUpdate(string projId, string updateId, string userId/*游客为空串*/)
+        {
+            var match1 = new JObject { {"$match", new JObject { { "projId", projId }, { "updateId", updateId } } } }.ToString();
+            var match = JsonConvert.SerializeObject(new JObject { {"$match", new JObject { { "projId", projId }, { "updateId", updateId } } } });
+            var lookup = new JObject { { "$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "lastUpdatorId"},
+                {"foreignField", "userId" },
+                {"as","us" }
+            } } }.ToString();
+            var project = new JObject { { "$project", new JObject {
+                { "updateTitle", 1 },
+                { "updateDetail", 1 },
+                { "lastUpdatorId", 1 },
+                { "lastUpdateTime", 1 },
+                { "time", 1 },
+                { "discussCount", 1 },
+                { "zanCount", 1 },
+                { "us.username",1},
+                { "us.headIconUrl",1},
+                { "_id", 0 }
+            } } }.ToString();
+            var list = new List<string> { match ,lookup , project};
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, list);
+            if (queryRes.Count == 0)
+            {
+                return getRes();
+            }
+
+            var item = (JObject)queryRes[0];
+            item["username"] = ((JArray)item["us"])[0]["username"].ToString();
+            item["headIconUrl"] = ((JArray)item["us"])[0]["headIconUrl"].ToString();
+            item.Remove("us");
+
+            bool isMember = isProjMember(projId, userId);
+            long rank = getUpdateRank(projId, long.Parse(item["time"].ToString()));
+            bool isZan = isZanUpdate(updateId, userId);
+            item["isMember"] = isMember;
+            item["rank"] = rank;
+            item["isZan"] = isZan;
+            item.Remove("time");
+            return getRes(item);
+        }
+        private bool isZanUpdate(string updateId, string userId)
+        {
+            if (userId == "") return false;
+            string findStr = new JObject { { "updateId", updateId},{ "userId",userId} }.ToString();
+            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateStarInfoCol, findStr) > 0;
+        }
+
         private bool getUserInfo(string userId, out string username, out string headIconUrl)
         {
             username = "";

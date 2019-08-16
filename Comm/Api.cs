@@ -75,6 +75,13 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    //
+                    case "getStarMangeProjCount":
+                        result = ps.getStarMangeProjCount(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString());
+                        break;
+                    //
                     case "zanUpdateDiscuss":
                         result = ds.zanUpdateDiscuss(
                             req.@params[0].ToString(),

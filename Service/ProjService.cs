@@ -1014,7 +1014,19 @@ namespace NEL_FutureDao_API.Service
         }
 
         // 
+        public JArray getStarMangeProjCount(string userId, string accessToken)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "userId", userId }, { "starState", StarState.StarYes } }.ToString();
+            long starCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
+            findStr = new JObject { { "userId", userId }, { "emailVerifyState", EmailState.hasVerifyAtInvitedYes} }.ToString();
+            long manageCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
 
+            return getRes(new JObject { { "starCount", starCount},{ "manageCount",manageCount} });
+        }
     }
     
 

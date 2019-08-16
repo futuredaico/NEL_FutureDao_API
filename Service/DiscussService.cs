@@ -744,7 +744,7 @@ namespace NEL_FutureDao_API.Service
                     { "projId", projId},
                     { "updateId", updateId},
                     { "userId",userId},
-                    { "time", TimeHelper.GetTimeStamp()}
+                    { "lastUpdateTime", TimeHelper.GetTimeStamp()}
                 }.ToString();
                 mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateStarInfoCol, newdata);
             }

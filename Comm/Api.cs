@@ -50,7 +50,6 @@ namespace NEL.Comm
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
                         oss = oss,
                         bucketName = mh.bucketName_testnet,
-                        defaultHeadIconUrl = mh.defaultHeadIconUrl,
                         prefixPassword = mh.prefixPassword
                     };
                     break;
@@ -62,7 +61,6 @@ namespace NEL.Comm
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
                         oss = oss,
                         bucketName = mh.bucketName_mainnet,
-                        defaultHeadIconUrl = mh.defaultHeadIconUrl,
                         prefixPassword = mh.prefixPassword
                     };
                     break;

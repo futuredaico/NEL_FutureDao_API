@@ -21,7 +21,6 @@ namespace NEL_FutureDao_API.Service
         public static int usernameLenMin { get; set; } = 2;
         public static int usernameLenMax { get; set; } = 24;
         public static int passwordLenMin { get; set; } = 8;
-        public string defaultHeadIconUrl { get; set; }
         public string prefixPassword { get; set; }
         public string tokenUrl { get; set; } = "";
 
@@ -243,30 +242,10 @@ namespace NEL_FutureDao_API.Service
 
             //
             string oldHeadIconUrl = queryRes[0]["headIconUrl"].ToString();
-            if(!DaoInfoHelper.StoreFile(oss, bucketName, oldHeadIconUrl, headIconUrl, defaultHeadIconUrl))
+            if(!DaoInfoHelper.StoreFile(oss, bucketName, oldHeadIconUrl, headIconUrl))
             {
                 return getErrorRes(DaoReturnCode.headIconNotUpload);
             }
-            /*
-            var fileName = queryRes[0]["headIconUrl"].ToString().toFileName();
-            if(!defaultHeadIconUrl.EndsWith(fileName))
-            {
-                try
-                {
-                    oss.CopyObject(bucketName, fileName, fileName.toBak());
-                }
-                catch { }
-            }
-            fileName = headIconUrl.toFileName();
-            try
-            {
-                oss.CopyObject(bucketName, fileName.toTemp(), fileName);
-            } catch
-            {
-                return getErrorRes(DaoReturnCode.headIconNotUpload);
-            }
-            */
-
 
             //
             if (queryRes[0]["headIconUrl"].ToString() != headIconUrl)
@@ -279,6 +258,7 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
+
         public JArray modifyUserBrief(string userId, string accessToken, string brief)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))

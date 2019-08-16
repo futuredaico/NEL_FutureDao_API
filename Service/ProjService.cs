@@ -47,7 +47,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionCreateProj);
             }
             // TODO
-            if (!DaoInfoHelper.StoreFile(oss, bucketName, projCoverUrl, projCoverUrl, "defaultHeadIconUrl"))
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, projCoverUrl, projCoverUrl))
             {
                 return getErrorRes(DaoReturnCode.projBriefNotUpload);
             }
@@ -134,7 +134,7 @@ namespace NEL_FutureDao_API.Service
             var oldprojDetail = item["projDetail"].ToString();
             if (oldprojVideoUrl != projVideoUrl && projVideoUrl.Trim().Length > 0)
             {
-                if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl, "defaultHeadIconUrl"))
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl))
                 {
                     return getErrorRes(DaoReturnCode.headIconNotUpload);
                 }
@@ -289,7 +289,7 @@ namespace NEL_FutureDao_API.Service
                 var oldprojConverUrl = item["projConverUrl"].ToString();
                 if (oldprojConverUrl != projConverUrl && projConverUrl.Trim().Length > 0)
                 {
-                    if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojConverUrl, projConverUrl, "defaultHeadIconUrl"))
+                    if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojConverUrl, projConverUrl))
                     {
                         return getErrorRes(DaoReturnCode.headIconNotUpload);
                     }

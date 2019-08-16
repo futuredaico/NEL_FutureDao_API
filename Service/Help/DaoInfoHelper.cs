@@ -76,12 +76,12 @@ namespace NEL_FutureDao_API.Service.Help
             return sb.ToString();
         }
 
-        public static bool StoreFile(OssHelper oss, string bucketName, string oldHeadIconUrl, string headIconUrl, string defaultHeadIconUrl)
+        public static bool StoreFile(OssHelper oss, string bucketName, string oldHeadIconUrl, string headIconUrl)
         {
             bool flag = true; if (flag) return flag;
             // old -> bak
             string fileName = oldHeadIconUrl.toFileName();
-            if (!defaultHeadIconUrl.EndsWith(fileName) && fileName != "")
+            if (fileName != "")
             {
                 try
                 {
@@ -92,13 +92,13 @@ namespace NEL_FutureDao_API.Service.Help
 
             // tmp -> origin
             fileName = headIconUrl.toFileName();
+            if (oss.ExistKey(bucketName, fileName))
+            {
+                return true;
+            }
             if (!oss.ExistKey(bucketName, fileName.toTemp()))
             {
                 return false;
-            }
-            if(oss.ExistKey(bucketName, fileName))
-            {
-                return true;
             }
             try
             {

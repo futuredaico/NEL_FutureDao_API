@@ -89,7 +89,7 @@ namespace NEL_FutureDao_API.Service
                 {"email", email },
                 {"emailVerifyCode", ""},
                 {"emailVerifyState", EmailState.sendBeforeState},
-                {"headIconUrl", defaultHeadIconUrl },
+                {"headIconUrl", "" },
                 {"brief", ""},
                 {"time",  time},
                 {"lastUpdateTime", time },
@@ -225,7 +225,6 @@ namespace NEL_FutureDao_API.Service
 
             var item = queryRes[0];
             item["emailVerifyState"] = DaoInfoHelper.toEmailState(item["emailVerifyState"].ToString());
-            item["headIconUrl"] = "";
             return getRes(item);
         }
         public JArray modifyUserIcon(string userId, string accessToken, string headIconUrl)

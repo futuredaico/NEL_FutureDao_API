@@ -18,6 +18,7 @@ namespace NEL_FutureDao_API.Service
         public string projStarInfoCol { get; set; } = "daoProjStarInfo";
         public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
         public string projUpdateInfoCol { get; set; } = "daoProjUpdateInfo";
+        public string projUpdateStarInfoCol { get; set; } = "daoProjUpdateStarInfo";
         public string projDiscussInfoCol { get; set; } = "daoProjDiscussInfo";
         public string projUpdateDiscussInfoCol { get; set; } = "daoProjUpdateDiscussInfo";
         public string projDiscussZanInfoCol { get; set; } = "daoProjDiscussZanInfo";
@@ -709,11 +710,43 @@ namespace NEL_FutureDao_API.Service
             {
                 var newdata = new JObject {
                     {"projId", projId },
+                    {"updateId", updateId },
                     {"discussId", discussId },
                     {"userId", userId },
                     {"time", TimeHelper.GetTimeStamp() },
                 }.ToString();
                 mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussZanInfoCol, newdata);
+            }
+            return getRes();
+        }
+
+        public JArray zanUpdate(string userId, string accessToken, string projId, string updateId)
+        {
+            // 
+            string code;
+            if (!checkToken(userId, accessToken, out code))
+            {
+                return getErrorRes(code);
+            }
+            //
+            if (!checkUserId(userId, out code))
+            {
+                return getErrorRes(code);
+            }
+            if(!checkUpdateExist(projId, updateId))
+            {
+                return getErrorRes(DaoReturnCode.S_InvalidUpdateIdOrProjId);
+            }
+            string findStr = new JObject { { "updateId", updateId }, { "userId", userId } }.ToString();
+            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateStarInfoCol, findStr) == 0)
+            {
+                var newdata = new JObject {
+                    { "projId", projId},
+                    { "updateId", updateId},
+                    { "userId",userId},
+                    { "time", TimeHelper.GetTimeStamp()}
+                }.ToString();
+                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateStarInfoCol, newdata);
             }
             return getRes();
         }

@@ -80,6 +80,13 @@ namespace NEL.Comm
                             req.@params[1].ToString());
                         break;
                     //
+                    case "zanUpdate":
+                        result = ds.zanUpdate(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString());
+                        break;
                     case "zanUpdateDiscuss":
                         result = ds.zanUpdateDiscuss(
                             req.@params[0].ToString(),

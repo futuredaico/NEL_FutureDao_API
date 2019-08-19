@@ -31,6 +31,10 @@ namespace NEL_FutureDao_API
         {
             return getOss().ExistKey(bucketName, filename);
         }
+        public void DeleteObject(string bucketName, string filename)
+        {
+            getOss().DeleteObject(bucketName, filename);
+        }
 
 
         private OssWraper getOss()
@@ -59,6 +63,11 @@ namespace NEL_FutureDao_API
             public bool ExistKey(string bucketName, string filename)
             {
                 return client.DoesObjectExist(bucketName, filename);
+            }
+            public string DeleteObject(string bucketName, string filename)
+            {
+                client.DeleteObject(bucketName, filename);
+                return "true";
             }
         }
     }

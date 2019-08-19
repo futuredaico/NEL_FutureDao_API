@@ -76,22 +76,10 @@ namespace NEL_FutureDao_API.Service.Help
             return sb.ToString();
         }
 
-        public static bool StoreFile(OssHelper oss, string bucketName, string oldHeadIconUrl, string headIconUrl)
+        public static bool StoreFile(OssHelper oss, string bucketName, string oldFileUrl, string fileUrl)
         {
-            bool flag = true; if (flag) return flag;
-            // old -> bak
-            string fileName = oldHeadIconUrl.toFileName();
-            if (fileName != "")
-            {
-                try
-                {
-                    oss.CopyObject(bucketName, fileName, fileName.toBak());
-                }
-                catch { }
-            }
-
             // tmp -> origin
-            fileName = headIconUrl.toFileName();
+            string fileName = fileUrl.toFileName();
             if (oss.ExistKey(bucketName, fileName))
             {
                 return true;
@@ -107,6 +95,16 @@ namespace NEL_FutureDao_API.Service.Help
             catch
             {
                 return false;
+            }
+            // delete tmp
+            fileName = oldFileUrl.toFileName();
+            if (fileName != "")
+            {
+                try
+                {
+                    oss.DeleteObject(bucketName, fileName);
+                }
+                catch { }
             }
             return true;
         }

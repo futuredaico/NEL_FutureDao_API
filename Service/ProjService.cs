@@ -49,7 +49,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionCreateProj);
             }
             // TODO
-            if (!DaoInfoHelper.StoreFile(oss, bucketName, projCoverUrl, projCoverUrl))
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl))
             {
                 return getErrorRes(DaoReturnCode.projBriefNotUpload);
             }

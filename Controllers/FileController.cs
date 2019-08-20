@@ -1,17 +1,22 @@
 ﻿using log4net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Net.Http.Headers;
 using NEL.Comm;
 using NEL.NNS.lib;
 using NEL_FutureDao_API.lib;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Threading.Tasks;
 
 namespace NEL_FutureDao_API.Controllers
 {
     [Route("api/[controller]")]
     public class FileController : Controller
     {
-        private Api api = Api.getTestApi();
+        private Api apiTest = Api.getTestApi();
+        private Api apiMain = Api.getMainApi();
         private ILog log = LogHelper.GetLogger(typeof(FileController));
 
         public IActionResult Index()
@@ -19,7 +24,40 @@ namespace NEL_FutureDao_API.Controllers
             return View();
         }
 
+        #region snippet_UploadPhysical
         [HttpPost("testnet")]
+        [DisableFormValueModelBinding]
+        //[ValidateAntiForgeryToken]
+        public async Task<JsonResult> UploadPhysical()
+        {
+            if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
+            {
+                return Json(toFail(new Exception("not support type:"+ Request.ContentType)));
+            }
+
+            try
+            {
+                var boundary = MultipartRequestHelper.GetBoundary(
+                MediaTypeHeaderValue.Parse(Request.ContentType),
+                1000000);
+                var reader = new MultipartReader(boundary, HttpContext.Request.Body);
+                var section = await reader.ReadNextSectionAsync();
+
+                var contentDisposition = ContentDispositionHeaderValue.Parse(section.ContentDisposition);
+                var fileName = contentDisposition.FileName.Value.toRandomFileName();
+                var stream = section.Body;
+                var ossUrl = apiTest.PutTestStream(fileName.toTemp(), stream);
+                return Json(toRes(ossUrl, fileName));
+            } catch(Exception ex)
+            {
+                log.Error(ex.Message, ex);
+                return Json(toFail(ex));
+            }
+        }
+        #endregion
+
+        // ***********************************************************
+        [HttpPost("testneto")]
         public JsonResult uploadTestnet()
         {
             try
@@ -28,7 +66,7 @@ namespace NEL_FutureDao_API.Controllers
                 using (var stream = file.OpenReadStream())
                 {
                     var fileName = file.FileName.toRandomFileName();
-                    var ossUrl = api.PutTestStream(fileName.toTemp(), stream);
+                    var ossUrl = apiTest.PutTestStream(fileName.toTemp(), stream);
                     return Json(toRes(ossUrl, fileName));
                 }
             }
@@ -48,7 +86,7 @@ namespace NEL_FutureDao_API.Controllers
                 using (var stream = file.OpenReadStream())
                 {
                     var fileName = file.FileName.toRandomFileName();
-                    var ossUrl = api.PutMainStream(fileName.toTemp(), stream);
+                    var ossUrl = apiMain.PutMainStream(fileName.toTemp(), stream);
                     return Json(toRes(ossUrl, fileName));
                 }
             }

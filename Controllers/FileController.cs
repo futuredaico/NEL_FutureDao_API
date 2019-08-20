@@ -1,15 +1,11 @@
 ﻿using log4net;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Net.Http.Headers;
 using NEL.Comm;
 using NEL.NNS.lib;
 using NEL_FutureDao_API.lib;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace NEL_FutureDao_API.Controllers
 {
@@ -26,8 +22,8 @@ namespace NEL_FutureDao_API.Controllers
         }
 
 
-        [HttpPost("testnet2")]
-        public JsonResult uploadTestnet2()
+        [HttpPost("demo")]
+        public JsonResult demo()
         {
             try
             {
@@ -47,40 +43,8 @@ namespace NEL_FutureDao_API.Controllers
             }
         }
 
-        #region snippet_UploadPhysical
+        // 
         [HttpPost("testnet")]
-        [DisableFormValueModelBinding]
-        //[ValidateAntiForgeryToken]
-        public async Task<JsonResult> UploadPhysical()
-        {
-            if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
-            {
-                return Json(toFail(new Exception("not support type:"+ Request.ContentType)));
-            }
-
-            try
-            {
-                var boundary = MultipartRequestHelper.GetBoundary(
-                    MediaTypeHeaderValue.Parse(Request.ContentType),
-                    1000000);
-                var reader = new MultipartReader(boundary, HttpContext.Request.Body);
-                var section = await reader.ReadNextSectionAsync();
-
-                var contentDisposition = ContentDispositionHeaderValue.Parse(section.ContentDisposition);
-                var fileName = contentDisposition.FileName.Value.toRandomFileName();
-                var stream = section.Body;
-                var ossUrl = apiTest.PutTestStream(fileName.toTemp(), stream);
-                return Json(toRes(ossUrl, fileName));
-            } catch(Exception ex)
-            {
-                log.Error(ex.Message, ex);
-                return Json(toFail(ex));
-            }
-        }
-        #endregion
-
-        // ***********************************************************
-        [HttpPost("testneto")]
         public JsonResult uploadTestnet()
         {
             try

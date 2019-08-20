@@ -16,7 +16,7 @@ namespace NEL_FutureDao_API
         {
             var config = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: true)
+               .AddJsonFile("appsettings.json")
                .AddCommandLine(args)
                .Build();
 

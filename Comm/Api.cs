@@ -54,6 +54,20 @@ namespace NEL.Comm
                     };
                     break;
                 case "mainnet":
+                    ds = new DiscussService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                    };
+                    ps = new ProjService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_mainnet,
+                    };
                     us = new UserService
                     {
                         mh = mh,

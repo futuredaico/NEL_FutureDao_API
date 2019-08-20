@@ -20,7 +20,6 @@ namespace NEL.NNS.lib
         public string bucketName_testnet = string.Empty;
         public string bucketName_mainnet = string.Empty;
         public string ossUrlPrefix = string.Empty;
-        public string defaultHeadIconUrl = string.Empty;
         public string prefixPassword = string.Empty;
         //
         public string startMonitorFlag = string.Empty;
@@ -30,7 +29,7 @@ namespace NEL.NNS.lib
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection()    //将配置文件的数据加载到内存中
                 .SetBasePath(System.IO.Directory.GetCurrentDirectory())   //指定配置文件所在的目录
-                .AddJsonFile("mongodbsettings.json", optional: true, reloadOnChange: true)  //指定加载的配置文件
+                .AddJsonFile("mongodbsettings.json")  //指定加载的配置文件
                 .Build();    //编译成对象  
             //
             dao_mongodbConnStr_testnet = config["dao_mongodbConnStr_testnet"];
@@ -43,7 +42,6 @@ namespace NEL.NNS.lib
             bucketName_testnet = config["bucketName_testnet"];
             bucketName_mainnet = config["bucketName_mainnet"];
             ossUrlPrefix = config["ossUrlPrefix"];
-            defaultHeadIconUrl = config["defaultHeadIconUrl"];
             prefixPassword = config["prefixPassword"];
             //
             startMonitorFlag = config["startMonitorFlag"];

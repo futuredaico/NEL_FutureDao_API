@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,15 +38,6 @@ namespace NEL_FutureDao_API
 
             app.UseHttpsRedirection();
             app.UseMvc();
-
-            DefaultFilesOptions options = new DefaultFilesOptions();
-            options.DefaultFileNames.Add("index.html");    //将index.html改为需要默认起始页的文件名.
-            app.UseDefaultFiles(options);
-            app.UseStaticFiles();
-            app.Use(async (context, next) => {
-                context.Request.EnableRewind();
-                await next();
-            });
         }
     }
 }

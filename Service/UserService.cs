@@ -242,16 +242,15 @@ namespace NEL_FutureDao_API.Service
 
             //
             string oldHeadIconUrl = queryRes[0]["headIconUrl"].ToString();
-            if(!DaoInfoHelper.StoreFile(oss, bucketName, oldHeadIconUrl, headIconUrl))
+            if(!DaoInfoHelper.StoreFile(oss, bucketName, oldHeadIconUrl, headIconUrl, out string newHeadIconUrl))
             {
                 return getErrorRes(DaoReturnCode.headIconNotUpload);
             }
-
             //
-            if (queryRes[0]["headIconUrl"].ToString() != headIconUrl)
+            if (oldHeadIconUrl != newHeadIconUrl)
             {
                 var updateStr = new JObject { {"$set", new JObject{
-                    { "headIconUrl", headIconUrl},
+                    { "headIconUrl", newHeadIconUrl},
                     { "lastUpdateTime", TimeHelper.GetTimeStamp() }
                 } }}.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);

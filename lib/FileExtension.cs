@@ -13,6 +13,7 @@ namespace NEL_FutureDao_API.lib
         }
         public static string toTemp(this string fileName)
         {
+            if (fileName.StartsWith("temp_")) return fileName; 
             return "temp_" + fileName;
         }
         public static string toBak(this string fileName) {

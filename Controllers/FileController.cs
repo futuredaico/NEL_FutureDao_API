@@ -52,8 +52,8 @@ namespace NEL_FutureDao_API.Controllers
                 var file = Request.Form.Files[0];
                 using (var stream = file.OpenReadStream())
                 {
-                    var fileName = file.FileName.toRandomFileName();
-                    var ossUrl = apiTest.PutTestStream(fileName.toTemp(), stream);
+                    var fileName = file.FileName.toRandomFileName().toTemp();
+                    var ossUrl = apiTest.PutTestStream(fileName, stream);
                     return Json(toRes(ossUrl, fileName));
                 }
             }

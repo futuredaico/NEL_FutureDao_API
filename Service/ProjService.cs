@@ -49,7 +49,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionCreateProj);
             }
             // TODO
-            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl))
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newProjCoverUrl))
             {
                 return getErrorRes(DaoReturnCode.projBriefNotUpload);
             }
@@ -72,7 +72,7 @@ namespace NEL_FutureDao_API.Service
                 { "projName", projName},
                 { "projTitle", projTitle},
                 { "projType", ProjType.to(projType)},
-                { "projConverUrl", projCoverUrl},
+                { "projConverUrl", newProjCoverUrl},
                 { "projBrief", projBrief},
                 { "platform", "neo"},
                 { "projVideoUrl", ""},
@@ -133,16 +133,17 @@ namespace NEL_FutureDao_API.Service
             var isUpdate = false;
             var updateJo = new JObject();
             var oldprojVideoUrl = item["projVideoUrl"].ToString();
-            var oldprojDetail = item["projDetail"].ToString();
-            if (oldprojVideoUrl != projVideoUrl && projVideoUrl.Trim().Length > 0)
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl, out string newProjVideoUrl))
             {
-                if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl))
-                {
-                    return getErrorRes(DaoReturnCode.headIconNotUpload);
-                }
-                updateJo.Add("projVideoUrl", projVideoUrl);
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
+            }
+            if (oldprojVideoUrl != newProjVideoUrl)
+            {
+                updateJo.Add("projVideoUrl", newProjVideoUrl);
                 isUpdate = true;
             }
+
+            var oldprojDetail = item["projDetail"].ToString();
             if (oldprojDetail != projDetail && projDetail.Trim().Length > 0)
             {
                 updateJo.Add("projDetail", projDetail);
@@ -289,13 +290,13 @@ namespace NEL_FutureDao_API.Service
                     isUpdate = true;
                 }
                 var oldprojConverUrl = item["projConverUrl"].ToString();
-                if (oldprojConverUrl != projConverUrl && projConverUrl.Trim().Length > 0)
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojConverUrl, projConverUrl, out string newProjConverUrl))
                 {
-                    if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojConverUrl, projConverUrl))
-                    {
-                        return getErrorRes(DaoReturnCode.headIconNotUpload);
-                    }
-                    updateJo.Add("projConverUrl", projConverUrl);
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
+                if (oldprojConverUrl != newProjConverUrl)
+                {
+                    updateJo.Add("projConverUrl", newProjConverUrl);
                     isUpdate = true;
                 }
                 var oldprojBrief = item["projBrief"].ToString();

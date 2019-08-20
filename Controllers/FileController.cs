@@ -8,6 +8,7 @@ using NEL.NNS.lib;
 using NEL_FutureDao_API.lib;
 using Newtonsoft.Json.Linq;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace NEL_FutureDao_API.Controllers
@@ -24,6 +25,28 @@ namespace NEL_FutureDao_API.Controllers
             return View();
         }
 
+
+        [HttpPost("testnet2")]
+        public JsonResult uploadTestnet2()
+        {
+            try
+            {
+                var file = Request.Form.Files[0];
+                string filename = file.FileName;
+                using (FileStream fs = System.IO.File.Create(filename))
+                {
+                    file.CopyTo(fs);
+                    fs.Flush();
+                }
+                return Json(toRes("", filename));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex);
+                return Json(toFail(ex));
+            }
+        }
+
         #region snippet_UploadPhysical
         [HttpPost("testnet")]
         [DisableFormValueModelBinding]
@@ -38,8 +61,8 @@ namespace NEL_FutureDao_API.Controllers
             try
             {
                 var boundary = MultipartRequestHelper.GetBoundary(
-                MediaTypeHeaderValue.Parse(Request.ContentType),
-                1000000);
+                    MediaTypeHeaderValue.Parse(Request.ContentType),
+                    1000000);
                 var reader = new MultipartReader(boundary, HttpContext.Request.Body);
                 var section = await reader.ReadNextSectionAsync();
 

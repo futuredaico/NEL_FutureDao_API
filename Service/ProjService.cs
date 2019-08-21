@@ -394,6 +394,7 @@ namespace NEL_FutureDao_API.Service
             return queryRes.All(p => p["projSubState"].ToString() != ProjSubState.Auditing);
         }
 
+        
         //0. query + invite + send + verify
         public JArray queryMember(string userId, string accessToken, string targetEmail/*模糊匹配*/, int pageNum = 1, int pageSize = 10)
         {
@@ -401,7 +402,9 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            string findStr = MongoFieldHelper.newRegexFilter(targetEmail, "email").ToString();
+            var findJo1 = MongoFieldHelper.newRegexFilter(targetEmail, "email");
+            var findJo2 = MongoFieldHelper.toFilter(new string[] { EmailState.hasVerify, EmailState.hasVerifyAtChangeEmail, EmailState.hasVerifyAtResetPassword }, "emailVerifyState");
+            string findStr = new JObject { { "$and", new JArray { findJo1, findJo2 } } }.ToString();
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr);
             if (count == 0)
             {
@@ -872,8 +875,17 @@ namespace NEL_FutureDao_API.Service
                 string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projState", "projSubState", "supportCount", "lastUpdateTime" }).ToString();
                 queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, skip, pageSize, fieldStr);
             }
-            var res = new JObject { { "count", count }, { "list", queryRes } };
+            
+            var res = new JObject { { "count", count }, { "list", toFormat(queryRes) } };
             return getRes(res);
+        }
+        private JArray toFormat(JArray queryRes)
+        {
+            var res = queryRes.Select(p => {
+                p["projId"] = p["projId"].ToString().toNormalId();
+                return p;
+            }).ToArray();
+            return new JArray { res };
         }
         private bool getListFilter(int pageNum, int pageSize, string userId, string manageOrStar, out string filter, out long count)
         {
@@ -889,6 +901,8 @@ namespace NEL_FutureDao_API.Service
                 var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
                 if (queryRes.Count == 0) return false;
                 var arr = queryRes.Select(p => p["projId"].ToString()).ToArray();
+                arr = getProjTempAndOther(arr);
+                
                 filter = MongoFieldHelper.toFilter(arr, "projId").ToString();
                 return true;
             }
@@ -913,10 +927,35 @@ namespace NEL_FutureDao_API.Service
                 return true;
             }
         }
+        private string[] getProjTempAndOther(string[] arr)
+        {
+            var arrDict = getProjTemp(arr);
+            if (arrDict.Count > 0)
+            {
+                arr = arr.Select(p => {
+                    if (arrDict.GetValueOrDefault(p, false))
+                    {
+                        return "temp_" + p;
+                    }
+                    return p;
+                }).ToArray();
+            }
+            return arr;
+        }
+        private Dictionary<string, bool> getProjTemp(string[] arr)
+        {
+            string[] arrTemp = arr.Select(p => "temp_" + p).ToArray();
+            string findStr = MongoFieldHelper.toFilter(arrTemp, "projId").ToString();
+            string fieldStr = new JObject { { "projId", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return new Dictionary<string, bool>();
+
+            return queryRes.ToDictionary(k => k["projId"].ToString().Substring(5), v => true);
+        }
         public JArray queryProjDetail(string projId, string userId = "")
         {
             string findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "projVideoUrl", "projBrief", "projDetail", "supportCount","discussCount", "updateCount" }).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "projVideoUrl", "projBrief", "projDetail", "supportCount","discussCount", "updateCount","time" }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
 

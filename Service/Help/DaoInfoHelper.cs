@@ -112,4 +112,12 @@ namespace NEL_FutureDao_API.Service.Help
             return true;
         }
     }
+    public static class DaoHelper
+    {
+        public static string toNormalId(this string projId)
+        {
+            if (projId.StartsWith("temp_")) return projId.Substring(5);
+            return projId;
+        }
+    }
 }

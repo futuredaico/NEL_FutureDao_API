@@ -837,7 +837,15 @@ namespace NEL_FutureDao_API.Service
         // 查询项目(all/管理中/关注中/支持中)
         public JArray queryProjList(int pageNum = 1, int pageSize = 10)
         {
-            return queryProjListPrivate(pageNum, pageSize);
+            //return queryProjListPrivate(pageNum, pageSize);
+            string findStr = new JObject { { "projState", ProjState.IdeaPub }, { "projSubState", ProjSubState.Init } }.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+
+            string sortStr = "{'time':-1}";
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projState", "projSubState", "supportCount", "lastUpdateTime" }).ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            return getRes(new JObject { { "count", count},{ "list", queryRes} });
         }
         public JArray queryProjListAtManage(string userId, string accessToken, int pageNum = 1, int pageSize = 10)
         {
@@ -845,7 +853,21 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            return queryProjListPrivate(pageNum, pageSize, userId, ProjMangeSortType.Managing);
+            //return queryProjListPrivate(pageNum, pageSize, userId, ProjMangeSortType.Managing);
+            string findStr = new JObject { { "userId", userId }, { "emailVerifyState", EmailState.hasVerifyAtInvitedYes } }.ToString();
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+
+            string sortStr = "{'time':1}";
+            string fieldStr = new JObject { { "projId", 1 }, { "_id", 0 } }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            var arr = queryRes.Select(p => p["projId"].ToString()).Distinct().ToArray();
+            arr = getProjTempAndOther(arr);
+
+            findStr = MongoFieldHelper.toFilter(arr, "projId").ToString();
+            fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projState", "projSubState", "supportCount", "lastUpdateTime" }).ToString();
+            queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            return getRes(new JObject { { "count", count},{ "list", toFormat(queryRes)} });
         }
         public JArray queryProjListAtStar(string userId, string accessToken, int pageNum = 1, int pageSize = 10)
         {
@@ -853,7 +875,41 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            return queryProjListPrivate(pageNum, pageSize, userId, ProjMangeSortType.Staring);
+            //return queryProjListPrivate(pageNum, pageSize, userId, ProjMangeSortType.Staring);
+            var findJo = new JObject { { "userId", userId }, { "starState", StarState.StarYes } };
+            long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findJo.ToString());
+            if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+
+            var match = new JObject { { "$match", findJo } }.ToString();
+            var sort = new JObject { { "$sort", new JObject { { "time", 1 } } } }.ToString();
+            var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
+            var limit = new JObject { { "$limit", pageSize } }.ToString();
+            var lookup = new JObject { { "$lookup", new JObject {
+                { "from", projInfoCol},
+                { "localField", "projId"},
+                { "foreignField", "projId" },
+                { "as", "ps"}
+            } } }.ToString();
+            var project = new JObject { { "$project", new JObject { { "ps",1} } } }.ToString();
+            var list = new List<string> { match, sort, skip, limit, lookup, project};
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, list);
+
+            var res = queryRes.Select(p => {
+                var ps = ((JArray)p["ps"])[0];
+                return new JObject {
+                    { "projId", ps["projId"]},
+                    { "projName", ps["projName"]},
+                    { "projTitle", ps["projTitle"]},
+                    { "projType", ps["projType"]},
+                    { "projConverUrl", ps["projConverUrl"]},
+                    { "projState", ps["projState"]},
+                    { "projSubState", ps["projSubState"]},
+                    { "supportCount", ps["supportCount"]},
+                    { "lastUpdateTime", ps["lastUpdateTime"]}
+                };
+            }).ToArray();
+
+            return getRes(new JObject { { "count", count},{ "list", new JArray { res } } });
         }
         public JArray queryProjListPrivate(int pageNum, int pageSize, string userId = "", string manageOrStar = "")
         {
@@ -921,7 +977,7 @@ namespace NEL_FutureDao_API.Service
             }
             else
             {
-                string findStr = "{}";
+                string findStr = new JObject { { "projState", ProjState.IdeaPub},{ "projSubState", ProjSubState.Init} }.ToString();
                 count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
                 if (count == 0) return false;
                 return true;

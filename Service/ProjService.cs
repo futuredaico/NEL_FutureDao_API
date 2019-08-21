@@ -329,7 +329,7 @@ namespace NEL_FutureDao_API.Service
             //
             string findStr = getProjIdFilter(projId);
             string sortStr = "{'time':-1}";
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projBrief", "videoBriefUrl", "projDetail", "projState", "projSubState", "connectEmail", "officialWeb", "community", "creatorId" }).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projBrief", "projVideoUrl", "projDetail", "projState", "projSubState", "connectEmail", "officialWeb", "community", "creatorId" }).ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1, fieldStr);
             var item = queryRes[0];
             item["role"] = item["creatorId"].ToString() == userId ? TeamRoleType.Admin : TeamRoleType.Member;
@@ -916,7 +916,7 @@ namespace NEL_FutureDao_API.Service
         public JArray queryProjDetail(string projId, string userId = "")
         {
             string findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "videoBriefUrl", "projBrief", "projDetail", "supportCount","discussCount", "updateCount" }).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "projVideoUrl", "projBrief", "projDetail", "supportCount","discussCount", "updateCount" }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
 

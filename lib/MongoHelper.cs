@@ -14,6 +14,8 @@ namespace NEL.NNS.lib
         public string dao_mongodbDatabase_testnet = string.Empty;
         public string dao_mongodbConnStr_mainnet = string.Empty;
         public string dao_mongodbDatabase_mainnet = string.Empty;
+        public string tokenUrl_testnet = string.Empty;
+        public string tokenUrl_mainnet = string.Empty;
         public string endpoint = string.Empty;
         public string accessKeyId = string.Empty;
         public string accessKeySecret = string.Empty;
@@ -36,6 +38,8 @@ namespace NEL.NNS.lib
             dao_mongodbDatabase_testnet = config["dao_mongodbDatabase_testnet"];
             dao_mongodbConnStr_mainnet = config["dao_mongodbConnStr_mainnet"];
             dao_mongodbDatabase_mainnet = config["dao_mongodbDatabase_mainnet"];
+            tokenUrl_testnet = config["tokenUrl_testnet"];
+            tokenUrl_mainnet = config["tokenUrl_mainnet"];
             endpoint = config["endpoint"];
             accessKeyId = config["accessKeyId"];
             accessKeySecret = config["accessKeySecret"];

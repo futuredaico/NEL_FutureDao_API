@@ -1,4 +1,5 @@
 ﻿using log4net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NEL.Comm;
 using NEL.NNS.lib;
@@ -23,11 +24,11 @@ namespace NEL_FutureDao_API.Controllers
 
 
         [HttpPost("demo")]
-        public JsonResult demo()
+        public JsonResult demo(IFormFile file)
         {
             try
             {
-                var file = Request.Form.Files[0];
+                //var file = Request.Form.Files[0];
                 string filename = file.FileName;
                 using (FileStream fs = System.IO.File.Create(filename))
                 {

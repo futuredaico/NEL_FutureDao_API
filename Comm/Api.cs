@@ -34,12 +34,14 @@ namespace NEL.Comm
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        tokenUrl = mh.tokenUrl_testnet,
                     };
                     ps = new ProjService
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        tokenUrl = mh.tokenUrl_testnet,
                         oss = oss,
                         bucketName = mh.bucketName_testnet,
                     };
@@ -48,6 +50,7 @@ namespace NEL.Comm
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        tokenUrl = mh.tokenUrl_testnet,
                         oss = oss,
                         bucketName = mh.bucketName_testnet,
                         prefixPassword = mh.prefixPassword
@@ -59,12 +62,14 @@ namespace NEL.Comm
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        tokenUrl = mh.tokenUrl_mainnet,
                     };
                     ps = new ProjService
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        tokenUrl = mh.tokenUrl_mainnet,
                         oss = oss,
                         bucketName = mh.bucketName_mainnet,
                     };
@@ -73,6 +78,7 @@ namespace NEL.Comm
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        tokenUrl = mh.tokenUrl_mainnet,
                         oss = oss,
                         bucketName = mh.bucketName_mainnet,
                         prefixPassword = mh.prefixPassword

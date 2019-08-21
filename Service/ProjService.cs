@@ -21,6 +21,12 @@ namespace NEL_FutureDao_API.Service
         public string projUpdateStarInfoCol { get; set; } = "daoProjUpdateStarInfo";
         public string projStarInfoCol { get; set; } = "daoProjStarInfo";
         public string projSupportInfoCol { get; set; } = "daoProjSupportInfo";
+
+        public string projDiscussInfoCol { get; set; } = "daoProjDiscussInfo";
+        public string projUpdateDiscussInfoCol { get; set; } = "daoProjUpdateDiscussInfo";
+        public string projDiscussZanInfoCol { get; set; } = "daoProjDiscussZanInfo";
+        public string projUpdateDiscussZanInfoCol { get; set; } = "daoProjUpdateDiscussZanInfo";
+
         public string tokenUrl { get; set; } = "";
         public OssHelper oss { get; set; }
         public string bucketName { get; set; }
@@ -107,7 +113,13 @@ namespace NEL_FutureDao_API.Service
             string findStr = getProjIdFilter(projId);
             mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
             findStr = new JObject { { "projId", projId } }.ToString();
+            mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
             mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
+            mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateStarInfoCol, findStr);
+            mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussInfoCol, findStr);
+            mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, findStr);
+            mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projDiscussZanInfoCol, findStr);
+            mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussZanInfoCol, findStr);
             mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
             return getRes();
         }
@@ -669,6 +681,9 @@ namespace NEL_FutureDao_API.Service
             }
             string findStr = new JObject { { "projId", projId }, { "updateId", updateId } }.ToString();
             mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
+            mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateStarInfoCol, findStr);
+            mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussInfoCol, findStr);
+            mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussZanInfoCol, findStr);
             return getRes();
         }
         public JArray modifyUpdate(string userId, string accessToken, string projId, string updateId, string updateTitle, string updateDetail)

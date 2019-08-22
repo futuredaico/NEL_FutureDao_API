@@ -216,7 +216,7 @@ namespace NEL_FutureDao_API.Service
             //string findStr = new JObject { { "projId", projId.toTemp() } }.ToString();
             string findStr = MongoFieldHelper.toFilter(new string[] { projId, projId.toTemp() }, "projId").ToString();
             string sortStr = "{'time':-1}";
-            string fieldStr = new JObject { { "connectEmail", 1 }, { "officialWeb", 1 }, { "community", 1 } }.ToString();
+            string fieldStr = new JObject { { "projId",1 },{ "connectEmail", 1 }, { "officialWeb", 1 }, { "community", 1 } }.ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1, fieldStr);
             var item = queryRes[0];
 

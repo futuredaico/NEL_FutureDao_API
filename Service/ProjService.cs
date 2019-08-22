@@ -866,7 +866,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyProj);
             }
-            string findStr = new JObject { { "projId", projId } }.ToString();
+            string findStr = new JObject { { "projId", projId.toTemp() } }.ToString();
             string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projConverUrl", "projSubState", "projBrief", "projDetail", "connectEmail" }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0)

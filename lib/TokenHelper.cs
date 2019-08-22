@@ -6,9 +6,9 @@ namespace NEL_FutureDao_API.lib
 {
     public class TokenHelper
     {
-        // 供临时测试使用
         public static string applyAccessToken(string url, string userId)
         {
+            // 供临时测试使用
             if (url == "") return "123456789012";
             var data = new JObject {
                 { "jsonrpc", "2.0"},
@@ -26,11 +26,9 @@ namespace NEL_FutureDao_API.lib
         }
         public static bool checkAccessToken(string url, string userId, string accessToken, out string code)
         {
-            if (url == "" || url == null)
-            {
-                code = "";
-                return true;
-            }
+            code = "";
+            // 供临时测试使用
+            if (url == "" || url == null) return true;
             var data = new JObject {
                 { "jsonrpc", "2.0"},
                 { "method", "checkAccessToken"},

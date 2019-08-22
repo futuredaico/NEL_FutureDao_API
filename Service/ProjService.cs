@@ -137,9 +137,11 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyProj);
             }
-            string findStr = new JObject { { "projId", projId.toTemp() } }.ToString();
+            //string findStr = new JObject { { "projId", projId.toTemp()  } }.ToString();
+            string findStr = MongoFieldHelper.toFilter(new string[] { projId, projId.toTemp()}, "projId").ToString();
+            string sortStr = "{'time':-1}";
             string fieldStr = new JObject { { "projVideoUrl", 1 }, { "projDetail", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1, fieldStr);
             var item = queryRes[0];
 
             var isUpdate = false;
@@ -163,8 +165,27 @@ namespace NEL_FutureDao_API.Service
             }
             if (isUpdate)
             {
+                long now = TimeHelper.GetTimeStamp();
+                if (item["projId"].ToString() == projId)
+                {
+                    if(updateJo["projVideoUrl"] != null)
+                    {
+                        item["projVideoUrl"] = updateJo["projVideoUrl"];
+                    }
+                    if (updateJo["projDetail"] != null)
+                    {
+                        item["projDetail"] = updateJo["projDetail"];
+                    }
+                    item["projId"] = projId.toTemp();
+                    item["lastUpdatorId"] = userId;
+                    item["time"] = now;
+                    item["lastUpdateTime"] = now;
+                    var newdata = item.ToString();
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata);
+                    return getRes();
+                }
                 updateJo.Add("lastUpdatorId", userId);
-                updateJo.Add("lastUpdateTime", TimeHelper.GetTimeStamp());
+                updateJo.Add("lastUpdateTime", now);
                 var updateStr = new JObject { { "$set", updateJo } }.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, updateStr, findStr);
             }
@@ -190,9 +211,11 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyProj);
             }
-            string findStr = new JObject { { "projId", projId.toTemp() } }.ToString();
+            //string findStr = new JObject { { "projId", projId.toTemp() } }.ToString();
+            string findStr = MongoFieldHelper.toFilter(new string[] { projId, projId.toTemp() }, "projId").ToString();
+            string sortStr = "{'time':-1}";
             string fieldStr = new JObject { { "connectEmail", 1 }, { "officialWeb", 1 }, { "community", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1, fieldStr);
             var item = queryRes[0];
 
             var isUpdate = false;
@@ -217,6 +240,29 @@ namespace NEL_FutureDao_API.Service
             }
             if (isUpdate)
             {
+                long now = TimeHelper.GetTimeStamp();
+                if (item["projId"].ToString() == projId)
+                {
+                    if (updateJo["connectEmail"] != null)
+                    {
+                        item["connectEmail"] = updateJo["connectEmail"];
+                    }
+                    if (updateJo["officialWeb"] != null)
+                    {
+                        item["officialWeb"] = updateJo["officialWeb"];
+                    }
+                    if (updateJo["community"] != null)
+                    {
+                        item["community"] = updateJo["community"];
+                    }
+                    item["projId"] = projId.toTemp();
+                    item["lastUpdatorId"] = userId;
+                    item["time"] = now;
+                    item["lastUpdateTime"] = now;
+                    var newdata = item.ToString();
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata);
+                    return getRes();
+                }
                 updateJo.Add("lastUpdatorId", userId);
                 updateJo.Add("lastUpdateTime", TimeHelper.GetTimeStamp());
                 var updateStr = new JObject { { "$set", updateJo } }.ToString();

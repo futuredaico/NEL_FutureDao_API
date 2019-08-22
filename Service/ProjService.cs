@@ -140,23 +140,25 @@ namespace NEL_FutureDao_API.Service
             //string findStr = new JObject { { "projId", projId.toTemp()  } }.ToString();
             string findStr = MongoFieldHelper.toFilter(new string[] { projId, projId.toTemp()}, "projId").ToString();
             string sortStr = "{'time':-1}";
-            string fieldStr = new JObject { { "projVideoUrl", 1 }, { "projDetail", 1 } }.ToString();
+            string fieldStr = new JObject { { "projId",1},{ "projVideoUrl", 1 }, { "projDetail", 1 } }.ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1, fieldStr);
             var item = queryRes[0];
 
             var isUpdate = false;
             var updateJo = new JObject();
-            var oldprojVideoUrl = item["projVideoUrl"].ToString();
-            if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl, out string newProjVideoUrl))
+            if(projVideoUrl != "")
             {
-                return getErrorRes(DaoReturnCode.headIconNotUpload);
+                var oldprojVideoUrl = item["projVideoUrl"].ToString();
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl, out string newProjVideoUrl))
+                {
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
+                if (oldprojVideoUrl != newProjVideoUrl)
+                {
+                    updateJo.Add("projVideoUrl", newProjVideoUrl);
+                    isUpdate = true;
+                }
             }
-            if (oldprojVideoUrl != newProjVideoUrl)
-            {
-                updateJo.Add("projVideoUrl", newProjVideoUrl);
-                isUpdate = true;
-            }
-
             var oldprojDetail = item["projDetail"].ToString();
             if (oldprojDetail != projDetail && projDetail.Trim().Length > 0)
             {

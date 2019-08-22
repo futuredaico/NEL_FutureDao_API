@@ -344,3 +344,4 @@ healthchecksdb
 /Service/ProjService.cs
 /Service/DiscussService.cs
 /Service/ProjServiceNew.cs
+/lib/AliOssHelper.cs

@@ -162,6 +162,19 @@ namespace NEL_FutureDao_API.Service
             var oldprojDetail = item["projDetail"].ToString();
             if (oldprojDetail != projDetail && projDetail.Trim().Length > 0)
             {
+                var olist = oldprojDetail.catchFileUrl();
+                var nlist = projDetail.catchFileUrl();
+                var oUrl = olist.Count > 0 ? olist[0] : "";
+                var nUrl = nlist.Count > 0 ? nlist[0] : "";
+                if(nUrl != "")
+                {
+                    if (!DaoInfoHelper.StoreFile(oss, bucketName, oUrl, nUrl, out string newUrl))
+                    {
+                        return getErrorRes(DaoReturnCode.headIconNotUpload);
+                    }
+                    projDetail = projDetail.Replace(nUrl, newUrl);
+                }
+                
                 updateJo.Add("projDetail", projDetail);
                 isUpdate = true;
             }
@@ -699,6 +712,16 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionCreateUpdate);
             }
             // TODO 是否需要检查项目的二级状态: 增删改查
+            var nlist = updateDetail.catchFileUrl();
+            var nUrl = nlist.Count > 0 ? nlist[0] : "";
+            if (nUrl != "")
+            {
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, "", nUrl, out string newUrl))
+                {
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
+                updateDetail = updateDetail.Replace(nUrl, newUrl);
+            }
 
             var updateId = DaoInfoHelper.genProjUpdateId(projId, updateTitle);
             var now = TimeHelper.GetTimeStamp();

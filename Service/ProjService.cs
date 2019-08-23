@@ -141,14 +141,14 @@ namespace NEL_FutureDao_API.Service
             string findStr = MongoFieldHelper.toFilter(new string[] { projId, projId.toTemp()}, "projId").ToString();
             string sortStr = "{'time':-1}";
             string fieldStr = new JObject { { "projId",1},{ "projVideoUrl", 1 }, { "projDetail", 1 } }.ToString();
-            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1, fieldStr);
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1);//, fieldStr);
             var item = queryRes[0];
 
             var isUpdate = false;
             var updateJo = new JObject();
-            if(projVideoUrl != "")
+            var oldprojVideoUrl = item["projVideoUrl"].ToString();
+            if (oldprojVideoUrl != projVideoUrl && projVideoUrl.Trim().Length > 0)
             {
-                var oldprojVideoUrl = item["projVideoUrl"].ToString();
                 if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl, out string newProjVideoUrl))
                 {
                     return getErrorRes(DaoReturnCode.headIconNotUpload);
@@ -230,7 +230,7 @@ namespace NEL_FutureDao_API.Service
             string findStr = MongoFieldHelper.toFilter(new string[] { projId, projId.toTemp() }, "projId").ToString();
             string sortStr = "{'time':-1}";
             string fieldStr = new JObject { { "projId",1 },{ "connectEmail", 1 }, { "officialWeb", 1 }, { "community", 1 } }.ToString();
-            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1, fieldStr);
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, 0, 1);//, fieldStr);
             var item = queryRes[0];
 
             var isUpdate = false;
@@ -303,7 +303,7 @@ namespace NEL_FutureDao_API.Service
             }
             string findStr = getProjIdFilter(projId);
             string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projBrief", "projSubState" }).ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);//, fieldStr);
             if (queryRes.Any(p => p["projSubState"].ToString() == ProjSubState.Auditing))
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyProj);
@@ -312,6 +312,20 @@ namespace NEL_FutureDao_API.Service
             var rr = queryRes.Where(p => p["projId"].ToString() == projId.toTemp()).ToArray();
             if (rr.Count() == 0)
             {
+                var newdata = queryRes[0];
+                newdata["projId"] = projId.toTemp();
+                newdata["projName"] = projName;
+                newdata["projTitle"] = projTitle;
+                newdata["projType"] = projType;
+                newdata["projConverUrl"] = projConverUrl;
+                newdata["projBrief"] = projBrief;
+                newdata["projState"] = ProjState.Readying;
+                newdata["projSubState"] = ProjSubState.Init;
+                newdata["creatorId"] = userId;
+                newdata["lastUpdatorId"] = userId;
+                newdata["time"] = now;
+                newdata["lastUpdateTime"] = now;
+                /*
                 var newdata = new JObject {
                     { "projId", projId.toTemp()},
                     { "projName", projName},
@@ -336,6 +350,7 @@ namespace NEL_FutureDao_API.Service
                     { "time", now},
                     { "lastUpdateTime", now},
                 }.ToString();
+                */
                 mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata);
             }
             else
@@ -1298,6 +1313,7 @@ namespace NEL_FutureDao_API.Service
         // * 准备中: 无状态/审核中/审核失败
         // * 众筹中: 无状态/预热中 
         public const string Init = "init";          // 初始状态: 无状态
+        public const string Modify = "modify";      // 修改中
         public const string Auditing = "auditing";      // 审核中
         public const string AuditFailed = "auditfailed";   // 审核失败
         public const string Preheating = "preheating";    // 预热中

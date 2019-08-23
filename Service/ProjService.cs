@@ -194,6 +194,7 @@ namespace NEL_FutureDao_API.Service
                     item["projId"] = projId.toTemp();
                     item["lastUpdatorId"] = userId;
                     item["time"] = now;
+                    item["projSubState"] = ProjSubState.Modify;
                     item["lastUpdateTime"] = now;
                     var newdata = item.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata);
@@ -271,6 +272,7 @@ namespace NEL_FutureDao_API.Service
                         item["community"] = updateJo["community"];
                     }
                     item["projId"] = projId.toTemp();
+                    item["projSubState"] = ProjSubState.Modify;
                     item["lastUpdatorId"] = userId;
                     item["time"] = now;
                     item["lastUpdateTime"] = now;
@@ -319,8 +321,7 @@ namespace NEL_FutureDao_API.Service
                 newdata["projType"] = projType;
                 newdata["projConverUrl"] = projConverUrl;
                 newdata["projBrief"] = projBrief;
-                newdata["projState"] = ProjState.Readying;
-                newdata["projSubState"] = ProjSubState.Init;
+                newdata["projSubState"] = ProjSubState.Modify;
                 newdata["creatorId"] = userId;
                 newdata["lastUpdatorId"] = userId;
                 newdata["time"] = now;

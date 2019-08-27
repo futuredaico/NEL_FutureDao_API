@@ -200,6 +200,7 @@ namespace NEL_FutureDao_API.Service
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata);
                     return getRes();
                 }
+                findStr = new JObject { { "projId", item["projId"].ToString() } }.ToString();
                 updateJo.Add("lastUpdatorId", userId);
                 updateJo.Add("lastUpdateTime", now);
                 var updateStr = new JObject { { "$set", updateJo } }.ToString();
@@ -280,6 +281,7 @@ namespace NEL_FutureDao_API.Service
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata);
                     return getRes();
                 }
+                findStr = new JObject { { "projId", item["projId"].ToString() } }.ToString();
                 updateJo.Add("lastUpdatorId", userId);
                 updateJo.Add("lastUpdateTime", TimeHelper.GetTimeStamp());
                 var updateStr = new JObject { { "$set", updateJo } }.ToString();

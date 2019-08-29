@@ -147,7 +147,7 @@ namespace NEL_FutureDao_API.Service
             var isUpdate = false;
             var updateJo = new JObject();
             var oldprojVideoUrl = item["projVideoUrl"].ToString();
-            if (oldprojVideoUrl != projVideoUrl && projVideoUrl.Trim().Length > 0)
+            if (oldprojVideoUrl != projVideoUrl)// && projVideoUrl.Trim().Length > 0)
             {
                 if (!DaoInfoHelper.StoreFile(oss, bucketName, oldprojVideoUrl, projVideoUrl, out string newProjVideoUrl))
                 {
@@ -160,7 +160,7 @@ namespace NEL_FutureDao_API.Service
                 }
             }
             var oldprojDetail = item["projDetail"].ToString();
-            if (oldprojDetail != projDetail && projDetail.Trim().Length > 0)
+            if (oldprojDetail != projDetail)// && projDetail.Trim().Length > 0)
             {
                 var olist = oldprojDetail.catchFileUrl();
                 var nlist = projDetail.catchFileUrl();
@@ -240,17 +240,17 @@ namespace NEL_FutureDao_API.Service
             var oldconnectEmail = item["connectEmail"].ToString();
             var oldofficialWeb = item["officialWeb"].ToString();
             var oldcommunity = item["community"].ToString();
-            if (oldconnectEmail != connectEmail && connectEmail.Trim().Length > 0)
+            if (oldconnectEmail != connectEmail)// && connectEmail.Trim().Length > 0)
             {
                 updateJo.Add("connectEmail", connectEmail);
                 isUpdate = true;
             }
-            if (oldofficialWeb != officialWeb && officialWeb.Trim().Length > 0)
+            if (oldofficialWeb != officialWeb)// && officialWeb.Trim().Length > 0)
             {
                 updateJo.Add("officialWeb", officialWeb);
                 isUpdate = true;
             }
-            if (oldcommunity != community && community.Trim().Length > 0)
+            if (oldcommunity != community)// && community.Trim().Length > 0)
             {
                 updateJo.Add("community", community);
                 isUpdate = true;
@@ -962,7 +962,7 @@ namespace NEL_FutureDao_API.Service
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 
-            string sortStr = "{'time':1}";
+            string sortStr = "{'lastUpdatTime':1}";
             string fieldStr = new JObject { { "projId", 1 }, { "_id", 0 } }.ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
             var arr = queryRes.Select(p => p["projId"].ToString()).Distinct().ToArray();

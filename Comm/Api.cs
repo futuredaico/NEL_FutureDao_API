@@ -446,13 +446,5 @@ namespace NEL.Comm
                 ossUrlPrefix = mh.ossUrlPrefix
             };
         }
-        public string PutTestStream(string fileName, Stream stream)
-        {
-            return oss.PutObjectTestnet(fileName, stream);
-        }
-        public string PutMainStream(string fileName, Stream stream)
-        {
-            return oss.PutObjectMainnet(fileName, stream);
-        }
     }
 }

@@ -428,8 +428,8 @@ namespace NEL_FutureDao_API.Service
             return getRes(item);
         }
 
-        private bool checkProjNameLen(string name) => name.Length <= 20;
-        private bool checkProjTitleLen(string title) => title.Length <= 40;
+        private bool checkProjNameLen(string name) => name.Length <= 30;
+        private bool checkProjTitleLen(string title) => title.Length <= 60;
         private bool checkProjBriefLen(string brief) => brief.Length <= 400;
         private bool checkNormalLen(string ss) => ss.Length <= 40;
         private bool checkUpdateLen(string title) => title.Length <= 80;

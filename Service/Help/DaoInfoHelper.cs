@@ -78,27 +78,32 @@ namespace NEL_FutureDao_API.Service.Help
 
         public static bool StoreFile(OssHelper oss, string bucketName, string oldFileUrl, string fileUrl, out string newFileUrl)
         {
+            newFileUrl = "";
             // tmp -> origin
             string fileName = fileUrl.toFileName();
-            string fileNameTemp = fileName.toTemp();
-            string fileNameNormal = fileName.toNormal();
-            newFileUrl = fileUrl.Replace(fileName, fileNameNormal);
-            if (oss.ExistKey(bucketName, fileNameNormal))
+            if(fileName.Trim().Length != 0)
             {
-                return true;
+                string fileNameTemp = fileName.toTemp();
+                string fileNameNormal = fileName.toNormal();
+                newFileUrl = fileUrl.Replace(fileName, fileNameNormal);
+                if (oss.ExistKey(bucketName, fileNameNormal))
+                {
+                    return true;
+                }
+                if (!oss.ExistKey(bucketName, fileNameTemp))
+                {
+                    return false;
+                }
+                try
+                {
+                    oss.CopyObject(bucketName, fileNameTemp, fileNameNormal);
+                }
+                catch
+                {
+                    return false;
+                }
             }
-            if (!oss.ExistKey(bucketName, fileNameTemp))
-            {
-                return false;
-            }
-            try
-            {
-                oss.CopyObject(bucketName, fileNameTemp, fileNameNormal);
-            }
-            catch
-            {
-                return false;
-            }
+            
             // delete tmp
             fileName = oldFileUrl.toFileName();
             if (fileName != "")

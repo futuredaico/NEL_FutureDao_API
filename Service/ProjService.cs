@@ -164,6 +164,22 @@ namespace NEL_FutureDao_API.Service
             {
                 var olist = oldprojDetail.catchFileUrl();
                 var nlist = projDetail.catchFileUrl();
+                // 添加新的
+                var ll = nlist.Except(olist).ToList();
+                foreach (var ii in ll)
+                {
+                    if (ii.Trim().Length == 0) continue;
+                    if (!DaoInfoHelper.StoreFile(oss, bucketName, "", ii, out string newUrl))
+                    {
+                        return getErrorRes(DaoReturnCode.headIconNotUpload);
+                    }
+                    projDetail = projDetail.Replace(ii, newUrl);
+                }
+                // 删除老的
+                olist.Except(nlist).ToList().ForEach(p => {
+                    DaoInfoHelper.StoreFile(oss, bucketName, p, "", out string newUrl);
+                });
+                /*
                 var oUrl = olist.Count > 0 ? olist[0] : "";
                 var nUrl = nlist.Count > 0 ? nlist[0] : "";
                 if(nUrl != "")
@@ -174,7 +190,7 @@ namespace NEL_FutureDao_API.Service
                     }
                     projDetail = projDetail.Replace(nUrl, newUrl);
                 }
-                
+                */
                 updateJo.Add("projDetail", projDetail);
                 isUpdate = true;
             }

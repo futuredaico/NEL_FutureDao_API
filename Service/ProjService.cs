@@ -370,7 +370,7 @@ namespace NEL_FutureDao_API.Service
                     { "lastUpdateTime", now},
                 }.ToString();
                 */
-                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata);
+                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, newdata.ToString());
             }
             else
             {

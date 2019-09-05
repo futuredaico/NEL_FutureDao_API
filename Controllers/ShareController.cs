@@ -34,9 +34,9 @@ namespace NEL_FutureDao_API.Controllers
             //
             if (type == 1)
             {
-                return string.Format(shareReturnHtmlFmtOg, "summary_large_image", "FutureDao", projBrief, projConverUrl, callback);
+                return string.Format(shareReturnHtmlFmtOg, "website", "FutureDao", projBrief, projConverUrl, callback);
             }
-            return string.Format(shareReturnHtmlFmt, "website", "FutureDao", projBrief, projConverUrl, callback);
+            return string.Format(shareReturnHtmlFmt, "summary_large_image", "FutureDao", projBrief, projConverUrl, callback);
 
         }
         private void getProjInfo(string projId, int net, out string projBrief, out string projConverUrl)

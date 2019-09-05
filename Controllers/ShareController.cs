@@ -9,21 +9,21 @@ namespace NEL_FutureDao_API.Controllers
     [Route("api/[controller]")]
     public class ShareController : Controller
     {
-        [HttpGet("{projId}/{net}")]
-        public ActionResult<string> Get(string projId, int net)
+        [HttpGet("{projId}/{net}"),HttpPost("{projId}/{net}")]
+        public void Get(string projId, int net)
         {
             //return GetShareReturnHtml(projId, net);
             var res = GetShareReturnHtml(projId, net);
-            Response.Body.WriteAsync(System.Text.Encoding.UTF8.GetBytes(res));
+            Response.ContentType = "text/html; charset=UTF-8";
+            Response.Body.Write(System.Text.Encoding.UTF8.GetBytes(res));
             Response.Body.Flush();
-            return "succ";
         }
 
         private string GetShareReturnHtml(string projId, int net)
         {
             var callback = getCallback(projId, net);
             getProjInfo(projId, net, out string projBrief, out string projConverUrl);
-            return string.Format(shareReturnHtmlFmt, "summary_large_image", "FutureDao", projBrief, projConverUrl, callback, methodStr);
+            return string.Format(shareReturnHtmlFmt, "summary_large_image", "FutureDao", projBrief, projConverUrl, callback);
 
         }
         private void getProjInfo(string projId, int net, out string projBrief, out string projConverUrl)
@@ -61,27 +61,18 @@ namespace NEL_FutureDao_API.Controllers
             + "<!DOCTYPE html>"
             + "\r\n<html lang=\"en\">"
             + "\r\n<head>"
-            + "\r\n<meta name=\"twitter:card\" content=\"{0}\" />"
-            + "\r\n<meta name=\"twitter:title\" content=\"{1}\" />"
-            + "\r\n<meta name=\"twitter:description\" content=\"{2}\" />"
-            + "\r\n<meta name=\"twitter:image.src\" content=\"{3}\" />"
+            + "\r\n<meta data-rh=\"true\" name=\"twitter:card\" content=\"{0}\" />"
+            + "\r\n<meta data-rh=\"true\" name=\"twitter:title\" content=\"{1}\" />"
+            + "\r\n<meta data-rh=\"true\" name=\"twitter:description\" content=\"{2}\" />"
+            + "\r\n<meta data-rh=\"true\" name=\"twitter:image.src\" content=\"{3}\" />"
             + "\r\n</head>"
             + "\r\n<script>"
             + "\r\nwindow.location.href = decodeURIComponent(decodeURI(\"{4}\"));"
-            //+ "\r\n{5}"
             + "\r\n</script>"
             + "\r\n<body>"
             + "\r\n</body>"
             + "\r\n</html>"
         ;
-        private string methodStr = ""
-            + "\r\nfunction GetQueryString(name) {"
-            + "\r\n     var reg = new RegExp(\"(^| &)\" + name + \"=([^&]*)(&|$)\");"
-            + "\r\n     var r = window.location.search.substr(1).match(reg);"
-            + "\r\n     if (r != null) return decodeURI(r[2]);"
-            + "\r\n         return null;"
-            + "\r\n}"
-            ;
         private string testnetShareReturnCallbackUrlPrefix = "https://futuredao.nel.group/test/projectinfo/";
         private string mainnetShareReturnCallbackUrlPrefix = "https://futuredao.nel.group/projectinfo/";
 

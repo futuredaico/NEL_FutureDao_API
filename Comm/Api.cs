@@ -446,5 +446,7 @@ namespace NEL.Comm
                 ossUrlPrefix = mh.ossUrlPrefix
             };
         }
+        //
+        public MongoHelper getMongoDB() => mh;
     }
 }

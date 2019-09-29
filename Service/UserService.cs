@@ -218,7 +218,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
             string findStr = new JObject { { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "username",1},{ "email",1}, { "emailVerifyState", 1 }, { "headIconUrl",1},{ "brief",1},{ "_id",0} }.ToString();
+            string fieldStr = new JObject { { "username",1},{ "email",1}, { "emailVerifyState", 1 }, { "headIconUrl",1},{ "brief",1},{ "neoAddress",1},{"ethAddress",1 },{ "_id",0} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
 
@@ -421,6 +421,35 @@ namespace NEL_FutureDao_API.Service
                     mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
                 }
             }
+            return getRes();
+        }
+
+        public JArray bindAddress(string userId, string accessToken, string type, string address)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            type = type.ToLower();
+            if(type != "neo" && type != "eth")
+            {
+                return getErrorRes("");
+            }
+            var findStr = new JObject { { "userId", userId} }.ToString();
+            var fieldStr = new JObject { { "neoAddress",1},{ "ethAddress",1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr,dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
+            if(queryRes.Count == 0 
+                || (queryRes[0]["neoAddress"].ToString() == address
+                    || queryRes[0]["ethAddress"].ToString() == address))
+            {
+                return getRes();
+            }
+
+            var updateJo = new JObject();
+            if (type == "neo") updateJo.Add("neoAddress", address);
+            if (type == "eth") updateJo.Add("ethAddress", address);
+            var updateStr = new JObject { { "$set", updateJo } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
             return getRes();
         }
     }

@@ -57,6 +57,11 @@ namespace NEL_FutureDao_API.Service.Help
             string data = string.Format("{0}.{1}.{2}.{3}.{4}", now, updateId, preId, content, userId);
             return hash(data);
         }
+        public static string genProjRewardId(string projId, string rewardName)
+        {
+            string data = string.Format("{0}.{1}.{2}", now, projId, rewardName);
+            return hash(data);
+        }
         private static string hash(string data)
         {
             byte[] binaryData = Encoding.UTF8.GetBytes(data);

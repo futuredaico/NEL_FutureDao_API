@@ -4,7 +4,6 @@ using NEL_FutureDao_API;
 using NEL_FutureDao_API.Service;
 using Newtonsoft.Json.Linq;
 using System;
-using System.IO;
 
 namespace NEL.Comm
 {
@@ -21,6 +20,7 @@ namespace NEL.Comm
         private UserService us;
         private ProjService ps;
         private DiscussService ds;
+        private FinanceService fs;
 
         public Api(string node)
         {
@@ -29,6 +29,13 @@ namespace NEL.Comm
             switch (netnode)
             {
                 case "testnet":
+                    fs = new FinanceService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+
+                    };
                     ds = new DiscussService
                     {
                         mh = mh,
@@ -93,6 +100,81 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryContractHash":
+                        result = fs.queryContractHash(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "queryReserveFundRatio":
+                        result = fs.queryReserveFundRatio(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "queryFinanceFund":
+                        result = fs.queryFinanceFund(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "applyFinanceFund":
+                        result = fs.applyFinanceFund(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
+                        break;
+                    case "queryReward":
+                        result = fs.queryReward(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "saveReward":
+                        result = fs.saveReward(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            JObject.Parse(req.@params[5].ToString())
+                            );
+                        break;
+                    case "queryContract":
+                        result = fs.queryContract(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "publishContract":
+                        result = fs.publishContract(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            req.@params[8].ToString(),
+                            JObject.Parse(req.@params[9].ToString())
+                            );
+                        break;
+                    case "bindAddress":
+                        result = us.bindAddress(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
+                        break;
                     //
                     case "getStarMangeProjCount":
                         result = ps.getStarMangeProjCount(
@@ -431,6 +513,7 @@ namespace NEL.Comm
             res.result = result;
             return res;
         }
+
 
         //
         private OssHelper oss;

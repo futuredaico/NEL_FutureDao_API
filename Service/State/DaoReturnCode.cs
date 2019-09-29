@@ -44,6 +44,8 @@ namespace NEL_FutureDao_API.Service.State
         public const string T_HaveNotPermissionDeleteTeamAdmin = "102345";  // 没有权限删除项目团队管理员
         public const string T_HaveNotPermissionDeleteYourSelf = "102346";   // 没有权限删除项目团队成员自己
 
+        public const string T_NoPermissionStartFinance = "102346";   // 
+
         public const string S_NoPermissionAddDiscuss = "10251";
         public const string S_NoPermissionDelDiscuss = "10252";
         public const string S_InvalidProjId = "10253";
@@ -52,6 +54,11 @@ namespace NEL_FutureDao_API.Service.State
         public const string S_InvalidUpdateIdOrDiscussId = "10256";
         public const string S_InvalidUpdateIdOrProjId = "10257";
 
+
+
+        // v2.0
+        public const string RepeatOperate = "10401";
+        public const string InvalidOperate = "10402";
 
     }
 }

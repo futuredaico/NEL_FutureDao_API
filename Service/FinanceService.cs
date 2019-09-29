@@ -36,6 +36,20 @@ namespace NEL_FutureDao_API.Service
         private JArray getRes(JToken res = null) => RespHelper.getRes(res);
         private bool checkToken(string userId, string accessToken, out string code)
             => TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out code);
+        private bool checkIntFmt(JToken tp)
+        {
+            if (tp == null) return false;
+            try
+            {
+                int.Parse(tp.ToString());
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
 
         public  JArray publishContract(string userId, string accessToken, 
             string projId, 
@@ -47,6 +61,52 @@ namespace NEL_FutureDao_API.Service
             string reserveTokenFlag, 
             JObject reserveTokenInfo) {
             // TODO: 参数检查
+            type = type.ToLower();
+            if(type != FinanceType.General
+                && type != FinanceType.DAICO)
+            {
+                return getErrorRes(DaoReturnCode.C_InvalidFinanceType);
+            }
+            platform = platform.ToLower();
+            if(platform != PlatformType.ETH
+                && platform != PlatformType.NEO)
+            {
+                return getErrorRes(DaoReturnCode.C_InvalidPlatformType);
+            }
+            if(token.Length == 0 || token.Length > 5 
+                || projTokenName.Length > 18
+                || projTokenSymbol.Length == 0 || projTokenSymbol.Length > 5)
+            {
+                return getErrorRes(DaoReturnCode.C_InvalidParamLen);
+            }
+            if (reserveTokenFlag != SelectKey.Yes) reserveTokenFlag = SelectKey.Not;
+            if(reserveTokenFlag == SelectKey.Yes)
+            {
+                var addr = reserveTokenInfo["address"];
+                if (addr == null)
+                {
+                    return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+                }
+                var addrLen = addr.ToString().Length;
+                if(addrLen == 0 || addrLen > 64)
+                {
+                    return getErrorRes(DaoReturnCode.C_InvalidParamLen);
+                }
+
+                var info = reserveTokenInfo["info"];
+                if(info == null)
+                {
+                    return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+                }
+                var infoArr = (JArray)info;
+                if(infoArr.Count > 0)
+                {
+                    if(!infoArr.All(p => checkIntFmt(p["amt"]) && checkIntFmt(p["days"])))
+                    {
+                        return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+                    }
+                }
+            }
 
             //
             string code;
@@ -118,6 +178,34 @@ namespace NEL_FutureDao_API.Service
         public JArray saveReward(string userId, string accessToken, string projId, string connectorName, string connectTel, JObject info)
         {
             // TODO: 参数检查
+            var infoJA = info["info"] as JArray;
+            if(infoJA != null && infoJA.Count > 0) 
+            {
+                if (connectorName.Length == 0 || connectorName.Length > 64) return getErrorRes(DaoReturnCode.C_InvalidParamLen);
+                if (connectTel.Length == 0 || connectTel.Length > 64) return getErrorRes(DaoReturnCode.C_InvalidParamLen);
+                if (!infoJA.All(p => {
+                    if(p["rewardId"] == null 
+                        || p["rewardName"] == null
+                        || p["rewardDesc"] == null
+                        || p["price"] == null
+                        || p["limitFlag"] == null
+                        || p["distributeTimeFlag"] == null
+                        || p["distributeWay"] == null
+                        || p["note"] == null)
+                    {
+                        return false;
+                    }
+                    var len = p["rewardName"].ToString().Length;
+                    if (len == 0 || len > 20) return false;
+                    if (!checkIntFmt(p["price"])) return false;
+                    var tp = p["limitFlag"].ToString();
+                    if(tp == SelectKey.Yes)
+                    {
+                        if (p["limitMax"] == null || !checkIntFmt(p["limitMax"])) return false;
+                    }
+                    return true;
+                })) return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+            }
 
             //
             string code;
@@ -320,9 +408,21 @@ namespace NEL_FutureDao_API.Service
             return null;
         }
     }
+    class FinanceType
+    {
+        public const string General = "gen"; // 普通融资
+        public const string DAICO = "daico"; // daico融资
+    }
     class RewardActiveState
     {
         public const string Valid_Yes = "1"; // 有效
         public const string Valid_Not = "0"; // 无效
+    }
+    
+    class SelectKey
+    {                                  // 是否预留代币    |   是否限制    | 预发时间  | 发放方式   
+                                       // -------------------------------------------------------
+        public const string Yes = "1"; // 预留                限制          定期        实物
+        public const string Not = "0"; // 不定期              不限制        不定期      虚拟
     }
 }

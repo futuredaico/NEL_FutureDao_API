@@ -57,8 +57,12 @@ namespace NEL_FutureDao_API.Service.State
 
 
         // v2.0
-        public const string RepeatOperate = "10401";
-        public const string InvalidOperate = "10402";
+        public const string C_InvalidParamLen = "10401";
+        public const string C_InvalidParamFmt = "10402";
+        public const string C_InvalidFinanceType = "10403";
+        public const string C_InvalidPlatformType = "10403";
+        public const string RepeatOperate = "10405";
+        public const string InvalidOperate = "10406";
 
     }
 }

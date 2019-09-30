@@ -164,7 +164,8 @@ namespace NEL.Comm
                             req.@params[6].ToString(),
                             req.@params[7].ToString(),
                             req.@params[8].ToString(),
-                            JObject.Parse(req.@params[9].ToString())
+                            req.@params[9].ToString(),
+                            JObject.Parse(req.@params[10].ToString())
                             );
                         break;
                     case "bindAddress":

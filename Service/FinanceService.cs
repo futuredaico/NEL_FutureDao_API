@@ -56,6 +56,7 @@ namespace NEL_FutureDao_API.Service
             string type, 
             string platform, 
             string token, 
+            string adminAddress, 
             string projTokenName, 
             string projTokenSymbol, 
             string reserveTokenFlag, 
@@ -137,6 +138,7 @@ namespace NEL_FutureDao_API.Service
                 { "type", type},
                 { "platform", platform},
                 { "tokenName", token},
+                { "adminAddress", adminAddress},
                 { "projTokenName", projTokenName},
                 { "projTokenSymbol", projTokenSymbol},
                 { "reserveTokenFlag", reserveTokenFlag},
@@ -168,7 +170,7 @@ namespace NEL_FutureDao_API.Service
             //
             findStr = new JObject { { "projId", projId } }.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] {
-                "projId","type", "platform", "token","projTokenName","projTokenSymbol",
+                "projId","type", "platform", "token","adminAddress", "projTokenName","projTokenSymbol",
                 "reserveTokenFlag","reserveTokenInfo","contractTxid","contractHash"
             }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);

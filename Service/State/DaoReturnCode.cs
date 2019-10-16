@@ -57,12 +57,12 @@ namespace NEL_FutureDao_API.Service.State
 
 
         // v2.0
-        public const string C_InvalidParamLen = "10401";
-        public const string C_InvalidParamFmt = "10402";
-        public const string C_InvalidFinanceType = "10403";
-        public const string C_InvalidPlatformType = "10403";
-        public const string RepeatOperate = "10405";
-        public const string InvalidOperate = "10406";
+        public const string C_InvalidParamLen = "10401";        // 不合法的参数长度
+        public const string C_InvalidParamFmt = "10402";        // 不合法的参数格式
+        public const string C_InvalidFinanceType = "10403";     // 不合法的融资类型
+        public const string C_InvalidPlatformType = "10404";    // 不合法的融资平台类型
+        public const string RepeatOperate = "10405";            // 重复操作
+        public const string InvalidOperate = "10406";           // 非法操作
 
     }
 }

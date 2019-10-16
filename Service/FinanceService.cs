@@ -414,12 +414,12 @@ namespace NEL_FutureDao_API.Service
                 || ((JArray)queryRes[0]).Count == 0)
             {
                 // 项目未发布, 不能启动
-                getErrorRes(DaoReturnCode.InvalidOperate);
+                return getErrorRes(DaoReturnCode.InvalidOperate);
             }
             if (queryRes[0]["startFinanceFlag"].ToString() == SelectKey.Not)
             {
                 // 已启动
-                getErrorRes(DaoReturnCode.RepeatOperate);
+                return getErrorRes(DaoReturnCode.RepeatOperate);
             }
             string updateStr = new JObject { { "$set", new JObject { { "startFinanceFlag", SelectKey.Yes } } } }.ToString();
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);

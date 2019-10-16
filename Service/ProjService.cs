@@ -1139,6 +1139,8 @@ namespace NEL_FutureDao_API.Service
             getStarState(projId, userId, out bool isStar, out bool isSupport);
             item["isSupport"] = isSupport;
             item["isStar"] = isStar;
+            item["hasIssueAmt"] = 0;
+            item["hasSellAmt"] = 0;
             return getRes(item);
         }
         private void getStarState(string projId, string userId, out bool isStar, out bool isSupport)

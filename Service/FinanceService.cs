@@ -301,6 +301,7 @@ namespace NEL_FutureDao_API.Service
                 p["rewardId"] = DaoInfoHelper.genProjRewardId(projId, p["rewardName"].ToString());
                 p["giftTokenName"] = tokenName;
                 p["activeState"] = RewardActiveState.Valid_Yes;
+                p["hasSellCount"] = 0;
                 return p;
             }).ToArray();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, new JArray { res });
@@ -332,8 +333,8 @@ namespace NEL_FutureDao_API.Service
 
             findStr = new JObject { { "projId", projId },{ "activeState", RewardActiveState.Valid_Yes} }.ToString();
             fieldStr = MongoFieldHelper.toReturn(new string[] {
-                "rewardId", "projId","name","desc", "giftTokenName","giftTokenPrice",
-                "limitFlag","limitMax", "distributeTimeFlag","distributeTimeFixYes","distributeTimeFixNot","distributeWay","note"
+                "rewardId", "projId","rewardName","rewardDesc", "giftTokenName","price",
+                "limitFlag","limitMax", "distributeTimeFlag","distributeTimeFixYes","distributeTimeFixNot","distributeWay","note","hasSellCount"
             }).ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, findStr, fieldStr);
             var res = new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{"info", queryRes} };

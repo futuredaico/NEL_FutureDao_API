@@ -170,7 +170,7 @@ namespace NEL_FutureDao_API.Service
             //
             findStr = new JObject { { "projId", projId } }.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] {
-                "projId","type", "platform", "token","adminAddress", "projTokenName","projTokenSymbol",
+                "projId","type", "platform", "tokenName","adminAddress", "projTokenName","projTokenSymbol",
                 "reserveTokenFlag","reserveTokenInfo","contractTxid","contractHash"
             }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);

@@ -330,9 +330,10 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{"info", queryRes} };
             return getRes(res);
         }
-        public JArray applyFinanceFund(string userId, string accessToken, string projId, string txid)
+        public JArray applyFinanceFund(string userId, string accessToken, string projId, string fundAmt, string txid)
         {
-            string findStr = new JObject { { "projId", projId},{ "txid", txid } }.ToString();
+            // 是否需要记录
+            string findStr = new JObject { { "projId", projId}}.ToString();
             return getRes();
         }
         public JArray queryFinanceFund(string userId, string accessToken, string projId)
@@ -356,19 +357,27 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes(new JObject { { "poolTotal", poolTotal} });
         }
+        public JArray saveReserveFundRatio(string userId, string accessToken, string projId, string ratio, string txid)
+        {
+            // 是否需要记录
+            string findStr = new JObject { { "projId", projId } }.ToString();
+            return getRes();
+        }
         public JArray queryReserveFundRatio(string userId, string accessToken, string projId)
         {
             if (!checkToken(userId, accessToken, out string code)) return getErrorRes(code);
 
             string findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "reserveFundRatio", 1 },{ "_id",0} }.ToString();
+            string fieldStr = new JObject { { "reserveFundRatio", 1 },{ "startFinanceFlag", 1}, { "_id",0} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             string ratio = "0";
+            string startFinanceFlag = "0";
             if (queryRes.Count > 0)
             {
                 ratio = queryRes[0]["reserveFundRatio"].ToString();
+                startFinanceFlag = queryRes[0]["startFinanceFlag"].ToString();
             } 
-            return getRes(new JObject { { "ratio", ratio} });
+            return getRes(new JObject { { "ratio", ratio},{ "startFinanceFlag", startFinanceFlag } });
         }
         public JArray queryContractHash(string userId, string accessToken, string projId)
         {
@@ -390,7 +399,31 @@ namespace NEL_FutureDao_API.Service
 
         public JArray startFinance(string userId, string accessToken, string projId)
         {
-            return null;
+            //
+            if (!checkToken(userId, accessToken, out string code)) return getErrorRes(code);
+
+            string findStr = new JObject { { "projId", projId }, { "userId", userId }, { "role", TeamRoleType.Admin } }.ToString();
+            if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
+            {
+                return getErrorRes(DaoReturnCode.T_NoPermissionStartFinance);
+            }
+            findStr = new JObject { { "projId", projId} }.ToString();
+            string fieldStr = new JObject { { "startFinanceFlag",1 },{ "contractHash", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
+            if(queryRes.Count == 0 
+                || ((JArray)queryRes[0]).Count == 0)
+            {
+                // 项目未发布, 不能启动
+                getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            if (queryRes[0]["startFinanceFlag"].ToString() == SelectKey.Not)
+            {
+                // 已启动
+                getErrorRes(DaoReturnCode.RepeatOperate);
+            }
+            string updateStr = new JObject { { "$set", new JObject { { "startFinanceFlag", SelectKey.Yes } } } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
+            return getRes();
         }
 
         public JArray queryProjContract(string userId, string accessToken, string projId)

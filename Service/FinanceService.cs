@@ -123,9 +123,9 @@ namespace NEL_FutureDao_API.Service
 
             //
             findStr = new JObject { { "projId", projId },{ "projState", ProjState.IdeaPub} }.ToString();
-            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr) > 0)
+            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr) == 0)
             {
-                return getErrorRes(DaoReturnCode.RepeatOperate);
+                return getErrorRes(DaoReturnCode.T_NoPermissionStartFinance);
             }
             findStr = new JObject { { "projId", projId } }.ToString();
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr) > 0)
@@ -135,6 +135,7 @@ namespace NEL_FutureDao_API.Service
             var now = TimeHelper.GetTimeStamp();
             var newdata = new JObject {
                 { "projId", projId},
+                // 部署合约
                 { "type", type},
                 { "platform", platform},
                 { "tokenName", token},
@@ -143,12 +144,16 @@ namespace NEL_FutureDao_API.Service
                 { "projTokenSymbol", projTokenSymbol},
                 { "reserveTokenFlag", reserveTokenFlag},
                 { "reserveTokenInfo", reserveTokenInfo},
-                { "contractTxid", ""},
-                { "contractHash", ""},
+                { "deployContractFlag", SkOp.HandlingOp},
+                // 设置回报
+                { "rewardSetFlag", SkOp.NotOp},
                 { "connectorName", ""},
                 { "connectTel", ""},
-                { "reserveFundRatio", "0"},
-                { "financeStartFlag", ""},
+                // 存储金比例
+                { "ratioSetFlag", SkOp.NotOp },
+                { "reserveFundRatio", 0},
+                // 启动融资
+                { "financeStartFlag", SkOp.NotOp},
                 { "time", now},
                 { "lastUpdateTime", now},
             }.ToString();
@@ -171,7 +176,7 @@ namespace NEL_FutureDao_API.Service
             findStr = new JObject { { "projId", projId } }.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] {
                 "projId","type", "platform", "tokenName","adminAddress", "projTokenName","projTokenSymbol",
-                "reserveTokenFlag","reserveTokenInfo","contractTxid","contractHash"
+                "reserveTokenFlag","reserveTokenInfo","deployContractFlag","rewardSetFlag","ratioSetFlag", "financeStartFlag"
             }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
@@ -222,16 +227,19 @@ namespace NEL_FutureDao_API.Service
             }
             //
             findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "connectorName", 1 }, { "connectTel", 1 },{ "tokenName",1 } }.ToString();
+            string fieldStr = new JObject { { "connectorName", 1 }, { "connectTel", 1 },{ "tokenName",1 },{ "deployContractFlag",1 },{ "rewardSetFlag",1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0)
             {
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
+            // TODO: 只有部署合约成功后才能继续
+
             if (queryRes[0]["connectorName"].ToString() != connectorName
-                || queryRes[0]["connectTel"].ToString() != connectTel)
+                || queryRes[0]["connectTel"].ToString() != connectTel
+                || queryRes[0]["rewardSetFlag"].ToString() != SkOp.FinishOp)
             {
-                string updateStr = new JObject { { "$set", new JObject { { "connectorName", connectorName }, { "connectTel", connectTel } } } }.ToString();
+                string updateStr = new JObject { { "$set", new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{ "rewardSetFlag", SkOp.FinishOp } } } }.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
             }
             //
@@ -265,7 +273,8 @@ namespace NEL_FutureDao_API.Service
                         && item["limitFlag"].ToString() == tItem["limitFlag"].ToString()
                         && item["limitMax"].ToString() == tItem["limitMax"].ToString()
                         && item["distributeTimeFlag"].ToString() == tItem["distributeTimeFlag"].ToString()
-                        && item["distributeTime"].ToString() == tItem["distributeTime"].ToString()
+                        && item["distributeTimeFixYes"].ToString() == tItem["distributeTimeFixYes"].ToString()
+                        && item["distributeTimeFixNot"].ToString() == tItem["distributeTimeFixNot"].ToString()
                         && item["distributeWay"].ToString() == tItem["distributeWay"].ToString()
                         ;
                     if (eq) continue;
@@ -324,7 +333,7 @@ namespace NEL_FutureDao_API.Service
             findStr = new JObject { { "projId", projId },{ "activeState", RewardActiveState.Valid_Yes} }.ToString();
             fieldStr = MongoFieldHelper.toReturn(new string[] {
                 "rewardId", "projId","name","desc", "giftTokenName","giftTokenPrice",
-                "limitFlag","limitMax", "distributeTimeFlag","distributeTime","distributeWay","note"
+                "limitFlag","limitMax", "distributeTimeFlag","distributeTimeFixYes","distributeTimeFixNot","distributeWay","note"
             }).ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, findStr, fieldStr);
             var res = new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{"info", queryRes} };
@@ -459,5 +468,12 @@ namespace NEL_FutureDao_API.Service
                                        // -------------------------------------------------------
         public const string Yes = "1"; // 预留                限制          定期        实物
         public const string Not = "0"; // 不定期              不限制        不定期      虚拟
+    }
+
+    class SkOp
+    {
+        public const string NotOp = "3";        // 未操作 
+        public const string HandlingOp = "4";   // 处理中
+        public const string FinishOp = "5";     // 已完成
     }
 }

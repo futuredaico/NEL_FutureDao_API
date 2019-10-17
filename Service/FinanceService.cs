@@ -41,13 +41,16 @@ namespace NEL_FutureDao_API.Service
             if (tp == null) return false;
             try
             {
-                int.Parse(tp.ToString());
+                decimal.Parse(tp.ToString());
+                var rr = tp.ToString().Split(".");
+                if (rr.Length == 1) return rr[0].Length <= 9;
+                else if (rr.Length == 2) return rr[0].Length <= 9 && rr[1].Length <= 4;
+                else return false;
             }
             catch
             {
                 return false;
             }
-            return true;
         }
 
 
@@ -185,11 +188,11 @@ namespace NEL_FutureDao_API.Service
         public JArray saveReward(string userId, string accessToken, string projId, string connectorName, string connectTel, JObject info)
         {
             // TODO: 参数检查
+            if(connectorName.Length > 40 || connectTel.Length > 40) return getErrorRes(DaoReturnCode.C_InvalidParamLen);
             var infoJA = info["info"] as JArray;
             if(infoJA != null && infoJA.Count > 0) 
             {
-                if (connectorName.Length == 0 || connectorName.Length > 64) return getErrorRes(DaoReturnCode.C_InvalidParamLen);
-                if (connectTel.Length == 0 || connectTel.Length > 64) return getErrorRes(DaoReturnCode.C_InvalidParamLen);
+                if (connectorName.Length == 0 || connectTel.Length == 0) return getErrorRes(DaoReturnCode.C_InvalidParamLen);
                 if (!infoJA.All(p => {
                     if(p["rewardId"] == null 
                         || p["rewardName"] == null
@@ -203,13 +206,17 @@ namespace NEL_FutureDao_API.Service
                         return false;
                     }
                     var len = p["rewardName"].ToString().Length;
-                    if (len == 0 || len > 20) return false;
+                    if (len == 0 || len > 40) return false;
+                    len = p["rewardDesc"].ToString().Length;
+                    if (len == 0 || len > 500) return false;
                     if (!checkIntFmt(p["price"])) return false;
                     var tp = p["limitFlag"].ToString();
                     if(tp == SelectKey.Yes)
                     {
                         if (p["limitMax"] == null || !checkIntFmt(p["limitMax"])) return false;
                     }
+                    len = p["note"].ToString().Length;
+                    if (len > 100) return false;
                     return true;
                 })) return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
             }

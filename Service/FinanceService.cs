@@ -266,7 +266,7 @@ namespace NEL_FutureDao_API.Service
                     var tItem = tItems[0];
                     bool eq = item["rewardName"].ToString() == tItem["rewardName"].ToString()
                         && item["rewardDesc"].ToString() == tItem["rewardDesc"].ToString()
-                        && item["giftTokenPrice"].ToString() == tItem["giftTokenPrice"].ToString()
+                        && item["price"].ToString() == tItem["price"].ToString()
                         && item["limitFlag"].ToString() == tItem["limitFlag"].ToString()
                         && item["limitMax"].ToString() == tItem["limitMax"].ToString()
                         && item["distributeTimeFlag"].ToString() == tItem["distributeTimeFlag"].ToString()

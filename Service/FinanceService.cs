@@ -229,10 +229,7 @@ namespace NEL_FutureDao_API.Service
             findStr = new JObject { { "projId", projId } }.ToString();
             string fieldStr = new JObject { { "connectorName", 1 }, { "connectTel", 1 },{ "tokenName",1 },{ "deployContractFlag",1 },{ "rewardSetFlag",1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
-            if (queryRes.Count == 0)
-            {
-                return getErrorRes(DaoReturnCode.InvalidOperate);
-            }
+            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.InvalidOperate);
             // TODO: 只有部署合约成功后才能继续
 
             if (queryRes[0]["connectorName"].ToString() != connectorName
@@ -304,7 +301,10 @@ namespace NEL_FutureDao_API.Service
                 p["hasSellCount"] = 0;
                 return p;
             }).ToArray();
-            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, new JArray { res });
+            if(res.Count() > 0)
+            {
+                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, new JArray { res });
+            }
             return getRes();
         }
         public JArray queryReward(string userId, string accessToken, string projId)
@@ -340,10 +340,21 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{"info", queryRes} };
             return getRes(res);
         }
-        public JArray applyFinanceFund(string userId, string accessToken, string projId, string fundAmt, string txid)
+        public JArray applyFinanceFund(string userId, string accessToken, string projId, string fundAmt)
         {
             // 是否需要记录
-            string findStr = new JObject { { "projId", projId}}.ToString();
+            string code;
+            if (!checkToken(userId, accessToken, out code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "projId", projId }, { "userId", userId }, { "role", TeamRoleType.Admin } }.ToString();
+            if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
+            {
+                return getErrorRes(DaoReturnCode.T_NoPermissionStartFinance);
+            }
+            //...
+
             return getRes();
         }
         public JArray queryFinanceFund(string userId, string accessToken, string projId)
@@ -367,10 +378,35 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes(new JObject { { "poolTotal", poolTotal} });
         }
-        public JArray saveReserveFundRatio(string userId, string accessToken, string projId, string ratio, string txid)
+        public JArray saveReserveFundRatio(string userId, string accessToken, string projId, string ratio)
         {
             // 是否需要记录
-            string findStr = new JObject { { "projId", projId } }.ToString();
+            string code;
+            if (!checkToken(userId, accessToken, out code))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "projId", projId }, { "userId", userId }, { "role", TeamRoleType.Admin } }.ToString();
+            if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
+            {
+                return getErrorRes(DaoReturnCode.T_NoPermissionStartFinance);
+            }
+            findStr = new JObject { { "projId", projId} }.ToString();
+            string fieldStr = new JObject { { "deployContractFlag", 1},{ "reserveFundRatio",1 },{ "ratioSetFlag",1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.InvalidOperate);
+            // TODO: 只有部署合约成功后才能继续
+
+            if(queryRes[0]["ratioSetFlag"].ToString() == SkOp.HandlingOp)
+            {
+                return getErrorRes(DaoReturnCode.RepeatOperate);
+            }
+
+            if (queryRes[0]["reserveFundRatio"].ToString() != ratio)
+            {
+                var updateStr = new JObject { { "$set", new JObject { { "reserveFundRatio", ratio }, { "ratioSetFlag", SkOp.HandlingOp } } } }.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
+            }
             return getRes();
         }
         public JArray queryReserveFundRatio(string userId, string accessToken, string projId)

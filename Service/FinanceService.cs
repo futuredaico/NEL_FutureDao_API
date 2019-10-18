@@ -3,6 +3,7 @@ using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,6 +29,7 @@ namespace NEL_FutureDao_API.Service
         public string projInfoCol { get; set; } = "daoProjInfo";
         public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
         public string projFinanceCol { get; set; } = "daoProjFinanceInfo";
+        public string projFinanceHashCol { get; set; } = "daoProjFinanceHashInfo";
         public string projRewardCol { get; set; } = "daoProjRewardInfo";
         public string projFundCol { get; set; } = "daoProjFundInfo";
         public string tokenUrl { get; set; }
@@ -444,10 +446,10 @@ namespace NEL_FutureDao_API.Service
             }
             //
             findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "contractHash", 1} }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
+            string fieldStr = new JObject { { "_id", 0} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceHashCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
-            return getRes(queryRes[0]["contractHash"]);
+            return getRes(queryRes);
         }
 
         public JArray startFinance(string userId, string accessToken, string projId)
@@ -468,14 +470,44 @@ namespace NEL_FutureDao_API.Service
                 // 项目未发布, 不能启动
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
-            if (queryRes[0]["financeStartFlag"].ToString() == SelectKey.Not)
+            if (queryRes[0]["financeStartFlag"].ToString() == SkOp.FinishOp)
             {
                 // 已启动
                 return getErrorRes(DaoReturnCode.RepeatOperate);
             }
-            string updateStr = new JObject { { "$set", new JObject { { "financeStartFlag", SelectKey.Yes } } } }.ToString();
+            if (!updateProjState(projId, out code))
+            {
+                return getErrorRes(code);
+            }
+
+            string updateStr = new JObject { { "$set", new JObject { { "financeStartFlag", SkOp.FinishOp } } } }.ToString();
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
             return getRes();
+        }
+        private bool updateProjState(string projId, out string code)
+        {
+            string findStr = new JObject { { "projId", projId} }.ToString();
+            string fieldStr = new JObject { { "projState", 1 }, { "projSubState", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if(queryRes.Count == 0)
+            {
+                code = DaoReturnCode.InvalidOperate;
+                return false;
+            }
+            var item = queryRes[0];
+            if(item["projSubState"].ToString() == ProjSubState.Auditing)
+            {
+                code = DaoReturnCode.RepeatOperate;
+                return false;
+            }
+            if(item["projState"].ToString() != ProjState.CrowdFunding 
+                || item["projSubState"].ToString() != ProjSubState.Init)
+            {
+                var updateStr = new JObject { { "$set", new JObject { { "projState", ProjState.CrowdFunding }, { "projSubState", ProjSubState.Init } } } }.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, updateStr, findStr);
+            }
+            code = "";
+            return true;
         }
 
         public JArray queryProjContract(string userId, string accessToken, string projId)

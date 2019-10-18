@@ -4,9 +4,9 @@ using System.Globalization;
 
 namespace NEL.NNS.lib
 {
-    public class MongoDecimalHelper
+    public static class MongoDecimalHelper
     {
-        public static string formatDecimal(string numberDecimalStr)
+        public static string formatDecimal(this string numberDecimalStr)
         {
             string value = numberDecimalStr;
             if (numberDecimalStr.Contains("$numberDecimal"))
@@ -23,9 +23,9 @@ namespace NEL.NNS.lib
             }
             return value;
         }
-        public static decimal formatDecimalDouble(string numberDecimalStr)
+        public static decimal formatDecimalDouble(this string numberDecimalStr)
         {
-            return decimal.Parse(formatDecimal(numberDecimalStr), NumberStyles.Float);
+            return decimal.Parse(numberDecimalStr.formatDecimal(), NumberStyles.Float);
         }
     }
 }

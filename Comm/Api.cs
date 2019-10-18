@@ -100,6 +100,9 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryProjContract":
+                        result = fs.queryProjContract(req.@params[0].ToString());
+                        break;
                     case "queryContractHash":
                         result = fs.queryContractHash(
                             req.@params[0].ToString(),

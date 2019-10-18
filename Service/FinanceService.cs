@@ -30,6 +30,7 @@ namespace NEL_FutureDao_API.Service
         public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
         public string projFinanceCol { get; set; } = "daoProjFinanceInfo";
         public string projFinanceHashCol { get; set; } = "daoProjFinanceHashInfo";
+        public string projFinanceFundPoolCol { get; set; } = "daoProjFinanceFundPoolInfo";
         public string projRewardCol { get; set; } = "daoProjRewardInfo";
         public string projFundCol { get; set; } = "daoProjFundInfo";
         public string tokenUrl { get; set; }
@@ -423,16 +424,16 @@ namespace NEL_FutureDao_API.Service
             if (!checkToken(userId, accessToken, out string code)) return getErrorRes(code);
 
             string findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "reserveFundRatio", 1 },{ "startFinanceFlag", 1}, { "_id",0} }.ToString();
+            string fieldStr = new JObject { { "reserveFundRatio", 1 }, { "ratioSetFlag",1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             string ratio = "0";
-            string startFinanceFlag = "0";
+            string ratioSetFlag = "0";
             if (queryRes.Count > 0)
             {
                 ratio = queryRes[0]["reserveFundRatio"].ToString();
-                startFinanceFlag = queryRes[0]["startFinanceFlag"].ToString();
+                ratioSetFlag = queryRes[0]["ratioSetFlag"].ToString();
             } 
-            return getRes(new JObject { { "ratio", ratio},{ "startFinanceFlag", startFinanceFlag } });
+            return getRes(new JObject { { "ratio", ratio},{ "ratioSetFlag", ratioSetFlag } });
         }
         public JArray queryContractHash(string userId, string accessToken, string projId)
         {
@@ -510,9 +511,25 @@ namespace NEL_FutureDao_API.Service
             return true;
         }
 
-        public JArray queryProjContract(string userId, string accessToken, string projId)
+        public JArray queryProjContract(string projId)
         {
-            return null;
+            string findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceFundPoolCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            var res = new JObject {
+                {"projId", projId },
+                {"tokenName", item["tokenName"] },
+                {"TokenIssueTotal", item["TokenIssueTotal"].ToString().formatDecimal() },
+                {"TokenUnlockNotAmount", item["TokenUnlockNotAmount"].ToString().formatDecimal() },
+                {"TokenUnlockYesAmount", item["TokenUnlockYesAmount"].ToString().formatDecimal() },
+                {"fundManagePoolTotal", item["fundManagePoolTotal"].ToString().formatDecimal() },
+                {"fundReservePoolTotal", item["fundReservePoolTotal"].ToString().formatDecimal() },
+                {"fundReserveRatio", item["fundReserveRatio"].ToString().formatDecimal() },
+                {"priceRaiseSpeed", item["priceRaiseSpeed"].ToString().formatDecimal() }
+            };
+            return getRes(res);
         }
         public JArray queryTokenHistPrice(string userId, string accessToken, string projId)
         {

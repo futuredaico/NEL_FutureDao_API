@@ -461,20 +461,19 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.T_NoPermissionStartFinance);
             }
             findStr = new JObject { { "projId", projId} }.ToString();
-            string fieldStr = new JObject { { "startFinanceFlag",1 },{ "contractHash", 1 } }.ToString();
+            string fieldStr = new JObject { { "financeStartFlag", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
-            if(queryRes.Count == 0 
-                || ((JArray)queryRes[0]).Count == 0)
+            if(queryRes.Count == 0)
             {
                 // 项目未发布, 不能启动
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
-            if (queryRes[0]["startFinanceFlag"].ToString() == SelectKey.Not)
+            if (queryRes[0]["financeStartFlag"].ToString() == SelectKey.Not)
             {
                 // 已启动
                 return getErrorRes(DaoReturnCode.RepeatOperate);
             }
-            string updateStr = new JObject { { "$set", new JObject { { "startFinanceFlag", SelectKey.Yes } } } }.ToString();
+            string updateStr = new JObject { { "$set", new JObject { { "financeStartFlag", SelectKey.Yes } } } }.ToString();
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
             return getRes();
         }

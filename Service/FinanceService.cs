@@ -521,9 +521,9 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject {
                 {"projId", projId },
                 {"tokenName", item["tokenName"] },
-                {"TokenIssueTotal", item["TokenIssueTotal"].ToString().formatDecimal() },
-                {"TokenUnlockNotAmount", item["TokenUnlockNotAmount"].ToString().formatDecimal() },
-                {"TokenUnlockYesAmount", item["TokenUnlockYesAmount"].ToString().formatDecimal() },
+                {"tokenIssueTotal", item["tokenIssueTotal"].ToString().formatDecimal() },
+                {"tokenUnlockNotAmount", item["tokenUnlockNotAmount"].ToString().formatDecimal() },
+                {"tokenUnlockYesAmount", item["tokenUnlockYesAmount"].ToString().formatDecimal() },
                 {"fundManagePoolTotal", item["fundManagePoolTotal"].ToString().formatDecimal() },
                 {"fundReservePoolTotal", item["fundReservePoolTotal"].ToString().formatDecimal() },
                 {"fundReserveRatio", item["fundReserveRatio"].ToString().formatDecimal() },

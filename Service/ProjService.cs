@@ -1133,7 +1133,7 @@ namespace NEL_FutureDao_API.Service
         public JArray queryProjDetail(string projId, string userId = "")
         {
             string findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "projVideoUrl", "projBrief", "projDetail", "supportCount","discussCount", "updateCount","time" }).ToString();
+            string fieldStr = MongoFieldHelper.toReturn(new string[] { "projName", "projTitle", "projType", "projConverUrl", "projVideoUrl", "projBrief", "projDetail", "projState","projSubState","supportCount","discussCount", "updateCount","time" }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
 

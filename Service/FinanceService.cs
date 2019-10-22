@@ -34,6 +34,7 @@ namespace NEL_FutureDao_API.Service
         public string projFinancePriceHistCol { get; set; } = "daoProjFinancePriceHistInfo";
         public string projFinanceReserveTokenHistCol { get; set; } = "daoProjFinanceReserveTokenHistInfo";
         public string projRewardCol { get; set; } = "daoProjRewardInfo";
+        public string daoNotifyCol { get; set; } = "daoNotifyInfo";
         public string projFundCol { get; set; } = "daoProjFundInfo";
         public string tokenUrl { get; set; }
 
@@ -533,24 +534,20 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-        public JArray queryTokenHistPrice(string projId, string recordType)
+        public JArray queryTokenPrice(string projId)
         {
+            var findStr = new JObject { { "projId", projId} }.ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "ob_fundAmt", "ob_tokenAmt", "os_fundAmt", "os_tokenAmt"}).ToString();
+            var sortStr = new JObject { { "blockNumber", -1} }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, sortStr, 0, 1, fieldStr);
+            if (queryRes.Count == 0) return getRes();
 
-            var findJo = new JObject { { "projId", projId } };
-            if(RecordType.ByMonth == recordType)
-            {
-                findJo.Add("recordType", 4);
-            }
-            var findStr = findJo.ToString();
-            var fieldStr = MongoFieldHelper.toReturn(new string[] { "ob_price","os_price","recordTime"}).ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return getRes(queryRes);
-
-            var buydata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["ob_price"].ToString())).ToArray();
-            var selldata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["os_price"].ToString())).ToArray();
-            var timedata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["recordTime"].ToString())).ToArray();
-            var res = new JObject { { "buyInfo", new JArray { buydata } }, { "sellInfo", new JArray { selldata } },{ "timeInfo", new JArray { timedata } } };
-            return getRes(res);
+            var item = queryRes[0];
+            item["ob_fundAmt"] = item["ob_fundAmt"].ToString().formatDecimal();
+            item["ob_tokenAmt"] = item["ob_tokenAmt"].ToString().formatDecimal();
+            item["os_fundAmt"] = item["os_fundAmt"].ToString().formatDecimal();
+            item["os_tokenAmt"] = item["os_tokenAmt"].ToString().formatDecimal();
+            return getRes(item);
         }
         public JArray queryRewardList(string projId)
         {
@@ -563,6 +560,12 @@ namespace NEL_FutureDao_API.Service
                 { "list", queryRes }
             };
             return getRes(res);
+        }
+        public JArray queryRewardDetail(string rewardId)
+        {
+            var findStr = new JObject { { "rewardId", rewardId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, findStr);
+            return getRes(queryRes);
         }
         public JArray queryReserveToken(string projId)
         {
@@ -591,6 +594,51 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
+
+        //
+        public JArray queryTokenHistPrice(string projId, string recordType)
+        {
+
+            var findJo = new JObject { { "projId", projId } };
+            if (RecordType.ByMonth == recordType)
+            {
+                findJo.Add("recordType", 4);
+            }
+            var findStr = findJo.ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "ob_price", "os_price", "recordTime" }).ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return getRes(queryRes);
+
+            var buydata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["ob_price"].ToString())).ToArray();
+            var selldata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["os_price"].ToString())).ToArray();
+            var timedata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["recordTime"].ToString())).ToArray();
+            var res = new JObject { { "buyInfo", new JArray { buydata } }, { "sellInfo", new JArray { selldata } }, { "timeInfo", new JArray { timedata } } };
+            return getRes(res);
+        }
+        public JArray queryTxList(string projId, string address, int pageNum=1, int pageSize=10)
+        {
+            var findJo = new JObject { { "projId", projId } };
+            if(address != "" && address.ToLower() != "all")
+            {
+                findJo.Add("address", address);
+            }
+            findJo.Add("$or", new JArray { new JObject { { "event", "OnBuy" } }, new JObject { { "event", "OnSell"} } });
+            var findStr = findJo.ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "blockTime", "transactionHash","blockNumber", "address", "event","fundAmt","tokenAmt"}).ToString();
+            var sortStr = new JObject { { "blockNumber", -1} }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr,dao_mongodbDatabase, daoNotifyCol, findStr, sortStr, pageSize*(pageNum-1), pageSize, fieldStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, daoNotifyCol, findStr);
+            var res = new JObject {
+                { "count", count },
+                { "list", queryRes}
+            };
+
+            return getRes(res);
+        }
+
+
     }
     class FinanceType
     {

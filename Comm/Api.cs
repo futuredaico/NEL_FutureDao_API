@@ -100,8 +100,27 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryTxList":
+                        result = fs.queryTxList(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString())
+                            );
+                        break;
+                    case "queryTokenHistPrice":
+                        result = fs.queryTokenHistPrice(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
                     case "queryReserveToken":
                         result = fs.queryReserveToken(
+                           req.@params[0].ToString()
+                           );
+                        break;
+                    case "queryRewardDetail":
+                        result = fs.queryRewardDetail(
                            req.@params[0].ToString()
                            );
                         break;
@@ -110,11 +129,10 @@ namespace NEL.Comm
                              req.@params[0].ToString()
                              );
                         break;
-                    case "queryTokenHistPrice":
-                        result = fs.queryTokenHistPrice(
-                            req.@params[0].ToString(),
-                            req.@params[1].ToString()
-                            );
+                    case "queryTokenPrice":
+                        result = fs.queryTokenPrice(
+                             req.@params[0].ToString()
+                             );
                         break;
                     case "queryProjContract":
                         result = fs.queryProjContract(req.@params[0].ToString());

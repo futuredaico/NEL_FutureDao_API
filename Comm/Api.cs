@@ -100,6 +100,12 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryTokenHistPrice":
+                        result = fs.queryTokenHistPrice(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
                     case "queryProjContract":
                         result = fs.queryProjContract(req.@params[0].ToString());
                         break;

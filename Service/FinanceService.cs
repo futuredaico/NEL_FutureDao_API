@@ -31,6 +31,7 @@ namespace NEL_FutureDao_API.Service
         public string projFinanceCol { get; set; } = "daoProjFinanceInfo";
         public string projFinanceHashCol { get; set; } = "daoProjFinanceHashInfo";
         public string projFinanceFundPoolCol { get; set; } = "daoProjFinanceFundPoolInfo";
+        public string projFinancePriceHistCol { get; set; } = "daoProjFinancePriceHistInfo";
         public string projRewardCol { get; set; } = "daoProjRewardInfo";
         public string projFundCol { get; set; } = "daoProjFundInfo";
         public string tokenUrl { get; set; }
@@ -531,12 +532,29 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-        public JArray queryTokenHistPrice(string userId, string accessToken, string projId)
+        public JArray queryTokenHistPrice(string projId, string recordType)
         {
-            return null;
+
+            var findJo = new JObject { { "projId", projId } };
+            if(RecordType.ByMonth == recordType)
+            {
+                findJo.Add("recordType", 4);
+            }
+            var findStr = findJo.ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "ob_price","os_price","recordTime"}).ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return queryRes;
+
+            var buydata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["ob_price"].ToString())).ToArray();
+            var selldata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["os_price"].ToString())).ToArray();
+            var timedata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["recordTime"].ToString())).ToArray();
+            var res = new JObject { { "buyInfo", new JArray { buydata } }, { "sellInfo", new JArray { selldata } },{ "timeInfo", new JArray { timedata } } };
+            return getRes(res);
         }
         public JArray queryRewardList(string userId, string accessToken, string projId)
         {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+
             return null;
         }
         public JArray queryReserveToken(string userId, string accessToken, string projId)
@@ -567,5 +585,10 @@ namespace NEL_FutureDao_API.Service
         public const string NotOp = "3";        // 未操作 
         public const string HandlingOp = "4";   // 处理中
         public const string FinishOp = "5";     // 已完成
+    }
+    class RecordType
+    {
+        public const string ByWeek = "w"; // 按周显示
+        public const string ByMonth = "m"; // 按月显示
     }
 }

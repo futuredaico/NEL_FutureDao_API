@@ -100,6 +100,16 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryReserveToken":
+                        result = fs.queryReserveToken(
+                           req.@params[0].ToString()
+                           );
+                        break;
+                    case "queryRewardList":
+                        result = fs.queryRewardList(
+                             req.@params[0].ToString()
+                             );
+                        break;
                     case "queryTokenHistPrice":
                         result = fs.queryTokenHistPrice(
                             req.@params[0].ToString(),

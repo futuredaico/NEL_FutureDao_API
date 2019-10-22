@@ -32,6 +32,7 @@ namespace NEL_FutureDao_API.Service
         public string projFinanceHashCol { get; set; } = "daoProjFinanceHashInfo";
         public string projFinanceFundPoolCol { get; set; } = "daoProjFinanceFundPoolInfo";
         public string projFinancePriceHistCol { get; set; } = "daoProjFinancePriceHistInfo";
+        public string projFinanceReserveTokenHistCol { get; set; } = "daoProjFinanceReserveTokenHistInfo";
         public string projRewardCol { get; set; } = "daoProjRewardInfo";
         public string projFundCol { get; set; } = "daoProjFundInfo";
         public string tokenUrl { get; set; }
@@ -543,7 +544,7 @@ namespace NEL_FutureDao_API.Service
             var findStr = findJo.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] { "ob_price","os_price","recordTime"}).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return queryRes;
+            if (queryRes.Count == 0) return getRes(queryRes);
 
             var buydata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["ob_price"].ToString())).ToArray();
             var selldata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["os_price"].ToString())).ToArray();
@@ -551,15 +552,44 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "buyInfo", new JArray { buydata } }, { "sellInfo", new JArray { selldata } },{ "timeInfo", new JArray { timedata } } };
             return getRes(res);
         }
-        public JArray queryRewardList(string userId, string accessToken, string projId)
+        public JArray queryRewardList(string projId)
         {
             var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, findStr);
+            if (queryRes.Count == 0) return getRes(queryRes);
 
-            return null;
+            var res = new JObject {
+                { "count", queryRes.Count},
+                { "list", queryRes }
+            };
+            return getRes(res);
         }
-        public JArray queryReserveToken(string userId, string accessToken, string projId)
+        public JArray queryReserveToken(string projId)
         {
-            return null;
+            var findStr = new JObject { { "projId", projId} }.ToString();
+            var fieldStr = new JObject { { "tokenAmt", 1 }, { "timestamp", 1 }, { "blockNumber",1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceReserveTokenHistCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return getRes(queryRes);
+
+            var list = new List<JObject>();
+            var now = TimeHelper.GetTimeStamp();
+            var data = queryRes.OrderBy(p => long.Parse(p["blockNumber"].ToString())).ToArray();
+            for(int i=0; i<data.Length; ++i)
+            {
+                var item = (JObject)data[i];
+                item["order"] = i + 1;
+                item["unlockFlag"] = long.Parse(item["timestamp"].ToString()) < now;
+                item.Remove("blockNumber");
+                item.Remove("_id");
+                list.Add(item);
+            }
+            var lockTotal = list.Sum(p => long.Parse(p["tokenAmt"].ToString()));
+            var res = new JObject {
+                { "lockTotal", lockTotal},
+                { "count", data.Length },
+                { "list", new JArray{list } }
+            };
+            return getRes(res);
         }
     }
     class FinanceType

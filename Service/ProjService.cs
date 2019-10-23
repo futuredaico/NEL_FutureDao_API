@@ -1141,13 +1141,15 @@ namespace NEL_FutureDao_API.Service
             getStarState(projId, userId, out bool isStar, out bool isSupport);
             item["isSupport"] = isSupport;
             item["isStar"] = isStar;
-            item["hasIssueAmt"] = 0;
-            item["hasSellAmt"] = 0;
+            item["hasIssueAmt"] = "0";
+            item["hasSellAmt"] = "0";
+            item["hasSupport"] = "0";
             if(getProjFinanceInfo(projId, out string hasIssueAmt, out string hasSellAmt))
             {
                 item["hasIssueAmt"] = hasIssueAmt;
                 item["hasSellAmt"] = hasSellAmt;
             }
+            // TODO  支持人数
             return getRes(item);
         }
         private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt)

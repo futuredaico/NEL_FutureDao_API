@@ -551,7 +551,7 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray queryRewardList(string projId)
         {
-            var findStr = new JObject { { "projId", projId } }.ToString();
+            var findStr = new JObject { { "projId", projId },{"activeState", RewardActiveState.Valid_Yes} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projRewardCol, findStr);
             if (queryRes.Count == 0) return getRes(queryRes);
 

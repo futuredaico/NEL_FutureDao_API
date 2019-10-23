@@ -27,6 +27,7 @@ namespace NEL_FutureDao_API.Service
         public string projDiscussZanInfoCol { get; set; } = "daoProjDiscussZanInfo";
         public string projUpdateDiscussZanInfoCol { get; set; } = "daoProjUpdateDiscussZanInfo";
         //
+        public string projFinanceCol { get; set; } = "daoProjFinanceInfo";
         public string projFinanceFundPoolCol { get; set; } = "daoProjFinanceFundPoolInfo";
 
         public string tokenUrl { get; set; } = "";
@@ -1144,27 +1145,52 @@ namespace NEL_FutureDao_API.Service
             item["hasIssueAmt"] = "0";
             item["hasSellAmt"] = "0";
             item["hasSupport"] = "0";
-            if(getProjFinanceInfo(projId, out string hasIssueAmt, out string hasSellAmt))
+            if(getProjFinanceInfo(projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport))
             {
                 item["hasIssueAmt"] = hasIssueAmt;
                 item["hasSellAmt"] = hasSellAmt;
+                item["hasSupport"] = hasSupport;
             }
-            // TODO  支持人数
+            item["type"] = "";
+            item["platform"] = "";
+            item["fundName"] = "";
+            if (getProjFinanceType(projId, out string type, out string platform, out string fundName))
+            {
+                item["type"] = type;
+                item["platform"] = platform;
+                item["fundName"] = fundName;
+            }
             return getRes(item);
         }
-        private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt)
+        private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport)
         {
             hasIssueAmt = "";
             hasSellAmt = "";
+            hasSupport = "";
 
             var findStr = new JObject { {"projId",  projId} }.ToString();
-            var fieldStr = new JObject { { "hasOnBuyFundTotal", 1},{ "hasIssueTokenTotal", 1} }.ToString();
+            var fieldStr = new JObject { { "hasOnBuyFundTotal", 1},{ "hasIssueTokenTotal", 1},{ "hasSupport",1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceFundPoolCol, findStr, fieldStr);
             if (queryRes.Count == 0) return false;
 
-
             hasIssueAmt = queryRes[0]["hasIssueTokenTotal"].ToString().formatDecimal();
             hasSellAmt = queryRes[0]["hasOnBuyFundTotal"].ToString().formatDecimal();
+            hasSupport = queryRes[0]["hasSupport"].ToString();
+            return true;
+        }
+        private bool getProjFinanceType(string projId, out string type, out string platform, out string tokenName)
+        {
+            type = "";
+            platform = "";
+            tokenName = "";
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var fieldStr = new JObject { { "type", 1 }, { "platform", 1 },{ "tokenName",1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return false;
+
+            type = queryRes[0]["type"].ToString();
+            platform = queryRes[0]["platform"].ToString();
+            tokenName = queryRes[0]["tokenName"].ToString();
             return true;
         }
         private void getStarState(string projId, string userId, out bool isStar, out bool isSupport)

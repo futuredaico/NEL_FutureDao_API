@@ -46,7 +46,7 @@ namespace NEL_FutureDao_API.Service.State
 
         public const string T_NoPermissionStartFinance = "102346";   // 
 
-        public const string S_NoPermissionAddDiscuss = "10251";
+        public const string S_NoPermissionAddDiscuss = "10251";     // 没有权限添加评论
         public const string S_NoPermissionDelDiscuss = "10252";
         public const string S_InvalidProjId = "10253";
         public const string S_InvalidProjIdOrDiscussId = "10254";

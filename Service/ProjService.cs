@@ -1156,13 +1156,13 @@ namespace NEL_FutureDao_API.Service
             hasSellAmt = "";
 
             var findStr = new JObject { {"projId",  projId} }.ToString();
-            var fieldStr = new JObject { { "fundPoolTotal", 1},{ "tokenIssueTotal", 1} }.ToString();
+            var fieldStr = new JObject { { "hasOnBuyFundTotal", 1},{ "hasIssueTokenTotal", 1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceFundPoolCol, findStr, fieldStr);
             if (queryRes.Count == 0) return false;
 
 
-            hasIssueAmt = queryRes[0]["tokenIssueTotal"].ToString().formatDecimal();
-            hasSellAmt = queryRes[0]["fundPoolTotal"].ToString().formatDecimal();
+            hasIssueAmt = queryRes[0]["hasIssueTokenTotal"].ToString().formatDecimal();
+            hasSellAmt = queryRes[0]["hasOnBuyFundTotal"].ToString().formatDecimal();
             return true;
         }
         private void getStarState(string projId, string userId, out bool isStar, out bool isSupport)

@@ -26,16 +26,16 @@ namespace NEL_FutureDao_API.Service
         public MongoHelper mh { get; set; }
         public string dao_mongodbConnStr { get; set; }
         public string dao_mongodbDatabase { get; set; }
-        public string projInfoCol { get; set; } = "daoProjInfo";
-        public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
-        public string projFinanceCol { get; set; } = "daoProjFinanceInfo";
-        public string projFinanceHashCol { get; set; } = "daoProjFinanceHashInfo";
-        public string projFinanceFundPoolCol { get; set; } = "daoProjFinanceFundPoolInfo";
-        public string projFinancePriceHistCol { get; set; } = "daoProjFinancePriceHistInfo";
-        public string projFinanceReserveTokenHistCol { get; set; } = "daoProjFinanceReserveTokenHistInfo";
-        public string projFinanceRewardCol { get; set; } = "daoProjFinanceRewardInfo";
-        public string daoNotifyCol { get; set; } = "daoNotifyInfo";
-        public string projFundCol { get; set; } = "daoProjFundInfo";
+        public string projInfoCol { get; set; } = "daoprojinfos";
+        public string projTeamInfoCol { get; set; } = "daoprojteaminfos";
+        public string projFinanceCol { get; set; } = "daoprojfinanceinfos";
+        public string projFinanceHashCol { get; set; } = "daoprojfinancehashinfos";
+        public string projFinanceFundPoolCol { get; set; } = "daoprojfinancefundpoolinfos";
+        public string projFinancePriceHistCol { get; set; } = "daoprojfinancepricehistinfos";
+        public string projFinanceReserveTokenHistCol { get; set; } = "daoprojfinancereservetokenhistinfos";
+        public string projFinanceRewardCol { get; set; } = "daoprojfinancerewardinfos";
+        public string daoNotifyCol { get; set; } = "daonotifyinfos";
+        public string projFundCol { get; set; } = "daoprojfundinfos";
         public string tokenUrl { get; set; }
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);

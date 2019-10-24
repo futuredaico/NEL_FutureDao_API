@@ -13,16 +13,16 @@ namespace NEL_FutureDao_API.Service
         public MongoHelper mh { get; set; }
         public string dao_mongodbConnStr { get; set; }
         public string dao_mongodbDatabase { get; set; }
-        public string userInfoCol { get; set; } = "daoUserInfo";
-        public string projInfoCol { get; set; } = "daoProjInfo";
-        public string projStarInfoCol { get; set; } = "daoProjStarInfo";
-        public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
-        public string projUpdateInfoCol { get; set; } = "daoProjUpdateInfo";
-        public string projUpdateStarInfoCol { get; set; } = "daoProjUpdateStarInfo";
-        public string projDiscussInfoCol { get; set; } = "daoProjDiscussInfo";
-        public string projUpdateDiscussInfoCol { get; set; } = "daoProjUpdateDiscussInfo";
-        public string projDiscussZanInfoCol { get; set; } = "daoProjDiscussZanInfo";
-        public string projUpdateDiscussZanInfoCol { get; set; } = "daoProjUpdateDiscussZanInfo";
+        public string userInfoCol { get; set; } = "daouserinfos";
+        public string projInfoCol { get; set; } = "daoprojinfos";
+        public string projStarInfoCol { get; set; } = "daoprojstarinfos";
+        public string projTeamInfoCol { get; set; } = "daoprojteaminfos";
+        public string projUpdateInfoCol { get; set; } = "daoprojupdateinfos";
+        public string projUpdateStarInfoCol { get; set; } = "daoprojupdatestarinfos";
+        public string projDiscussInfoCol { get; set; } = "daoprojdiscussinfos";
+        public string projUpdateDiscussInfoCol { get; set; } = "daoprojupdatediscussinfos";
+        public string projDiscussZanInfoCol { get; set; } = "daoprojdiscusszaninfos";
+        public string projUpdateDiscussZanInfoCol { get; set; } = "daoprojupdatediscusszaninfos";
         public string tokenUrl { get; set; }
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);

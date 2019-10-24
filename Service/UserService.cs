@@ -14,7 +14,7 @@ namespace NEL_FutureDao_API.Service
         public MongoHelper mh { get; set; }
         public string dao_mongodbConnStr { get; set; }
         public string dao_mongodbDatabase { get; set; }
-        public string userInfoCol { get; set; } = "daoUserInfo";
+        public string userInfoCol { get; set; } = "daouserinfos";
         public OssHelper oss { get; set;}
         public string bucketName { get; set; }
         //

@@ -14,21 +14,21 @@ namespace NEL_FutureDao_API.Service
         public MongoHelper mh { get; set; }
         public string dao_mongodbConnStr { get; set; }
         public string dao_mongodbDatabase { get; set; }
-        public string projInfoCol { get; set; } = "daoProjInfo";
-        public string projTeamInfoCol { get; set; } = "daoProjTeamInfo";
-        public string userInfoCol { get; set; } = "daoUserInfo";
-        public string projUpdateInfoCol { get; set; } = "daoProjUpdateInfo";
-        public string projUpdateStarInfoCol { get; set; } = "daoProjUpdateStarInfo";
-        public string projStarInfoCol { get; set; } = "daoProjStarInfo";
-        public string projSupportInfoCol { get; set; } = "daoProjSupportInfo";
+        public string projInfoCol { get; set; } = "daoprojinfos";
+        public string projTeamInfoCol { get; set; } = "daoprojteaminfos";
+        public string userInfoCol { get; set; } = "daouserinfos";
+        public string projUpdateInfoCol { get; set; } = "daoprojupdateinfos";
+        public string projUpdateStarInfoCol { get; set; } = "daoprojupdatestarinfos";
+        public string projStarInfoCol { get; set; } = "daoprojstarinfos";
+        public string projSupportInfoCol { get; set; } = "daoprojsupportinfos";
 
-        public string projDiscussInfoCol { get; set; } = "daoProjDiscussInfo";
-        public string projUpdateDiscussInfoCol { get; set; } = "daoProjUpdateDiscussInfo";
-        public string projDiscussZanInfoCol { get; set; } = "daoProjDiscussZanInfo";
-        public string projUpdateDiscussZanInfoCol { get; set; } = "daoProjUpdateDiscussZanInfo";
+        public string projDiscussInfoCol { get; set; } = "daoprojdiscussinfos";
+        public string projUpdateDiscussInfoCol { get; set; } = "daoprojupdatediscussinfos";
+        public string projDiscussZanInfoCol { get; set; } = "daoprojdiscusszaninfos";
+        public string projUpdateDiscussZanInfoCol { get; set; } = "daoprojupdatediscusszaninfos";
         //
-        public string projFinanceCol { get; set; } = "daoProjFinanceInfo";
-        public string projFinanceFundPoolCol { get; set; } = "daoProjFinanceFundPoolInfo";
+        public string projFinanceCol { get; set; } = "daoprojfinanceinfos";
+        public string projFinanceFundPoolCol { get; set; } = "daoprojfinancefundpoolinfos";
 
         public string tokenUrl { get; set; } = "";
         public OssHelper oss { get; set; }

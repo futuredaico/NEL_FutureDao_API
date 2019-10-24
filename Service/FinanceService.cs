@@ -69,8 +69,8 @@ namespace NEL_FutureDao_API.Service
             string projTokenName, 
             string projTokenSymbol, 
             string reserveTokenFlag, 
-            JObject reserveTokenInfo) {
-            // TODO: 参数检查
+            JArray reserveTokenInfos) {
+            // 参数检查
             type = type.ToLower();
             if(type != FinanceType.General
                 && type != FinanceType.DAICO)
@@ -92,28 +92,31 @@ namespace NEL_FutureDao_API.Service
             if (reserveTokenFlag != SelectKey.Yes) reserveTokenFlag = SelectKey.Not;
             if(reserveTokenFlag == SelectKey.Yes)
             {
-                var addr = reserveTokenInfo["address"];
-                if (addr == null)
+                foreach(var reserveTokenInfo in reserveTokenInfos)
                 {
-                    return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
-                }
-                var addrLen = addr.ToString().Length;
-                if(addrLen == 0 || addrLen > 64)
-                {
-                    return getErrorRes(DaoReturnCode.C_InvalidParamLen);
-                }
-
-                var info = reserveTokenInfo["info"];
-                if(info == null)
-                {
-                    return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
-                }
-                var infoArr = (JArray)info;
-                if(infoArr.Count > 0)
-                {
-                    if(!infoArr.All(p => checkIntFmt(p["amt"]) && checkIntFmt(p["days"])))
+                    var addr = reserveTokenInfo["address"];
+                    if (addr == null)
                     {
                         return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+                    }
+                    var addrLen = addr.ToString().Length;
+                    if (addrLen == 0 || addrLen > 64)
+                    {
+                        return getErrorRes(DaoReturnCode.C_InvalidParamLen);
+                    }
+
+                    var info = reserveTokenInfo["info"];
+                    if (info == null)
+                    {
+                        return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+                    }
+                    var infoArr = (JArray)info;
+                    if (infoArr.Count > 0)
+                    {
+                        if (!infoArr.All(p => checkIntFmt(p["amt"]) && checkIntFmt(p["days"])))
+                        {
+                            return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+                        }
                     }
                 }
             }
@@ -152,7 +155,7 @@ namespace NEL_FutureDao_API.Service
                 { "projTokenName", projTokenName},
                 { "projTokenSymbol", projTokenSymbol},
                 { "reserveTokenFlag", reserveTokenFlag},
-                { "reserveTokenInfo", reserveTokenInfo},
+                { "reserveTokenInfo", reserveTokenInfos},
                 { "deployContractFlag", SkOp.HandlingOp},
                 // 设置回报
                 { "rewardSetFlag", SkOp.NotOp},

@@ -209,7 +209,7 @@ namespace NEL.Comm
                             req.@params[7].ToString(),
                             req.@params[8].ToString(),
                             req.@params[9].ToString(),
-                            JObject.Parse(req.@params[10].ToString())
+                            JArray.Parse(req.@params[10].ToString())
                             );
                         break;
                     case "bindAddress":

@@ -35,6 +35,7 @@ namespace NEL_FutureDao_API.Service
         public string projFinancePriceHistCol { get; set; } = "daoprojfinancepricehistinfos";
         public string projFinanceReserveTokenHistCol { get; set; } = "daoprojfinancereservetokenhistinfos";
         public string projFinanceRewardCol { get; set; } = "daoprojfinancerewardinfos";
+        public string projFinanceBalanceCol { get; set; } = "daoprojfinancebalanceinfos";
         public string projFundCol { get; set; } = "daoprojfundinfos";
         public string projFundApplyCol { get; set; } = "daoprojfundapplyinfos";
         public string daoNotifyCol { get; set; } = "daonotifyinfos";
@@ -664,6 +665,75 @@ namespace NEL_FutureDao_API.Service
             return getRes(res);
         }
 
+        //
+        public JArray queryTokenBalanceInfo(string projId, string address)
+        {
+            var findStr = new JObject { { "projId", projId},{ "address", address} }.ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "transferFrom", "transferTo", "onSetFdtIn", "onGetFdtOut", "onPreMint", "onPreMintAtEnd", "onVote", "onVoteAtEnd" }).ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceBalanceCol, findStr, fieldStr);
+            if(queryRes.Count == 0)
+            {
+                var zeroD = decimal.Zero;
+                return getRes(new JObject { { "tokenAmt", zeroD },{ "shareAmt", zeroD },{ "availableAmt", zeroD }, { "lockAmt", zeroD }, { "24chg", get24hChg(projId) } });
+            }
+            var item = queryRes[0];
+            var tokenAmt = item["transferTo"].ToString().formatDecimalDouble() - item["transferFrom"].ToString().formatDecimalDouble();
+            var shareAmt = item["onSetFdtIn"].ToString().formatDecimalDouble() 
+                - item["onGetFdtOut"].ToString().formatDecimalDouble()
+                + item["onPreMintAtEnd"].ToString().formatDecimalDouble()
+                - item["onVote"].ToString().formatDecimalDouble()
+                + item["onVoteAtEnd"].ToString().formatDecimalDouble()
+                ;
+            var lockAmt = item["onPreMint"].ToString().formatDecimalDouble()
+                - item["onPreMintAtEnd"].ToString().formatDecimalDouble()
+                + item["onVote"].ToString().formatDecimalDouble()
+                - item["onVoteAtEnd"].ToString().formatDecimalDouble()
+                ;
+            var res = new JObject {
+                {"tokenAmt", tokenAmt },
+                {"shareAmt", shareAmt },
+                {"availableAmt",tokenAmt + shareAmt },
+                {"lockAmt", lockAmt },
+                {"24chg", get24hChg(projId) }
+            };
+            return getRes(res); ;
+        }
+        private decimal get24hChg(string projId)
+        {
+            var findStr = new JObject { {"projId", projId},{ "$or", new JArray { new JObject { {"event", "OnBuy" } },new JObject { { "event", "OnSell" } } } } }.ToString();
+            var fieldStr = new JObject { { "blockTime", 1 }, { "tokenAmt", 1 }, { "fundAmt", 1 } }.ToString();
+            var sortStr = new JObject { { "blockNumber",-1} }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, daoNotifyCol, findStr, sortStr, 0, 1, fieldStr);
+            if (queryRes.Count == 0)
+            {
+                return decimal.Zero;
+            }
+
+            var item = queryRes[0];
+            var blockTime = long.Parse(item["blockTime"].ToString());
+            var zeorTime = TimeHelper.GetTimeStampZero();
+            if(blockTime < zeorTime)
+            {
+                return decimal.Zero;
+            }
+            var tokenAmt = decimal.Parse(item["tokenAmt"].ToString());
+            var fundAmt = decimal.Parse(item["fundAmt"].ToString());
+            if (tokenAmt == 0) tokenAmt = 1;
+            var price = fundAmt / tokenAmt;
+
+            findStr = new JObject { { "blockTime", new JObject { { "$lte", zeorTime - TimeHelper.OneDaySeconds } } }, { "projId", projId }, { "$or", new JArray { new JObject { { "event", "OnBuy" } }, new JObject { { "event", "OnSell" } } } } }.ToString();
+            queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, daoNotifyCol, findStr, sortStr, 0, 1, fieldStr);
+            if(queryRes.Count == 0)
+            {
+                return decimal.Zero;
+            }
+            var tokenAmtBf = decimal.Parse(item["tokenAmt"].ToString());
+            var fundAmtBf = decimal.Parse(item["fundAmt"].ToString());
+            if (tokenAmtBf == 0) tokenAmtBf = 1;
+            var priceBf = fundAmtBf / tokenAmtBf;
+            var ratio = (price - priceBf) / priceBf;
+            return decimal.Parse((ratio * 100).ToString("#0.0000"));
+        }
 
     }
     class FinanceType

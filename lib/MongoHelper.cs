@@ -63,6 +63,21 @@ namespace NEL.NNS.lib
 
             return txCount;
         }
+        public JArray GetData(string mongodbConnStr, string mongodbDatabase, string coll, string findStr, string fieldStr = "{'_id':0}")
+        {
+            var client = new MongoClient(mongodbConnStr);
+            var database = client.GetDatabase(mongodbDatabase);
+            var collection = database.GetCollection<BsonDocument>(coll);
+
+            List<BsonDocument> query = collection.Find(BsonDocument.Parse(findStr)).Project(BsonDocument.Parse(fieldStr)).ToList(); ;
+            client = null;
+
+            if (query != null && query.Count > 0)
+            {
+                return JArray.Parse(query.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.Strict }));
+            }
+            else { return new JArray(); }
+        }
         public JArray GetDataPages(string mongodbConnStr, string mongodbDatabase, string coll, string findStr = "{}", string sortStr = "{}", int skip = 0, int limit = 0, string fieldStr = "{'_id':0}")
         {
             var client = new MongoClient(mongodbConnStr);
@@ -78,21 +93,6 @@ namespace NEL.NNS.lib
             {
                 query = collection.Find(BsonDocument.Parse(findStr)).Project(BsonDocument.Parse(fieldStr)).Sort(sortStr).Skip(skip).Limit(limit).ToList();
             }
-            client = null;
-
-            if (query != null && query.Count > 0)
-            {
-                return JArray.Parse(query.ToJson(new JsonWriterSettings { OutputMode = JsonOutputMode.Strict }));
-            }
-            else { return new JArray(); }
-        }
-        public JArray GetData(string mongodbConnStr, string mongodbDatabase, string coll, string findStr, string fieldStr = "{'_id':0}")
-        {
-            var client = new MongoClient(mongodbConnStr);
-            var database = client.GetDatabase(mongodbDatabase);
-            var collection = database.GetCollection<BsonDocument>(coll);
-
-            List<BsonDocument> query = collection.Find(BsonDocument.Parse(findStr)).Project(BsonDocument.Parse(fieldStr)).ToList(); ;
             client = null;
 
             if (query != null && query.Count > 0)

@@ -100,6 +100,12 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryTokenBalanceInfo":
+                        result = fs.queryTokenBalanceInfo(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
                     case "queryTxList":
                         result = fs.queryTxList(
                             req.@params[0].ToString(),

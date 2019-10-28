@@ -16,5 +16,8 @@ namespace NEL.NNS.lib
             TimeSpan st = DateTime.UtcNow.Date - ZERO_SECONDS_Date;
             return Convert.ToInt64(st.TotalSeconds);
         }
+
+        public const long OneDaySeconds = 24 * 60 * 60;
+
     }
 }

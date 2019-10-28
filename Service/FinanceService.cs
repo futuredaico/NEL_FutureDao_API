@@ -694,7 +694,7 @@ namespace NEL_FutureDao_API.Service
                 {"shareAmt", shareAmt },
                 {"availableAmt",tokenAmt + shareAmt },
                 {"lockAmt", lockAmt },
-                {"24chg", get24hChg(projId) }
+                {"chg24h", get24hChg(projId) }
             };
             return getRes(res); ;
         }

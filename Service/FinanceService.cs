@@ -500,7 +500,8 @@ namespace NEL_FutureDao_API.Service
                 // 项目未发布, 不能启动
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
-            if (queryRes[0]["financeStartFlag"].ToString() == SkOp.FinishOp)
+            var startFlag = queryRes[0]["financeStartFlag"].ToString();
+            if (startFlag == SkOp.HandlingOp || startFlag == SkOp.FinishOp)
             {
                 // 已启动
                 return getErrorRes(DaoReturnCode.RepeatOperate);
@@ -510,7 +511,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
 
-            string updateStr = new JObject { { "$set", new JObject { { "financeStartFlag", SkOp.FinishOp } } } }.ToString();
+            string updateStr = new JObject { { "$set", new JObject { { "financeStartFlag", SkOp.HandlingOp } } } }.ToString();
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
             return getRes();
         }

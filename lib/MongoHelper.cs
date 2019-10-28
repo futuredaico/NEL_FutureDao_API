@@ -50,7 +50,6 @@ namespace NEL.NNS.lib
             //
             startMonitorFlag = config["startMonitorFlag"];
         }
-
         //
         public long GetDataCount(string mongodbConnStr, string mongodbDatabase, string coll, string findStr = "{}")
         {

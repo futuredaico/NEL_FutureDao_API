@@ -1,4 +1,5 @@
-﻿using NEL.NNS.lib;
+﻿using MongoDB.Bson;
+using NEL.NNS.lib;
 using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
@@ -34,8 +35,9 @@ namespace NEL_FutureDao_API.Service
         public string projFinancePriceHistCol { get; set; } = "daoprojfinancepricehistinfos";
         public string projFinanceReserveTokenHistCol { get; set; } = "daoprojfinancereservetokenhistinfos";
         public string projFinanceRewardCol { get; set; } = "daoprojfinancerewardinfos";
-        public string daoNotifyCol { get; set; } = "daonotifyinfos";
         public string projFundCol { get; set; } = "daoprojfundinfos";
+        public string projFundApplyCol { get; set; } = "daoprojfundapplyinfos";
+        public string daoNotifyCol { get; set; } = "daonotifyinfos";
         public string tokenUrl { get; set; }
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
@@ -358,7 +360,8 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray applyFinanceFund(string userId, string accessToken, string projId, string fundAmt)
         {
-            // 是否需要记录
+            // 前端发送
+            /*
             string code;
             if (!checkToken(userId, accessToken, out code))
             {
@@ -369,8 +372,27 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.T_NoPermissionStartFinance);
             }
-            //...
+            //
+            var findBson = new BsonDocument { { "projId", projId},{ "fundManagePoolTotal", new BsonDocument { { "$lte", decimal.Parse(fundAmt).format()} } } };
+            if(mh.GetDataCountBson(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceFundPoolCol, findBson) == 0)
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
 
+            findStr = new JObject { { "projId", projId },{ "state", SkOp.HandlingOp } }.ToString();
+            if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFundApplyCol, findStr) > 0)
+            {
+                return getErrorRes(DaoReturnCode.RepeatOperate);
+            }
+            var newdata = new JObject {
+                { "projId", projId },
+                { "fundAmt", fundAmt},
+                { "state", SkOp.HandlingOp},
+                { "txid", "" },
+                { "time", TimeHelper.GetTimeStamp() },
+            }.ToString();
+            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFundApplyCol, newdata);
+            */
             return getRes();
         }
         public JArray queryFinanceFund(string userId, string accessToken, string projId)
@@ -385,12 +407,12 @@ namespace NEL_FutureDao_API.Service
             }
             //
             findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "managePoolTotal", 1 }, { "_id", 0 } }.ToString();
+            string fieldStr = new JObject { { "fundManagePoolTotal", 1 }, { "_id", 0 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFundCol, findStr, fieldStr);
             string poolTotal = "0";
             if(queryRes.Count > 0)
             {
-                poolTotal = queryRes[0]["managePoolTotal"].ToString();
+                poolTotal = queryRes[0]["fundManagePoolTotal"].ToString();
             }
             return getRes(new JObject { { "poolTotal", poolTotal} });
         }
@@ -527,7 +549,7 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject {
                 {"projId", projId },
                 {"tokenName", item["tokenName"] },
-                {"tokenIssueTotal", item["tokenIssueTotal"].ToString().formatDecimal() },
+                {"tokenIssueTotal", item["hasIssueTokenTotal"].ToString().formatDecimal() },
                 {"tokenUnlockNotAmount", item["tokenUnlockNotAmount"].ToString().formatDecimal() },
                 {"tokenUnlockYesAmount", item["tokenUnlockYesAmount"].ToString().formatDecimal() },
                 {"fundManagePoolTotal", item["fundManagePoolTotal"].ToString().formatDecimal() },
@@ -624,7 +646,7 @@ namespace NEL_FutureDao_API.Service
             var findJo = new JObject { { "projId", projId } };
             if(address != "" && address.ToLower() != "all")
             {
-                findJo.Add("address", address);
+                findJo.Add("who", address);
             }
             findJo.Add("$or", new JArray { new JObject { { "event", "OnBuy" } }, new JObject { { "event", "OnSell"} } });
             var findStr = findJo.ToString();

@@ -1177,9 +1177,9 @@ namespace NEL_FutureDao_API.Service
             if (queryRes.Count == 0) return false;
 
             hasIssueAmt = queryRes[0]["hasIssueTokenTotal"].ToString().formatDecimal();
-            hasSellAmt = queryRes[0]["hasOnBuyFundTotal"].ToString().formatDecimal();
+            hasSellAmt = queryRes[0]["hasOnBuyFundTotal"].ToString().formatDecimal().formatEth();
             hasSupport = queryRes[0]["hasSupport"].ToString();
-            fundReservePoolTotal = queryRes[0]["fundReservePoolTotal"].ToString().formatDecimal();
+            fundReservePoolTotal = queryRes[0]["fundReservePoolTotal"].ToString().formatDecimal().formatEth();
             return true;
         }
         private bool getProjFinanceType(string projId, out string type, out string platform, out string tokenName)

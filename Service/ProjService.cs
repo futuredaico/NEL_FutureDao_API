@@ -961,7 +961,7 @@ namespace NEL_FutureDao_API.Service
         public JArray queryProjList(int pageNum = 1, int pageSize = 10)
         {
             //return queryProjListPrivate(pageNum, pageSize);
-            string findStr = new JObject { { "projState", ProjState.IdeaPub }, { "projSubState", ProjSubState.Init } }.ToString();
+            string findStr = new JObject { { "$or", new JArray { new JObject { { "projState", ProjState.IdeaPub } } , new JObject { { "projState", ProjState.CrowdFunding } } } }, { "projSubState", ProjSubState.Init } }.ToString();
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 

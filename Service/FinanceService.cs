@@ -675,7 +675,14 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0)
             {
                 var zeroD = decimal.Zero;
-                return getRes(new JObject { { "tokenAmt", zeroD },{ "shareAmt", zeroD },{ "availableAmt", zeroD }, { "lockAmt", zeroD }, { "24chg", get24hChg(projId) } });
+                return getRes(new JObject {
+                    { "lastBuyPrice", getLastPrice(projId, "OnBuy") },
+                    { "lastSellPrice", getLastPrice(projId, "OnSell") },
+                    { "tokenAmt", zeroD },
+                    { "shareAmt", zeroD },
+                    { "availableAmt", zeroD },
+                    { "lockAmt", zeroD },
+                    { "chg24h", get24hChg(projId) } });
             }
             var item = queryRes[0];
             var tokenAmt = item["transferTo"].ToString().formatDecimalDouble() - item["transferFrom"].ToString().formatDecimalDouble();

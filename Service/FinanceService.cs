@@ -413,7 +413,7 @@ namespace NEL_FutureDao_API.Service
             string poolTotal = "0";
             if(queryRes.Count > 0)
             {
-                poolTotal = queryRes[0]["fundManagePoolTotal"].ToString();
+                poolTotal = queryRes[0]["fundManagePoolTotal"].ToString().formatDecimal().formatEth();
             }
             return getRes(new JObject { { "poolTotal", poolTotal} });
         }
@@ -554,10 +554,10 @@ namespace NEL_FutureDao_API.Service
                 {"tokenIssueTotal", item["hasIssueTokenTotal"].ToString().formatDecimal() },
                 {"tokenUnlockNotAmount", item["tokenUnlockNotAmount"].ToString().formatDecimal() },
                 {"tokenUnlockYesAmount", item["tokenUnlockYesAmount"].ToString().formatDecimal() },
-                {"fundManagePoolTotal", item["fundManagePoolTotal"].ToString().formatDecimal() },
-                {"fundReservePoolTotal", item["fundReservePoolTotal"].ToString().formatDecimal() },
-                {"fundReserveRatio", item["fundReserveRatio"].ToString().formatDecimal() },
-                {"priceRaiseSpeed", item["priceRaiseSpeed"].ToString().formatDecimal() }
+                {"fundManagePoolTotal", item["fundManagePoolTotal"].ToString().formatDecimal().formatEth() },
+                {"fundReservePoolTotal", item["fundReservePoolTotal"].ToString().formatDecimal().formatEth() },
+                {"fundReserveRatio", item["fundReserveRatio"].ToString().formatDecimal().formatRatio() },
+                {"priceRaiseSpeed", item["priceRaiseSpeed"].ToString().formatDecimal().formatRatio() }
             };
             return getRes(res);
         }
@@ -570,9 +570,9 @@ namespace NEL_FutureDao_API.Service
             if (queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
-            item["ob_fundAmt"] = item["ob_fundAmt"].ToString().formatDecimal();
+            item["ob_fundAmt"] = item["ob_fundAmt"].ToString().formatDecimal().formatEth();
             item["ob_tokenAmt"] = item["ob_tokenAmt"].ToString().formatDecimal();
-            item["os_fundAmt"] = item["os_fundAmt"].ToString().formatDecimal();
+            item["os_fundAmt"] = item["os_fundAmt"].ToString().formatDecimal().formatEth();
             item["os_tokenAmt"] = item["os_tokenAmt"].ToString().formatDecimal();
             return getRes(item);
         }
@@ -637,9 +637,9 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes(queryRes);
 
-            var buydata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["ob_price"].ToString())).ToArray();
-            var selldata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["os_price"].ToString())).ToArray();
-            var timedata = queryRes.Select(p => MongoDecimalHelper.formatDecimal(p["recordTime"].ToString())).ToArray();
+            var buydata = queryRes.Select(p => p["ob_price"].ToString().formatDecimal().formatEth()).ToArray();
+            var selldata = queryRes.Select(p => p["os_price"].ToString().formatDecimal().formatEth()).ToArray();
+            var timedata = queryRes.Select(p => p["recordTime"].ToString()).ToArray();
             var res = new JObject { { "buyInfo", new JArray { buydata } }, { "sellInfo", new JArray { selldata } }, { "timeInfo", new JArray { timedata } } };
             return getRes(res);
         }
@@ -676,8 +676,8 @@ namespace NEL_FutureDao_API.Service
             {
                 var zeroD = decimal.Zero;
                 return getRes(new JObject {
-                    { "lastBuyPrice", getLastPrice(projId, "OnBuy") },
-                    { "lastSellPrice", getLastPrice(projId, "OnSell") },
+                    { "lastBuyPrice", getLastPrice(projId, "OnBuy").formatEth() },
+                    { "lastSellPrice", getLastPrice(projId, "OnSell").formatEth() },
                     { "tokenAmt", zeroD },
                     { "shareAmt", zeroD },
                     { "availableAmt", zeroD },
@@ -698,8 +698,8 @@ namespace NEL_FutureDao_API.Service
                 - item["onVoteAtEnd"].ToString().formatDecimalDouble()
                 ;
             var res = new JObject {
-                {"lastBuyPrice", getLastPrice(projId, "OnBuy") },
-                {"lastSellPrice", getLastPrice(projId, "OnSell") },
+                {"lastBuyPrice", getLastPrice(projId, "OnBuy").formatEth().formatEth() },
+                {"lastSellPrice", getLastPrice(projId, "OnSell").formatEth().formatEth() },
                 {"tokenAmt", tokenAmt },
                 {"shareAmt", shareAmt },
                 {"availableAmt",tokenAmt + shareAmt },

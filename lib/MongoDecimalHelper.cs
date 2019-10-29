@@ -27,5 +27,20 @@ namespace NEL.NNS.lib
         {
             return decimal.Parse(numberDecimalStr.formatDecimal(), NumberStyles.Float);
         }
+
+        private static decimal EthPrecision = decimal.Parse("1000000000000000000");
+        public static decimal formatEth(this decimal numberDecimal)
+        {
+            return numberDecimal / EthPrecision;
+        }
+        public static string formatEth(this string numberDecimalStr)
+        {
+            return decimal.Parse(numberDecimalStr).formatEth().ToString();
+        }
+        private static decimal ratioPrecision = 1000;
+        public static string formatRatio(this string ratio)
+        {
+            return (decimal.Parse(ratio)/ratioPrecision).ToString();
+        }
     }
 }

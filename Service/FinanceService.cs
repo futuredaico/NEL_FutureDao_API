@@ -691,6 +691,8 @@ namespace NEL_FutureDao_API.Service
                 - item["onVoteAtEnd"].ToString().formatDecimalDouble()
                 ;
             var res = new JObject {
+                {"lastBuyPrice", getLastPrice(projId, "OnBuy") },
+                {"lastSellPrice", getLastPrice(projId, "OnSell") },
                 {"tokenAmt", tokenAmt },
                 {"shareAmt", shareAmt },
                 {"availableAmt",tokenAmt + shareAmt },
@@ -698,6 +700,20 @@ namespace NEL_FutureDao_API.Service
                 {"chg24h", get24hChg(projId) }
             };
             return getRes(res); ;
+        }
+
+        private decimal getLastPrice(string projId, string type="OnBuy")
+        {
+            var findStr = new JObject { { "projId", projId }, { "event", type } }.ToString();
+            var sortStr = new JObject { { "blockNumber", -1 } }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, daoNotifyCol, findStr, sortStr, 0, 1);
+            if (queryRes.Count == 0) return decimal.Zero;
+
+            var item = queryRes[0];
+            var tokenAmt = decimal.Parse(item["tokenAmt"].ToString());
+            var fundAmt = decimal.Parse(item["fundAmt"].ToString());
+            var price = fundAmt / tokenAmt;
+            return decimal.Parse(price.ToString("#0.0000"));
         }
         private decimal get24hChg(string projId)
         {

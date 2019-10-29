@@ -1145,11 +1145,13 @@ namespace NEL_FutureDao_API.Service
             item["hasIssueAmt"] = "0";
             item["hasSellAmt"] = "0";
             item["hasSupport"] = "0";
-            if(getProjFinanceInfo(projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport))
+            item["fundReservePoolTotal"] = "0";
+            if(getProjFinanceInfo(projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal))
             {
                 item["hasIssueAmt"] = hasIssueAmt;
                 item["hasSellAmt"] = hasSellAmt;
                 item["hasSupport"] = hasSupport;
+                item["fundReservePoolTotal"] = fundReservePoolTotal;
             }
             item["type"] = "";
             item["platform"] = "";
@@ -1162,20 +1164,22 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes(item);
         }
-        private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport)
+        private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal)
         {
             hasIssueAmt = "";
             hasSellAmt = "";
             hasSupport = "";
+            fundReservePoolTotal = "";
 
             var findStr = new JObject { {"projId",  projId} }.ToString();
-            var fieldStr = new JObject { { "hasOnBuyFundTotal", 1},{ "hasIssueTokenTotal", 1},{ "hasSupport",1 } }.ToString();
+            var fieldStr = new JObject { { "hasOnBuyFundTotal", 1},{ "hasIssueTokenTotal", 1},{ "hasSupport",1 },{ "fundReservePoolTotal",1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceFundPoolCol, findStr, fieldStr);
             if (queryRes.Count == 0) return false;
 
             hasIssueAmt = queryRes[0]["hasIssueTokenTotal"].ToString().formatDecimal();
             hasSellAmt = queryRes[0]["hasOnBuyFundTotal"].ToString().formatDecimal();
             hasSupport = queryRes[0]["hasSupport"].ToString();
+            fundReservePoolTotal = queryRes[0]["fundReservePoolTotal"].ToString().formatDecimal();
             return true;
         }
         private bool getProjFinanceType(string projId, out string type, out string platform, out string tokenName)

@@ -145,9 +145,7 @@ namespace NEL.Comm
                         break;
                     case "queryContractHash":
                         result = fs.queryContractHash(
-                            req.@params[0].ToString(),
-                            req.@params[1].ToString(),
-                            req.@params[2].ToString()
+                            req.@params[0].ToString()
                             );
                         break;
                     case "startFinance":

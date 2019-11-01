@@ -464,18 +464,10 @@ namespace NEL_FutureDao_API.Service
             } 
             return getRes(new JObject { { "ratio", ratio},{ "ratioSetFlag", ratioSetFlag } });
         }
-        public JArray queryContractHash(string userId, string accessToken, string projId)
+        public JArray queryContractHash(string projId)
         {
             //
-            if (!checkToken(userId, accessToken, out string code)) return getErrorRes(code);
-
-            string findStr = new JObject { { "projId", projId }, { "userId", userId }, { "role", TeamRoleType.Admin } }.ToString();
-            if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr) == 0)
-            {
-                return getErrorRes(DaoReturnCode.T_NoPermissionStartFinance);
-            }
-            //
-            findStr = new JObject { { "projId", projId } }.ToString();
+            string findStr = new JObject { { "projId", projId } }.ToString();
             string fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "contractHash", "contractName"}).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceHashCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();

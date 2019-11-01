@@ -64,6 +64,7 @@ namespace NEL_FutureDao_API.Service
             if (queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
+            var headIconUrl = getHeadIconUrl(item["address"].ToString(), out string userId, out string userName);
             var res = new JObject {
                  {"proposalId",item["proposalId"]},
                 {"proposalName",item["proposalName"]},
@@ -71,16 +72,24 @@ namespace NEL_FutureDao_API.Service
                 {"address",item["address"]},
                 {"distributeWay",item["distributeWay"]},
                 {"proposalDetail",item["proposalDetail"]},
-                {"proposalDetail",getHeadIconUrl(item["address"].ToString())},
+                {"headIconUrl",headIconUrl},
+                {"userId",userId},
+                {"userName",userName},
             };
             return getRes(res);
         }
-        private string getHeadIconUrl(string address)
+        private string getHeadIconUrl(string address, out string userId, out string userName)
         {
+            userId = "";
+            userName = "";
             var findStr = new JObject { { "ethAddress", address } }.ToString();
-            var fieldStr = new JObject { { "headIconUrl", 1 } }.ToString();
+            var fieldStr = new JObject { { "headIconUrl", 1 },{ "userId",1},{ "userName",1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return "";
+
+            var item = queryRes[0];
+            userId = item["userId"].ToString();
+            userName = item["userName"].ToString();
             return queryRes[0]["headIconUrl"].ToString();
         }
 

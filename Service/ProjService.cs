@@ -113,6 +113,11 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionDeleteProj);
             }
+            if(hasStartFinance(projId))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+
             string findStr = getProjIdFilter(projId);
             mh.DeleteData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
             findStr = new JObject { { "projId", projId } }.ToString();
@@ -125,6 +130,11 @@ namespace NEL_FutureDao_API.Service
             mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateDiscussZanInfoCol, findStr);
             mh.DeleteDataMany(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
             return getRes();
+        }
+        private bool hasStartFinance(string projId)
+        {
+            var findStr = new JObject { { "projId", projId} }.ToString();
+            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr) > 0;
         }
         public JArray modifyProjVideo(string userId, string accessToken, string projId, string projVideoUrl, string projDetail)
         {

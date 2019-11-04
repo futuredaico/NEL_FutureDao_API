@@ -37,14 +37,14 @@ namespace NEL_FutureDao_API.Service.State
         public const string T_HaveNotPermissionModifyUpdate = "10237";  // 没有权限[修改]项目更新
         public const string T_HaveNotPermissionQueryUpdate = "10238";   // 没有权限[查询]项目更新
         public const string T_InvalidTargetUserId = "10239";
-        public const string T_HaveNotPermissionInviteTeamMember = "102341"; // 没有权限[创建/邀请]项目成员
-        public const string T_HaveNotPermissionDeleteTeamMember = "102342"; // 没有权限[删除]项目成员
-        public const string T_HaveNotPermissionModifyTeamMember = "102343"; // 没有权限[修改(角色)]项目成员
-        public const string T_HaveNotPermissionQueryTeamMember = "102344";  // 没有权限[查询]项目成员
-        public const string T_HaveNotPermissionDeleteTeamAdmin = "102345";  // 没有权限删除项目团队管理员
-        public const string T_HaveNotPermissionDeleteYourSelf = "102346";   // 没有权限删除项目团队成员自己
+        public const string T_HaveNotPermissionInviteTeamMember = "10241"; // 没有权限[创建/邀请]项目成员
+        public const string T_HaveNotPermissionDeleteTeamMember = "10242"; // 没有权限[删除]项目成员
+        public const string T_HaveNotPermissionModifyTeamMember = "10243"; // 没有权限[修改(角色)]项目成员
+        public const string T_HaveNotPermissionQueryTeamMember = "10244";  // 没有权限[查询]项目成员
+        public const string T_HaveNotPermissionDeleteTeamAdmin = "10245";  // 没有权限删除项目团队管理员
+        public const string T_HaveNotPermissionDeleteYourSelf = "10246";   // 没有权限删除项目团队成员自己
 
-        public const string T_NoPermissionStartFinance = "102346";   // 
+        public const string T_NoPermissionStartFinance = "10247";   // 没有权限启动融资
 
         public const string S_NoPermissionAddDiscuss = "10251";     // 没有权限添加评论
         public const string S_NoPermissionDelDiscuss = "10252";

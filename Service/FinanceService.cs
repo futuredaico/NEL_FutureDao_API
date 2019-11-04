@@ -161,7 +161,7 @@ namespace NEL_FutureDao_API.Service
                 { "reserveTokenInfo", reserveTokenInfos},
                 { "deployContractFlag", SkOp.HandlingOp},
                 // 设置回报
-                { "rewardSetFlag", SkOp.NotOp},
+                { "rewardSetFlag", SkOp.HandlingOp},
                 { "connectorName", ""},
                 { "connectTel", ""},
                 // 存储金比例
@@ -249,13 +249,17 @@ namespace NEL_FutureDao_API.Service
             string fieldStr = new JObject { { "connectorName", 1 }, { "connectTel", 1 },{ "tokenName",1 },{ "deployContractFlag",1 },{ "rewardSetFlag",1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.InvalidOperate);
-            // TODO: 只有部署合约成功后才能继续
-
-            if (queryRes[0]["connectorName"].ToString() != connectorName
-                || queryRes[0]["connectTel"].ToString() != connectTel
+            //
+            if(queryRes[0]["deployContractFlag"].ToString() != SkOp.FinishOp
                 || queryRes[0]["rewardSetFlag"].ToString() != SkOp.FinishOp)
             {
-                string updateStr = new JObject { { "$set", new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{ "rewardSetFlag", SkOp.FinishOp } } } }.ToString();
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+
+            if (queryRes[0]["connectorName"].ToString() != connectorName
+                || queryRes[0]["connectTel"].ToString() != connectTel)
+            {
+                string updateStr = new JObject { { "$set", new JObject { { "connectorName", connectorName }, { "connectTel", connectTel }} } }.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
             }
             //

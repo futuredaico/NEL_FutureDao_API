@@ -961,7 +961,7 @@ namespace NEL_FutureDao_API.Service
         public JArray queryProjList(int pageNum = 1, int pageSize = 10)
         {
             //return queryProjListPrivate(pageNum, pageSize);
-            string findStr = new JObject { { "$or", new JArray { new JObject { { "projState", ProjState.IdeaPub } } , new JObject { { "projState", ProjState.CrowdFunding } } } }, { "projSubState", ProjSubState.Init } }.ToString();
+            string findStr = new JObject { { "$or", new JArray { new JObject { { "projState", ProjState.IdeaPub } } , new JObject { { "projState", ProjState.Trading } } } }, { "projSubState", ProjSubState.Init } }.ToString();
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 
@@ -1378,7 +1378,7 @@ namespace NEL_FutureDao_API.Service
     {
         public const string Readying = "reading";  // 准备中
         public const string IdeaPub = "ideapub";   // 创意发布
-        public const string CrowdFunding = "crowdfunding";  // 众筹中
+        public const string CrowdFunding = "crowdfunding";  // 众筹中，已去掉
         public const string Trading = "trading";       // 交易中
         public const string ClearUp = "clearup";       // 清退
     }

@@ -523,10 +523,10 @@ namespace NEL_FutureDao_API.Service
                 code = DaoReturnCode.RepeatOperate;
                 return false;
             }
-            if(item["projState"].ToString() != ProjState.CrowdFunding 
+            if(item["projState"].ToString() != ProjState.Trading 
                 || item["projSubState"].ToString() != ProjSubState.Init)
             {
-                var updateStr = new JObject { { "$set", new JObject { { "projState", ProjState.CrowdFunding }, { "projSubState", ProjSubState.Init } } } }.ToString();
+                var updateStr = new JObject { { "$set", new JObject { { "projState", ProjState.Trading }, { "projSubState", ProjSubState.Init } } } }.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, updateStr, findStr);
             }
             code = "";

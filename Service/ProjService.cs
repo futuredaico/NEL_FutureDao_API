@@ -991,15 +991,16 @@ namespace NEL_FutureDao_API.Service
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 
-            string sortStr = "{'lastUpdatTime':1}";
+            string sortStr = "{'lastUpdatTime':-1}";
             string fieldStr = new JObject { { "projId", 1 }, { "_id", 0 } }.ToString();
-            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            //var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr, fieldStr);
             var arr = queryRes.Select(p => p["projId"].ToString()).Distinct().ToArray();
             arr = getProjTempAndOther(arr);
 
             findStr = MongoFieldHelper.toFilter(arr, "projId").ToString();
             fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "projTitle", "projType", "projConverUrl", "projState", "projSubState", "supportCount", "lastUpdateTime" }).ToString();
-            queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
             return getRes(new JObject { { "count", count},{ "list", toFormat(queryRes)} });
         }
         public JArray queryProjListAtStar(string userId, string accessToken, int pageNum = 1, int pageSize = 10)
@@ -1073,7 +1074,7 @@ namespace NEL_FutureDao_API.Service
             var res = queryRes.Select(p => {
                 p["projId"] = p["projId"].ToString().toNormalId();
                 return p;
-            }).ToArray();
+            }).OrderByDescending(p => long.Parse(p["lastUpdateTime"].ToString())).ToArray();
             return new JArray { res };
         }
         private bool getListFilter(int pageNum, int pageSize, string userId, string manageOrStar, out string filter, out long count)

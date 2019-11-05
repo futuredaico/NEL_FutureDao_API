@@ -562,7 +562,7 @@ namespace NEL_FutureDao_API.Service
             var item = queryRes[0];
             var res = new JObject {
                 {"projId", projId },
-                {"tokenSymbol", item["tokenSymbol"] },
+                {"tokenSymbol", item["tokenName"] },
                 {"tokenIssueTotal", item["hasIssueTokenTotal"].ToString().formatDecimal().ToString() },
                 {"tokenUnlockNotAmount", item["tokenUnlockNotAmount"].ToString().formatDecimal().ToString() },
                 {"tokenUnlockYesAmount", item["tokenUnlockYesAmount"].ToString().formatDecimal().ToString() },

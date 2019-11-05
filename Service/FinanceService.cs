@@ -73,6 +73,8 @@ namespace NEL_FutureDao_API.Service
             string tokenSymbol, 
             string reserveTokenFlag, 
             JArray reserveTokenInfos) {
+
+            adminAddress = adminAddress.ToLower();
             // 参数检查
             type = type.ToLower();
             if(type != FinanceType.General
@@ -121,6 +123,7 @@ namespace NEL_FutureDao_API.Service
                             return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
                         }
                     }
+                    reserveTokenInfo["address"] = addr.ToString().ToLower();
                 }
             }
 
@@ -657,6 +660,7 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray queryTxList(string projId, string address, int pageNum=1, int pageSize=10)
         {
+            address = address.ToLower();
             var findJo = new JObject { { "projId", projId } };
             if(address != "" && address.ToLower() != "all")
             {
@@ -688,6 +692,7 @@ namespace NEL_FutureDao_API.Service
         //
         public JArray queryTokenBalanceInfo(string projId, string address)
         {
+            address = address.ToLower();
             var findStr = new JObject { { "projId", projId},{ "address", address} }.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] { "transferFrom", "transferTo", "onSetFdtIn", "onGetFdtOut", "onPreMint", "onPreMintAtEnd", "onVote", "onVoteAtEnd" }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceBalanceCol, findStr, fieldStr);

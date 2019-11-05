@@ -426,6 +426,7 @@ namespace NEL_FutureDao_API.Service
 
         public JArray bindAddress(string userId, string accessToken, string type, string address)
         {
+            address = address.ToLower();
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);

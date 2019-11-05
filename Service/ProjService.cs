@@ -1199,13 +1199,13 @@ namespace NEL_FutureDao_API.Service
             platform = "";
             tokenName = "";
             var findStr = new JObject { { "projId", projId } }.ToString();
-            var fieldStr = new JObject { { "type", 1 }, { "platform", 1 },{ "tokenName",1} }.ToString();
+            var fieldStr = new JObject { { "type", 1 }, { "platform", 1 },{ "fundName", 1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0) return false;
 
             type = queryRes[0]["type"].ToString();
             platform = queryRes[0]["platform"].ToString();
-            tokenName = queryRes[0]["tokenName"].ToString();
+            tokenName = queryRes[0]["fundName"].ToString();
             return true;
         }
         private void getStarState(string projId, string userId, out bool isStar, out bool isSupport)

@@ -1,10 +1,8 @@
 ﻿using NEL.NNS.lib;
 using NEL_FutureDao_API.Service.Help;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace NEL_FutureDao_API.Service
 {
@@ -52,7 +50,7 @@ namespace NEL_FutureDao_API.Service
                 {"address",p["address"]},
                 {"distributeWay",p["distributeWay"]},
                 {"proposalDetail",p["proposalDetail"]},
-                {"proposalDetail",(p["us"] as JArray)[0]["headIconUrl"]},
+                {"headIconUrl",(p["us"] as JArray)[0]["headIconUrl"]},
             }).ToArray();
 
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });

@@ -694,7 +694,7 @@ namespace NEL_FutureDao_API.Service
         {
             address = address.ToLower();
             var findStr = new JObject { { "projId", projId},{ "address", address} }.ToString();
-            var fieldStr = MongoFieldHelper.toReturn(new string[] { "transferFrom", "transferTo", "onSetFdtIn", "onGetFdtOut", "onPreMint", "onPreMintAtEnd", "onVote", "onVoteAtEnd" }).ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "transferFrom", "transferTo", "onSetFdtIn", "onGetFdtOut", "onPreMint", "onPreMintAtEnd", "onVote", "onProcess" }).ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceBalanceCol, findStr, fieldStr);
             if(queryRes.Count == 0)
             {
@@ -714,12 +714,12 @@ namespace NEL_FutureDao_API.Service
                 - item["onGetFdtOut"].ToString().formatDecimalDouble()
                 + item["onPreMintAtEnd"].ToString().formatDecimalDouble()
                 - item["onVote"].ToString().formatDecimalDouble()
-                + item["onVoteAtEnd"].ToString().formatDecimalDouble()
+                + item["onProcess"].ToString().formatDecimalDouble()
                 ;
             var lockAmt = item["onPreMint"].ToString().formatDecimalDouble()
                 - item["onPreMintAtEnd"].ToString().formatDecimalDouble()
                 + item["onVote"].ToString().formatDecimalDouble()
-                - item["onVoteAtEnd"].ToString().formatDecimalDouble()
+                - item["onProcess"].ToString().formatDecimalDouble()
                 ;
             var res = new JObject {
                 {"lastBuyPrice", getLastPrice(projId, "OnBuy").formatEth().formatEth().ToString() },

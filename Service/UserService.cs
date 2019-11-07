@@ -92,6 +92,8 @@ namespace NEL_FutureDao_API.Service
                 {"brief", ""},
                 {"time",  time},
                 {"lastUpdateTime", time },
+                {"ethAddress", "" },
+                {"neoAddress", "" },
             }.ToString();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, newdata);
 

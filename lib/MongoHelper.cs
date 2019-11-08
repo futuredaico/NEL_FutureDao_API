@@ -78,7 +78,7 @@ namespace NEL.NNS.lib
             }
             else { return new JArray(); }
         }
-        public JArray GetDataPages(string mongodbConnStr, string mongodbDatabase, string coll, string findStr = "{}", string sortStr = "{}", int skip = 0, int limit = 0, string fieldStr = "{'_id':0}")
+        public JArray GetDataPages(string mongodbConnStr, string mongodbDatabase, string coll, string findStr, string sortStr, int skip, int limit, string fieldStr = "{'_id':0}")
         {
             var client = new MongoClient(mongodbConnStr);
             var database = client.GetDatabase(mongodbDatabase);

@@ -268,7 +268,7 @@ namespace NEL_FutureDao_API.Service
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
             }
             //
-            string tokenName = queryRes[0]["tokenName"].ToString();
+            string fundName = queryRes[0]["fundName"].ToString();
             var rewardList = (JArray)info["info"];
 
             // TODO: 增删改查
@@ -324,7 +324,7 @@ namespace NEL_FutureDao_API.Service
             {
                 p["projId"] = projId;
                 p["rewardId"] = DaoInfoHelper.genProjRewardId(projId, p["rewardName"].ToString());
-                p["giftTokenName"] = tokenName;
+                p["fundName"] = fundName;
                 p["activeState"] = RewardActiveState.Valid_Yes;
                 p["hasSellCount"] = 0;
                 return p;
@@ -361,7 +361,7 @@ namespace NEL_FutureDao_API.Service
 
             findStr = new JObject { { "projId", projId },{ "activeState", RewardActiveState.Valid_Yes} }.ToString();
             fieldStr = MongoFieldHelper.toReturn(new string[] {
-                "rewardId", "projId","rewardName","rewardDesc", "giftTokenName","price",
+                "rewardId", "projId","rewardName","rewardDesc", "fundName","price",
                 "limitFlag","limitMax", "distributeTimeFlag","distributeTimeFixYes","distributeTimeFixNot","distributeWay","note","hasSellCount"
             }).ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr, fieldStr);

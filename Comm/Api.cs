@@ -21,6 +21,7 @@ namespace NEL.Comm
         private ProjService ps;
         private DiscussService ds;
         private FinanceService fs;
+        private RewardService rs;
 
         public Api(string node)
         {
@@ -29,6 +30,12 @@ namespace NEL.Comm
             switch (netnode)
             {
                 case "testnet":
+                    rs = new RewardService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet
+                    };
                     fs = new FinanceService
                     {
                         mh = mh,
@@ -64,6 +71,12 @@ namespace NEL.Comm
                     };
                     break;
                 case "mainnet":
+                    rs = new RewardService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet
+                    };
                     ds = new DiscussService
                     {
                         mh = mh,
@@ -100,6 +113,44 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryBuyOrder":
+                        result = rs.queryBuyOrder(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "cancelBuyOrder":
+                        result = rs.cancelBuyOrder(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "confirmBuyOrder":
+                        result = rs.confirmBuyOrder(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
+                        break;
+                    case "initBuyOrder":
+                        result = rs.initBuyOrder(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            req.@params[8].ToString(),
+                            req.@params[9].ToString(),
+                            req.@params[10].ToString()
+                            );
+                        break;
+                    // 
                     case "queryTokenBalanceInfo":
                         result = fs.queryTokenBalanceInfo(
                             req.@params[0].ToString(),

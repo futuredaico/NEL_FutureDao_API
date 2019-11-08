@@ -64,5 +64,8 @@ namespace NEL_FutureDao_API.Service.State
         public const string RepeatOperate = "10405";            // 重复操作
         public const string InvalidOperate = "10406";           // 非法操作
 
+        public const string Invalid_RewardId = "10411"; // 无效回报id
+        public const string Invalid_OrderId = "10412";   // 无效订单id
+
     }
 }

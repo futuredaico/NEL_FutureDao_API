@@ -1,5 +1,7 @@
 ﻿using NEL.NNS.lib;
+using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
+using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,31 +15,31 @@ namespace NEL_FutureDao_API.Service
         public MongoHelper mh { get; set; }
         public string dao_mongodbConnStr { get; set; }
         public string dao_mongodbDatabase { get; set; }
+        private string projFinanceCol { get; set; } = "daoprojfinanceinfos";
         private string projFinanceOrderCol { get; set; } = "daoprojfinanceorderinfos";
         private string projFinanceRewardCol { get; set; } = "daoprojfinancerewardinfos";
+        public string tokenUrl { get; set; } = "";
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
         private JArray getRes(JToken res = null) => RespHelper.getRes(res);
-        public JArray applyBuyOrder(
+        public JArray initBuyOrder(
             string userId,
-            string token,
+            string accessToken,
             string projId,
             string rewardId,
-            string rewardName,
-            string price,
-            string amt,
-            string totalPrice,
-            string senderName,
-            string senderTel,
-            string senderNote,
+            string amount,
+            string rewardAmount,
             string connectorName,
             string connectorTel,
-            string connectorEmail,
             string connectorAddress,
+            string connectorEmail,
             string connectorMessage
             )
         {
-
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
             var findStr = new JObject { { "rewardId", rewardId }}.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr);
             if(queryRes.Count == 0 
@@ -45,24 +47,31 @@ namespace NEL_FutureDao_API.Service
                 || queryRes[0]["projId"].ToString() != projId
                 )
             {
-                // 无效订单
-                return getErrorRes("");
+                // 无效回报id
+                return getErrorRes(DaoReturnCode.Invalid_RewardId);
             }
             var item = queryRes[0];
-
+            
+            if(!getProjTokenName(projId, out string tokenName, out string fundName))
+            {
+                return getErrorRes(DaoReturnCode.S_InvalidProjId);
+            }
+            var orderId = DaoInfoHelper.genProjRewardOrderId(projId, rewardId, userId);
             var now = TimeHelper.GetTimeStamp();
             var newdata = new JObject {
                 { "projId", projId},
                 { "rewardId", rewardId},
-                { "orderId", DaoInfoHelper.genProjRewardOrderId(projId, rewardId, userId)},
+                { "orderId", orderId},
                 { "orderState", OrderState.WaitingPay},
-                { "rewardName", rewardName},
-                { "price", price},
-                { "amount", amt},
-                { "totalPrice", totalPrice},
-                { "senderName", senderName},
-                { "senderTel", senderTel},
-                { "senderNote", senderNote},
+                { "rewardName", item["rewardName"]},
+                { "price", item["price"]},
+                { "priceUnit", fundName },
+                { "amount", amount},
+                { "totalCost", decimal.Parse(item["price"].ToString()) * decimal.Parse(amount)},
+                { "totalCostUnit", fundName },
+                { "rewardAmount", rewardAmount },
+                { "rewardAmountUnit", tokenName },
+                { "senderNote", ""},
                 { "connectorName", connectorName},
                 { "connectorTel", connectorTel},
                 { "connectorEmail", connectorEmail},
@@ -72,28 +81,47 @@ namespace NEL_FutureDao_API.Service
                 { "userId", userId},
                 { "originInfo", item},
                 { "time",  now},
-                { "lastUpdateTime",  now}
+                { "lastUpdateTime", now}
             };
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, newdata);
-            return getRes();
+            return getRes(new JObject { { "orderId", orderId} });
+        }
+        private bool getProjTokenName(string projId, out string tokenName, out string fundName)
+        {
+            tokenName = "";
+            fundName = "";
+            var findStr = new JObject { { "projId", projId} }.ToString();
+            var fieldStr = new JObject { { "tokenSymbol", 1 }, { "fundName", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return false;
+
+            var item = queryRes[0];
+            tokenName = item["tokenSymbol"].ToString();
+            fundName = item["fundName"].ToString();
+            return true;
         }
 
-        public JArray hasPayOrder(string userId, string token, string orderId, string txid)
+        public JArray confirmBuyOrder(string userId, string accessToken, string orderId, string txid)
         {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+
             var findStr = new JObject { { "orderId", orderId } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr);
             if(queryRes.Count == 0
                 || queryRes[0]["userId"].ToString() != userId)
             {
-                // 无效订单
-                return getErrorRes("");
+                // 无效订单id
+                return getErrorRes(DaoReturnCode.Invalid_OrderId);
             }
 
             var item = queryRes[0];
             if(item["orderState"].ToString() != OrderState.WaitingPay)
             {
                 // 无效操作
-                return getErrorRes("");
+                return getErrorRes(DaoReturnCode.InvalidOperate);
             }
             if(item["txid"].ToString() != txid)
             {
@@ -105,29 +133,34 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
-        public JArray cancelPayOrder(string userId, string token, string orderId)
+        public JArray cancelBuyOrder(string userId, string accessToken, string orderId)
         {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
             var findStr = new JObject { { "orderId", orderId} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr);
             if(queryRes.Count == 0
                 || queryRes[0]["userId"].ToString() != userId)
             {
-                // 无效订单
-                return getErrorRes("");
+                // 无效订单id
+                return getErrorRes(DaoReturnCode.Invalid_OrderId);
             }
 
             var item = queryRes[0];
             if(item["orderState"].ToString() != OrderState.WaitingPay)
             {
                 // 无效操作
-                return getErrorRes("");
+                return getErrorRes(DaoReturnCode.InvalidOperate);
             }
-
+            var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.Canceled} } } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, updateStr, findStr);
             return getRes();
         }
-        public JArray queryBuyOrder(string userId, string token)
+        public JArray queryBuyOrder(string userId, string token, string orderId)
         {
-            return null;
+            return getRes();
         }
 
     }

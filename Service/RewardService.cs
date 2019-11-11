@@ -323,14 +323,30 @@ namespace NEL_FutureDao_API.Service
             return true;
         }
 
-        public JArray confirmDeliverBuyOrder(string userId, string accessToken, string projId, string orderId)
+        public JArray confirmDeliverBuyOrder(string userId, string accessToken, string projId, string orderId, string note)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
                 return getErrorRes(code);
             }
 
+            if (isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
 
+            var findStr = new JObject { { "projId", projId }, { "orderId", orderId } }.ToString();
+            var fieldStr = new JObject { { "orderState", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.Invalid_OrderId);
+
+            var item = queryRes[0];
+            if (item["orderState"].ToString() != OrderState.WaitingDeliverGoods)
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.hasDeliverGoods },{ "senderNote", note } } } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, updateStr, findStr);
             return getRes();
         }
 

@@ -113,12 +113,46 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "queryProjBuyOrderList":
+                        result = rs.queryProjBuyOrderList(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            int.Parse(req.@params[3].ToString()),
+                            int.Parse(req.@params[4].ToString())
+                            );
+                        break;
+                    case "queryProjBuyOrder":
+                        result = rs.queryProjBuyOrder(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
+                        break;
+                    case "queryBuyOrderList":
+                        result = rs.queryBuyOrderList(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString())
+                            );
+                        break;
                     case "queryBuyOrder":
                         result = rs.queryBuyOrder(
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
                             req.@params[2].ToString(),
                             req.@params[3].ToString()
+                            );
+                        break;
+                    case "confirmDeliverBuyOrder":
+                        result = rs.confirmDeliverBuyOrder(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString()
                             );
                         break;
                     case "cancelBuyOrder":

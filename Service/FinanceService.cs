@@ -250,7 +250,7 @@ namespace NEL_FutureDao_API.Service
             }
             //
             findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "connectorName", 1 }, { "connectTel", 1 }, { "fundName", 1 }, { "deployContractFlag", 1 }, { "rewardSetFlag", 1 } }.ToString();
+            string fieldStr = new JObject { { "connectorName", 1 }, { "connectTel", 1 }, { "fundName", 1 }, { "deployContractFlag", 1 },{ "reserveTokenSetFlag",1 }, { "rewardSetFlag", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.InvalidOperate);
             //

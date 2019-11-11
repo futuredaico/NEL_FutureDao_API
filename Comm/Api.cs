@@ -117,7 +117,8 @@ namespace NEL.Comm
                         result = rs.queryBuyOrder(
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
-                            req.@params[2].ToString()
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
                             );
                         break;
                     case "cancelBuyOrder":

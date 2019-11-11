@@ -163,7 +163,7 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
         
-        public JArray queryBuyOderList(string userId, string accessToken, int pageNum, int pageSize)
+        public JArray queryBuyOrderList(string userId, string accessToken, int pageNum, int pageSize)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
             {
@@ -188,14 +188,105 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
+            var findStr = new JObject { { "projId", projId }, { "orderId", orderId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr);
+            if (queryRes.Count == 0 || queryRes[0]["userId"].ToString() != userId) return getRes();
 
-            var isAdmin = isProjMember(projId, userId, true);
+            var item = queryRes[0];
+            getProjRewardConnector(projId, out string senderName, out string senderTel);
 
-            var findStr = new JObject { { "orderId", orderId } }.ToString();
-            
-            
+            var res = new JObject {
+                {"projId", projId},
+                {"projName", item["projName"]},
+                {"rewardId", item["rewardId"]},
+                {"rewardName", item["rewardName"]},
+                {"orderId", item["orderId"]},
+                {"orderState", item["orderState"]},
+                {"price", item["price"]},
+                {"priceUnit", item["priceUnit"]},
+                {"amount", item["amount"]},
+                {"totalCost", item["totalCost"]},
+                {"totalCostUnit", item["totalCostUnit"]},
+                {"time", item["time"]},
+                { "connectorName", item["connectorName"]},
+                { "connectorTel", item["connectorTel"]},
+                { "connectorAddress", item["connectorAddress"]},
+                { "connectorEmail", item["connectorEmail"]},
+                { "connectorMessage", item["connectorMessage"]},
+                { "senderName", senderName},
+                { "senderTel", senderTel},
+                { "senderNote", item["senderNote"]},
+            };
+            return getRes(res);
+        }
 
-            return getRes();
+        public JArray queryProjBuyOrderList(string userId, string accessToken, string projId, int pageNum, int pageSize)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+
+            if(isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var sortStr = new JObject { { "time", -1 } }.ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "rewardId", "rewardName","orderId",
+                "price","priceUnit","amount","totalCost","totalCostUnit","orderState"
+            }).ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", queryRes } });
+
+            return getRes(new JObject { { "count", count }, { "list", queryRes } });
+        }
+        public JArray queryProjBuyOrder(string userId, string accessToken, string projId, string orderId)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+
+            if (isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+
+            var findStr = new JObject { { "projId", projId }, { "orderId", orderId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            getProjRewardConnector(projId, out string senderName, out string senderTel);
+
+            var res = new JObject {
+                {"projId", projId},
+                {"projName", item["projName"]},
+                {"rewardId", item["rewardId"]},
+                {"rewardName", item["rewardName"]},
+                {"orderId", item["orderId"]},
+                {"orderState", item["orderState"]},
+                {"price", item["price"]},
+                {"priceUnit", item["priceUnit"]},
+                {"amount", item["amount"]},
+                {"totalCost", item["totalCost"]},
+                {"totalCostUnit", item["totalCostUnit"]},
+                {"time", item["time"]},
+                { "connectorName", item["connectorName"]},
+                { "connectorTel", item["connectorTel"]},
+                { "connectorAddress", item["connectorAddress"]},
+                { "connectorEmail", item["connectorEmail"]},
+                { "connectorMessage", item["connectorMessage"]},
+                { "senderName", senderName},
+                { "senderTel", senderTel},
+                { "senderNote", item["senderNote"]},
+            };
+            return getRes(res);
         }
         private bool isProjMember(string projId, string userId, bool isNeedAdmin = false)
         {
@@ -216,6 +307,31 @@ namespace NEL_FutureDao_API.Service
                     && item["role"].ToString() == TeamRoleType.Admin;
             }
             return item["emailVerifyState"].ToString() == EmailState.hasVerifyAtInvitedYes;
+        }
+        private bool getProjRewardConnector(string projId, out string connectorName, out string connectorTel)
+        {
+            connectorName = "";
+            connectorTel = "";
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var fieldStr = new JObject { { "connectorName", 1 }, { "connectorTel" } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return false;
+
+            var item = queryRes[0];
+            connectorName = item["connectorName"].ToString();
+            connectorTel = item["connectorTel"].ToString();
+            return true;
+        }
+
+        public JArray confirmDeliverBuyOrder(string userId, string accessToken, string projId, string orderId)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+
+
+            return getRes();
         }
 
     }

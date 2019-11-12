@@ -303,6 +303,7 @@ namespace NEL_FutureDao_API.Service
                         && item["distributeWay"].ToString() == tItem["distributeWay"].ToString()
                         ;
                     if (eq) continue;
+                    findStr = new JObject { { "rewardId", item["rewardId"]} }.ToString();
                     var updateStr = new JObject { { "$set", new JObject { { "activeState", RewardActiveState.Valid_Not } } } }.ToString();
                     mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, updateStr, findStr);
                     nlist.Add(item);

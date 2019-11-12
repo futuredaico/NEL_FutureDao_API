@@ -103,9 +103,5 @@ namespace NEL_FutureDao_API.Service
         public string Not = "0";    // 反对         投票中
         public string Yes = "1";    // 赞成         
     }
-    class VoteKey
-    {
-
-    }
 
 }

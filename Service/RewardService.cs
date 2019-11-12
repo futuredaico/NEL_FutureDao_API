@@ -3,10 +3,6 @@ using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NEL_FutureDao_API.Service
 {
@@ -350,16 +346,5 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
 
-    }
-    class OrderState
-    {
-        // 等待付款 + 等待确认 + 等待发货 + 已发货 + 取消订单 + 付款超时 + 交易失败
-        public const string WaitingPay = "";
-        public const string WaitingConfirm = "";
-        public const string WaitingDeliverGoods = "";
-        public const string hasDeliverGoods = "";
-        public const string Canceled = "";
-        public const string PayTimeout = "";
-        public const string TxFailed = "";
     }
 }

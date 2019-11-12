@@ -54,8 +54,6 @@ namespace NEL_FutureDao_API.Service.State
         public const string S_InvalidUpdateIdOrDiscussId = "10256";
         public const string S_InvalidUpdateIdOrProjId = "10257";
 
-
-
         // v2.0
         public const string C_InvalidParamLen = "10401";        // 不合法的参数长度
         public const string C_InvalidParamFmt = "10402";        // 不合法的参数格式

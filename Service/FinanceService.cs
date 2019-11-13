@@ -167,7 +167,7 @@ namespace NEL_FutureDao_API.Service
                 // 设置回报
                 { "rewardSetFlag", SkOp.NotOp},
                 { "connectorName", ""},
-                { "connectTel", ""},
+                { "connectorTel", ""},
                 // 存储金比例
                 { "ratioSetFlag", SkOp.NotOp },
                 { "reserveFundRatio", 0},
@@ -250,7 +250,7 @@ namespace NEL_FutureDao_API.Service
             }
             //
             findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "connectorName", 1 }, { "connectTel", 1 }, { "fundName", 1 }, { "deployContractFlag", 1 },{ "reserveTokenSetFlag",1 }, { "rewardSetFlag", 1 } }.ToString();
+            string fieldStr = new JObject { { "connectorName", 1 }, { "connectorTel", 1 }, { "fundName", 1 }, { "deployContractFlag", 1 },{ "reserveTokenSetFlag",1 }, { "rewardSetFlag", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.InvalidOperate);
             //
@@ -261,10 +261,10 @@ namespace NEL_FutureDao_API.Service
             }
 
             if (queryRes[0]["connectorName"].ToString() != connectorName
-                || queryRes[0]["connectTel"].ToString() != connectTel
+                || queryRes[0]["connectorTel"].ToString() != connectTel
                 || queryRes[0]["rewardSetFlag"].ToString() != SkOp.FinishOp)
             {
-                string updateStr = new JObject { { "$set", new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{ "rewardSetFlag", SkOp.FinishOp } } } }.ToString();
+                string updateStr = new JObject { { "$set", new JObject { { "connectorName", connectorName }, { "connectorTel", connectTel },{ "rewardSetFlag", SkOp.FinishOp } } } }.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, updateStr, findStr);
             }
             //

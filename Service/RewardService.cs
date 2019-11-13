@@ -317,7 +317,7 @@ namespace NEL_FutureDao_API.Service
             connectorName = "";
             connectorTel = "";
             var findStr = new JObject { { "projId", projId } }.ToString();
-            var fieldStr = new JObject { { "connectorName", 1 }, { "connectorTel" } }.ToString();
+            var fieldStr = new JObject { { "connectorName", 1 }, { "connectorTel",1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0) return false;
 

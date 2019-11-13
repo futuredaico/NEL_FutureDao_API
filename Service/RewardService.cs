@@ -67,7 +67,7 @@ namespace NEL_FutureDao_API.Service
                 { "price", item["price"]},
                 { "priceUnit", fundName },
                 { "amount", amount},
-                { "totalCost", decimal.Parse(item["price"].ToString()) * decimal.Parse(amount)},
+                { "totalCost", (decimal.Parse(item["price"].ToString()) * decimal.Parse(amount)).ToString()},
                 { "totalCostUnit", fundName },
                 { "rewardAmount", rewardAmount },
                 { "rewardAmountUnit", tokenName },

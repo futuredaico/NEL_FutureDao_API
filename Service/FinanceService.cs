@@ -353,11 +353,11 @@ namespace NEL_FutureDao_API.Service
             string fieldStr = new JObject { { "connectorName",1},{ "connectorTel", 1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             var connectorName = "";
-            var connectTel = "";
+            var connectorTel = "";
             if (queryRes.Count > 0)
             {
                 connectorName = queryRes[0]["connectorName"].ToString();
-                connectTel = queryRes[0]["connectorTel"].ToString();
+                connectorTel = queryRes[0]["connectorTel"].ToString();
             }
 
             findStr = new JObject { { "projId", projId },{ "activeState", RewardActiveState.Valid_Yes} }.ToString();
@@ -366,7 +366,7 @@ namespace NEL_FutureDao_API.Service
                 "limitFlag","limitMax", "distributeTimeFlag","distributeTimeFixYes","distributeTimeFixNot","distributeWay","note","hasSellCount"
             }).ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr, fieldStr);
-            var res = new JObject { { "connectorName", connectorName }, { "connectTel", connectTel },{"info", queryRes} };
+            var res = new JObject { { "connectorName", connectorName }, { "connectorTel", connectorTel },{"info", queryRes} };
             return getRes(res);
         }
         public JArray applyFinanceFund(string userId, string accessToken, string projId, string fundAmt)

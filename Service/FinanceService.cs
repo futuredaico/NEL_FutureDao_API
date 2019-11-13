@@ -608,8 +608,7 @@ namespace NEL_FutureDao_API.Service
         public JArray queryRewardDetail(string rewardId)
         {
             var findStr = new JObject { { "rewardId", rewardId } }.ToString();
-            var fieldStr = new JObject { { "activeState", 0 },{ "_id",0} }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr, fieldStr);
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr);
             return getRes(queryRes);
         }
         public JArray queryReserveToken(string projId)

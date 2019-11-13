@@ -350,14 +350,14 @@ namespace NEL_FutureDao_API.Service
             }
             //
             findStr = new JObject { { "projId", projId } }.ToString();
-            string fieldStr = new JObject { { "connectorName",1},{ "connectTel", 1} }.ToString();
+            string fieldStr = new JObject { { "connectorName",1},{ "connectorTel", 1} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             var connectorName = "";
             var connectTel = "";
             if (queryRes.Count > 0)
             {
                 connectorName = queryRes[0]["connectorName"].ToString();
-                connectTel = queryRes[0]["connectTel"].ToString();
+                connectTel = queryRes[0]["connectorTel"].ToString();
             }
 
             findStr = new JObject { { "projId", projId },{ "activeState", RewardActiveState.Valid_Yes} }.ToString();

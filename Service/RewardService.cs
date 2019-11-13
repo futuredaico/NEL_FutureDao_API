@@ -11,6 +11,7 @@ namespace NEL_FutureDao_API.Service
         public MongoHelper mh { get; set; }
         public string dao_mongodbConnStr { get; set; }
         public string dao_mongodbDatabase { get; set; }
+        public string projInfoCol { get; set; } = "daoprojinfos";
         public string projTeamInfoCol { get; set; } = "daoprojteaminfos";
         public string projFinanceCol { get; set; } = "daoprojfinanceinfos";
         public string projFinanceOrderCol { get; set; } = "daoprojfinanceorderinfos";
@@ -53,10 +54,12 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.S_InvalidProjId);
             }
+            string projName = getProjName(projId);
             var orderId = DaoInfoHelper.genProjRewardOrderId(projId, rewardId, userId);
             var now = TimeHelper.GetTimeStamp();
             var newdata = new JObject {
                 { "projId", projId},
+                { "projName", projName},
                 { "rewardId", rewardId},
                 { "orderId", orderId},
                 { "orderState", OrderState.WaitingPay},
@@ -81,7 +84,7 @@ namespace NEL_FutureDao_API.Service
                 { "lastUpdateTime", now}
             };
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, newdata);
-            return getRes(new JObject { { "orderId", orderId} });
+            return getRes(new JObject { { "orderId", orderId},{ "time", now} });
         }
         private bool getProjTokenName(string projId, out string tokenName, out string fundName)
         {
@@ -96,6 +99,14 @@ namespace NEL_FutureDao_API.Service
             tokenName = item["tokenSymbol"].ToString();
             fundName = item["fundName"].ToString();
             return true;
+        }
+        private string getProjName(string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var fieldStr = new JObject { { "projName", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return "";
+            return queryRes[0]["projName"].ToString();
         }
 
         public JArray confirmBuyOrder(string userId, string accessToken, string orderId, string txid)

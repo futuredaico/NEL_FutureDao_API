@@ -12,6 +12,7 @@ namespace NEL_FutureDao_API.Service
         public string dao_mongodbConnStr {get;set;}
         public string dao_mongodbDatabase { get; set; }
         public string projProposalCol { get; set; } = "daoprojproposalinfos";
+        public string projProposalVoteCol { get; set; } = "daoprojproposalvoteinfos";
         public string userInfoCol { get; set; } = "daouserinfos";
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
@@ -55,16 +56,16 @@ namespace NEL_FutureDao_API.Service
 
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
         }
-        public JArray queryProposalDetail(string projId, string proposalId)
+        public JArray queryProposalDetail(string projId, string proposalIndex)
         {
-            var findStr = new JObject { { "proposalId", proposalId } }.ToString();
+            var findStr = new JObject { { "proposalIndex", proposalIndex } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projProposalCol, findStr);
             if (queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
             var headIconUrl = getHeadIconUrl(item["address"].ToString(), out string userId, out string userName);
             var res = new JObject {
-                 {"proposalId",item["proposalId"]},
+                {"proposalIndex",item["proposalIndex"]},
                 {"proposalName",item["proposalName"]},
                 {"proposalFundAmt",item["proposalFundAmt"]},
                 {"address",item["address"]},
@@ -91,9 +92,39 @@ namespace NEL_FutureDao_API.Service
             return queryRes[0]["headIconUrl"].ToString();
         }
 
-        public JArray queryVoteInfo()
+        public JArray queryVoteInfo(string projId, int proposalIndex, string address)
         {
-            return null;
+            var findStr = new JObject { { "projId", projId }, { "index", proposalIndex } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projProposalCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            long voteProCount = long.Parse(item["voteProCount"].ToString());
+            long voteConCount = long.Parse(item["voteConCount"].ToString());
+
+            getMyVoteCount(projId, proposalIndex, address, out string voteResult, out long shares);
+
+            var data = new JObject {
+                { "voteProCount", voteProCount},
+                { "voteConCount", voteConCount},
+                { "voteResult", voteResult},
+                { "shares", shares},
+            }.ToString();
+
+            return getRes(data);
+        }
+        private bool getMyVoteCount(string projId, int proposalIndex, string address, out string voteResult, out long shares)
+        {
+            voteResult = "2";
+            shares = 0;
+            var findStr = new JObject { { "projId", projId }, { "index", proposalIndex }, { "who", address } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projProposalCol, findStr);
+            if (queryRes.Count == 0) return false;
+
+            var item = queryRes[0];
+            voteResult = item["voteResult"].ToString();
+            shares = long.Parse(item["shares"].ToString());
+            return true;
         }
 
     }

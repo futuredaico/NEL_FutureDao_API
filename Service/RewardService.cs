@@ -49,7 +49,7 @@ namespace NEL_FutureDao_API.Service
             }
             var item = queryRes[0];
             
-            if(!getProjTokenName(projId, out string tokenName, out string fundName, out string projName))
+            if(!getProjTokenName(projId, out string tokenName, out string fundName))
             {
                 return getErrorRes(DaoReturnCode.S_InvalidProjId);
             }
@@ -57,7 +57,6 @@ namespace NEL_FutureDao_API.Service
             var now = TimeHelper.GetTimeStamp();
             var newdata = new JObject {
                 { "projId", projId},
-                { "projName", projName},
                 { "rewardId", rewardId},
                 { "orderId", orderId},
                 { "orderState", OrderState.WaitingPay},
@@ -84,20 +83,18 @@ namespace NEL_FutureDao_API.Service
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, newdata);
             return getRes(new JObject { { "orderId", orderId} });
         }
-        private bool getProjTokenName(string projId, out string tokenName, out string fundName, out string projName)
+        private bool getProjTokenName(string projId, out string tokenName, out string fundName)
         {
             tokenName = "";
             fundName = "";
-            projName = "";
             var findStr = new JObject { { "projId", projId} }.ToString();
-            var fieldStr = new JObject { { "tokenSymbol", 1 }, { "fundName", 1 },{ "projName",1} }.ToString();
+            var fieldStr = new JObject { { "tokenSymbol", 1 }, { "fundName", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceCol, findStr, fieldStr);
             if (queryRes.Count == 0) return false;
 
             var item = queryRes[0];
             tokenName = item["tokenSymbol"].ToString();
             fundName = item["fundName"].ToString();
-            projName = item["projName"].ToString();
             return true;
         }
 

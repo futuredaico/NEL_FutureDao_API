@@ -80,6 +80,7 @@ namespace NEL_FutureDao_API.Service
                 { "txid", ""},
                 { "userId", userId},
                 { "originInfo", item},
+                { "markTime",  now},
                 { "time",  now},
                 { "lastUpdateTime", now}
             };
@@ -162,11 +163,37 @@ namespace NEL_FutureDao_API.Service
                 // 无效操作
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
-            var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.Canceled} } } }.ToString();
+            var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.Canceled},{ "markTime", TimeHelper.GetTimeStamp()} } } }.ToString();
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, updateStr, findStr);
             return getRes();
         }
-        
+        public JArray confirmDeliverBuyOrder(string userId, string accessToken, string projId, string orderId, string note)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+
+            if (!isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+
+            var findStr = new JObject { { "projId", projId }, { "orderId", orderId } }.ToString();
+            var fieldStr = new JObject { { "orderState", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.Invalid_OrderId);
+
+            var item = queryRes[0];
+            if (item["orderState"].ToString() != OrderState.WaitingDeliverGoods)
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.hasDeliverGoods }, { "senderNote", note } } } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, updateStr, findStr);
+            return getRes();
+        }
+
         public JArray queryBuyOrderList(string userId, string accessToken, int pageNum, int pageSize)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
@@ -231,7 +258,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
 
-            if(isProjMember(projId, userId, true))
+            if(!isProjMember(projId, userId, true))
             {
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
@@ -256,7 +283,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
 
-            if (isProjMember(projId, userId, true))
+            if (!isProjMember(projId, userId, true))
             {
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
@@ -325,33 +352,6 @@ namespace NEL_FutureDao_API.Service
             connectorName = item["connectorName"].ToString();
             connectorTel = item["connectorTel"].ToString();
             return true;
-        }
-
-        public JArray confirmDeliverBuyOrder(string userId, string accessToken, string projId, string orderId, string note)
-        {
-            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
-            {
-                return getErrorRes(code);
-            }
-
-            if (isProjMember(projId, userId, true))
-            {
-                return getErrorRes(DaoReturnCode.InvalidOperate);
-            }
-
-            var findStr = new JObject { { "projId", projId }, { "orderId", orderId } }.ToString();
-            var fieldStr = new JObject { { "orderState", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.Invalid_OrderId);
-
-            var item = queryRes[0];
-            if (item["orderState"].ToString() != OrderState.WaitingDeliverGoods)
-            {
-                return getErrorRes(DaoReturnCode.InvalidOperate);
-            }
-            var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.hasDeliverGoods },{ "senderNote", note } } } }.ToString();
-            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, updateStr, findStr);
-            return getRes();
         }
 
     }

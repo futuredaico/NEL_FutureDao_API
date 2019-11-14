@@ -328,6 +328,7 @@ namespace NEL_FutureDao_API.Service
                 p["fundName"] = fundName;
                 p["activeState"] = RewardActiveState.Valid_Yes;
                 p["hasSellCount"] = 0;
+                p["hasSellCountTp"] = 0;
                 return p;
             }).ToArray();
             if(res.Count() > 0)

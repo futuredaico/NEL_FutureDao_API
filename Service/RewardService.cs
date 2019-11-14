@@ -206,7 +206,7 @@ namespace NEL_FutureDao_API.Service
 
             var sortStr = new JObject { { "time", -1} }.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "rewardId", "rewardName","orderId",
-                "price","priceUnit","amount","totalCost","totalCostUnit","orderState","time"
+                "price","priceUnit","amount","totalCost","totalCostUnit","orderState","time","connectorName"
             }).ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
             if(queryRes.Count == 0) return getRes(new JObject { { "count", count},{ "list", queryRes} });
@@ -269,7 +269,7 @@ namespace NEL_FutureDao_API.Service
 
             var sortStr = new JObject { { "time", -1 } }.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "rewardId", "rewardName","orderId",
-                "price","priceUnit","amount","totalCost","totalCostUnit","orderState","time"
+                "price","priceUnit","amount","totalCost","totalCostUnit","orderState","time","connectorName"
             }).ToString();
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
             if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", queryRes } });

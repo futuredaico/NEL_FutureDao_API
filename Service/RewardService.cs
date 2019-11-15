@@ -256,9 +256,11 @@ namespace NEL_FutureDao_API.Service
         {
             if(orderId != "")
             {
-                var sRes = queryProjBuyOrder(userId, accessToken, projId, orderId);
-                var sCnt = sRes.Count;
-                return getRes(new JObject { { "count", sCnt},{ "list", sRes} });
+                var sRes = queryProjBuyOrder(userId, accessToken, projId, orderId)[0]["data"];
+                var sF = ((JObject)sRes).Count;
+                var sCnt = sF == 0 ? 0 : 1;
+                var sJa = sF == 0 ? new JArray() : new JArray { sRes};
+                return getRes(new JObject { { "count", sCnt},{ "list", sJa } });
             }
 
             // 

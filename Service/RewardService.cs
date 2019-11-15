@@ -77,6 +77,7 @@ namespace NEL_FutureDao_API.Service
                 { "connectorEmail", connectorEmail},
                 { "connectorAddress", connectorAddress},
                 { "connectorMessage", connectorMessage},
+                { "distributeWay", item["distributeWay"]},
                 { "txid", ""},
                 { "userId", userId},
                 { "originInfo", item},
@@ -251,6 +252,67 @@ namespace NEL_FutureDao_API.Service
             return getRes(res);
         }
 
+        public JArray queryProjBuyOrderList(string userId, string accessToken, string projId, int pageNum, int pageSize, int isDelivery, string buyerName, string orderId, int orderType)
+        {
+            if(orderId != "")
+            {
+                var sRes = queryProjBuyOrder(userId, accessToken, projId, orderId);
+                var sCnt = sRes.Count;
+                return getRes(new JObject { { "count", sCnt},{ "list", sRes} });
+            }
+
+            // 
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            if (!isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            var findJo = new JObject { { "projId", projId } };
+            // 待发货/已发货(没有则默认待发货)
+            if (isDelivery == 0)
+            {
+                findJo.Add("orderState", OrderState.WaitingDeliverGoods);
+            } else if(isDelivery == 1)
+            {
+                findJo.Add("orderState", OrderState.hasDeliverGoods);
+            } else
+            {
+                findJo.Add("orderState", OrderState.WaitingDeliverGoods);
+            }
+
+            // 买价姓名(没有则为全部)
+            if(buyerName != "")
+            {
+                findJo.Add("connectorName", buyerName);
+            }
+
+            // 订单编号(已优先处理)
+
+            // 订单发放类型(没有则为全部)
+            if (orderType == 0)
+            {
+                findJo.Add("distributeWay", SelectKey.Not);
+            } else if(orderType == 1)
+            {
+                findJo.Add("distributeWay", SelectKey.Yes);
+            }
+            //
+            var findStr = findJo.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var sortStr = new JObject { { "time", -1 } }.ToString();
+            var fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "rewardId", "rewardName","orderId",
+                "price","priceUnit","amount","totalCost","totalCostUnit","orderState","time","connectorName"
+            }).ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", queryRes } });
+
+            return getRes(new JObject { { "count", count }, { "list", queryRes } });
+        }
         public JArray queryProjBuyOrderList(string userId, string accessToken, string projId, int pageNum, int pageSize)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))

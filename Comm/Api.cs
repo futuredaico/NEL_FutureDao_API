@@ -119,7 +119,11 @@ namespace NEL.Comm
                             req.@params[1].ToString(),
                             req.@params[2].ToString(),
                             int.Parse(req.@params[3].ToString()),
-                            int.Parse(req.@params[4].ToString())
+                            int.Parse(req.@params[4].ToString()),
+                            int.Parse(req.@params[5].ToString()),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            int.Parse(req.@params[8].ToString())
                             );
                         break;
                     case "queryProjBuyOrder":

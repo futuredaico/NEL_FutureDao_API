@@ -34,7 +34,9 @@ namespace NEL.Comm
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_testnet,
                     };
                     fs = new FinanceService
                     {
@@ -75,7 +77,9 @@ namespace NEL.Comm
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_mainnet,
                     };
                     ds = new DiscussService
                     {
@@ -113,6 +117,13 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    case "exportOrderInfo":
+                        result = rs.exportOrderInfo(
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
                     case "queryProjBuyOrderList":
                         result = rs.queryProjBuyOrderList(
                             req.@params[0].ToString(),

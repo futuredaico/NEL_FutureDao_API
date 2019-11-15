@@ -126,6 +126,11 @@ namespace NEL_FutureDao_API.Service.Help
             }
             return true;
         }
+
+        public static string StoreFile(OssHelper oss, string bucketName, string filename, Stream stream)
+        {
+            return oss.PutObject(bucketName, filename, stream);
+        }
     }
     public static class DaoHelper
     {

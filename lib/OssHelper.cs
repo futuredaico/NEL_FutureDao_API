@@ -13,15 +13,10 @@ namespace NEL_FutureDao_API
         public string bucketName_mainnet { get; set; }
         public string ossUrlPrefix { get; set; }
 
-        public string PutObjectTestnet(string fileName, Stream stream)
+        public string PutObject(string bucketName, string fileName, Stream stream)
         {
-            getOss().PutStream(bucketName_testnet, fileName, stream);
-            return ossUrlPrefix;
-        }
-        public string PutObjectMainnet(string fileName, Stream stream)
-        {
-            getOss().PutStream(bucketName_mainnet, fileName, stream);
-            return ossUrlPrefix;
+            getOss().PutStream(bucketName, fileName, stream);
+            return ossUrlPrefix.Replace("#", bucketName) + fileName;
         }
         public void CopyObject(string bucketName, string source, string target)
         {

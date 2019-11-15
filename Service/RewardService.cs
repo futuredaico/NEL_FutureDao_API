@@ -3,6 +3,7 @@ using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace NEL_FutureDao_API.Service
 {
@@ -417,6 +418,46 @@ namespace NEL_FutureDao_API.Service
             connectorTel = item["connectorTel"].ToString();
             return true;
         }
+
+        public JArray exportOrderInfo(string userId, string accessToken, string projId)
+        {
+            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            {
+                return getErrorRes(code);
+            }
+            if (!isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            //
+            var findStr = new JObject { { "projId", projId},{ "orderState", OrderState.WaitingDeliverGoods} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr);
+            if(queryRes.Count == 0)
+            {
+                return getRes();
+            }
+            //
+            var fileUrl = getFileUrl(getFileName(projId, queryRes));
+            //
+            return getRes(new JObject { { "fileUrl", fileUrl } });
+        }
+
+        private string getFileName(string projId, JArray queryRes)
+        {
+            var filename = "temp_" + projId +"_"+ TimeHelper.GetTimeStamp() + ".csv";
+            FileHelper.Store(filename, queryRes);
+            return filename;
+        }
+        private string getFileUrl(string filename)
+        {
+            using (var sr = new StreamReader(filename))
+            {
+                return DaoInfoHelper.StoreFile(oss, bucketName, filename, sr.BaseStream); 
+            }
+        }
+
+        public OssHelper oss { get; set; }
+        public string bucketName { get; set; }
 
     }
 }

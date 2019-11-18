@@ -644,15 +644,18 @@ namespace NEL_FutureDao_API.Service
         //
         public JArray queryTokenHistPrice(string projId, string recordType)
         {
-
             var findJo = new JObject { { "projId", projId } };
+            int skip = 0;
+            int limit = 168;
             if (RecordType.ByMonth == recordType)
             {
+                limit = 180;
                 findJo.Add("recordType", 4);
             }
             var findStr = findJo.ToString();
             var fieldStr = MongoFieldHelper.toReturn(new string[] { "ob_price", "os_price", "recordTime" }).ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, fieldStr);
+            var sortStr = new JObject { {"recordTime", 1} }.ToString();
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinancePriceHistCol, findStr, sortStr, skip, limit, fieldStr);
             if (queryRes.Count == 0) return getRes(queryRes);
 
             var buydata = queryRes.Select(p => p["ob_price"].ToString().formatDecimal().formatEth()).ToArray();

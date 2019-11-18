@@ -182,17 +182,22 @@ namespace NEL_FutureDao_API.Service
             }
 
             var findStr = new JObject { { "projId", projId }, { "orderId", orderId } }.ToString();
-            var fieldStr = new JObject { { "orderState", 1 } }.ToString();
+            var fieldStr = new JObject { { "orderState", 1 }, { "senderNote", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.Invalid_OrderId);
 
             var item = queryRes[0];
-            if (item["orderState"].ToString() != OrderState.WaitingDeliverGoods)
+            var orderState = item["orderState"].ToString();
+            if (orderState != OrderState.WaitingDeliverGoods
+                && orderState != OrderState.hasDeliverGoods)
             {
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
-            var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.hasDeliverGoods }, { "senderNote", note } } } }.ToString();
-            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, updateStr, findStr);
+            if(item["senderNote"].ToString() != note)
+            {
+                var updateStr = new JObject { { "$set", new JObject { { "orderState", OrderState.hasDeliverGoods }, { "senderNote", note } } } }.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderCol, updateStr, findStr);
+            }
             return getRes();
         }
 

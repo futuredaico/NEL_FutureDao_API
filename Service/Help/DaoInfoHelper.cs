@@ -64,8 +64,9 @@ namespace NEL_FutureDao_API.Service.Help
         }
         public static string genProjRewardOrderId(string projId, string rewardId, string userId)
         {
-            string data = string.Format("{0}.{1}.{2}.{3}", now, projId, rewardId, userId);
-            return hash(data);
+            //string data = string.Format("{0}.{1}.{2}.{3}", now, projId, rewardId, userId);
+            //return hash(data);
+            return ((long)(new Random().NextDouble() * 10000000000L)).ToString();
         }
         private static string hash(string data)
         {

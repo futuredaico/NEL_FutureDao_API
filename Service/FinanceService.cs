@@ -596,7 +596,7 @@ namespace NEL_FutureDao_API.Service
         public JArray queryRewardList(string projId)
         {
             var findStr = new JObject { { "projId", projId },{"activeState", RewardActiveState.Valid_Yes} }.ToString();
-            var fieldStr = new JObject { { "activeState", 0 }, { "_id", 0 } }.ToString();
+            var fieldStr = new JObject { { "activeState", 0 }, { "_id", 0 },{ "hasSellCountTp",0 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes(queryRes);
 
@@ -609,7 +609,8 @@ namespace NEL_FutureDao_API.Service
         public JArray queryRewardDetail(string rewardId)
         {
             var findStr = new JObject { { "rewardId", rewardId } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr);
+            var fieldStr = new JObject { { "_id", 0 }, { "hasSellCountTp", 0 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardCol, findStr, fieldStr);
             return getRes(queryRes);
         }
         public JArray queryReserveToken(string projId)

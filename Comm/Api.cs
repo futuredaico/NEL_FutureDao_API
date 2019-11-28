@@ -117,6 +117,14 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // ******************************************* v3.st
+                    case "validateLogin":
+                        result = us.validateLoginInfo(req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
+                    case "getLoginNonce":
+                        result = us.getLoginNonce(req.@params[0].ToString());
+                        break;
+                    // ******************************************* v3.ed
                     case "exportOrderInfo":
                         result = rs.exportOrderInfo(
                             req.@params[0].ToString(),
@@ -615,6 +623,11 @@ namespace NEL.Comm
                         result = us.modifyUserIcon(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
                     case "getUserInfo":
+                        if(req.@params.Length == 3)
+                        {
+                            result = us.getUserInfo(req.@params[0].ToString(), req.@params[1].ToString(), "1");
+                            break;
+                        }
                         result = us.getUserInfo(req.@params[0].ToString(), req.@params[1].ToString());
                         break;
                     case "verifyReset":

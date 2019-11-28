@@ -65,5 +65,8 @@ namespace NEL_FutureDao_API.Service.State
         public const string Invalid_RewardId = "10411"; // 无效回报id
         public const string Invalid_OrderId = "10412";   // 无效订单id
 
+        // v3.0
+        public const string C_InvalidUserInfo = "10421"; // 无效用户信息
+
     }
 }

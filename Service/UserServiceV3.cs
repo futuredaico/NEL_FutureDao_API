@@ -113,7 +113,8 @@ namespace NEL_FutureDao_API.Service
             //controller.Response.Headers["Access-Control-Allow-Origin"] = "https://aa.nel.group/";
             //controller.Response.Headers.Remove("Set-Cookie");
             //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
-            controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
+            controller.Response.Headers.Add("Set-Cookie", "userId=" + userId  + "; Path=/; HttpOnly");
+            controller.Response.Headers.Add("Set-Cookie", "accessToken=" + accessToken + "; Path=/; HttpOnly");
         }
         private bool getUserInfo(Controller controller, out string code, out string userId)
         {

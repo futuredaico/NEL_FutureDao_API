@@ -26,7 +26,10 @@ namespace NEL_FutureDao_API
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseCors(builder =>
-                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+            {
+                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                builder.AllowCredentials();
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

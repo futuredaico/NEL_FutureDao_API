@@ -96,6 +96,7 @@ namespace NEL_FutureDao_API.Service
                 HttpOnly = true,
                 //Expires = DateTimeOffset.MaxValue
             });
+            controller.Response.Cookies.Append("aa", "bb");
             /*controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
                 Path = "/",
                 HttpOnly = true,

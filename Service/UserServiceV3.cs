@@ -92,9 +92,16 @@ namespace NEL_FutureDao_API.Service
             controller.Response.Cookies.Delete("accessToken");
 
             controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() {
-                Domain = host, Path = "/", HttpOnly = true, Expires = DateTimeOffset.MaxValue});
-            controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() { Path = "/", HttpOnly = true, Expires = DateTimeOffset.MaxValue });
-            controller.Response.Headers["Access-Control-Allow-Origin"] = host;
+                Path = "/",
+                HttpOnly = true,
+                Expires = DateTimeOffset.MaxValue
+            });
+            controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
+                Path = "/",
+                HttpOnly = true,
+                Expires = DateTimeOffset.MaxValue
+            });
+            //controller.Response.Headers["Access-Control-Allow-Origin"] = host;
             //controller.Response.Headers.Remove("Set-Cookie");
             //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
         }

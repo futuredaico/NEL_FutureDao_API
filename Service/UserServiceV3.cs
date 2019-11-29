@@ -94,12 +94,12 @@ namespace NEL_FutureDao_API.Service
             controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() {
                 Path = "/",
                 HttpOnly = true,
-                Expires = DateTimeOffset.MaxValue
+                //Expires = DateTimeOffset.MaxValue
             });
             controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
                 Path = "/",
                 HttpOnly = true,
-                Expires = DateTimeOffset.MaxValue
+                //Expires = DateTimeOffset.MaxValue
             });
             controller.Response.Headers["Access-Control-Allow-Origin"] = "https://aa.nel.group/";
             //controller.Response.Headers.Remove("Set-Cookie");
@@ -163,6 +163,17 @@ namespace NEL_FutureDao_API.Service
 
         public JArray getUserInfo(Controller controller)
         {
+            Console.WriteLine("header------------->st");
+            foreach(var item in controller.Request.Headers)
+            {
+
+            }
+            Console.WriteLine("header------------->ed");
+            var cc = controller.Request.Cookies;
+            foreach (var item in cc.Keys)
+            {
+                Console.WriteLine(cc[item].ToString());
+            }
             var host = controller.Request.Host.ToString();
             Console.WriteLine("host:"+host);
 

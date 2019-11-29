@@ -119,6 +119,7 @@ namespace NEL_FutureDao_API.Service
             var ss = userId.Split("_");
             Console.WriteLine(ss[0]);
             Console.WriteLine(ss[1]);
+            userId = ss[0];
             return TokenHelper.checkAccessToken(tokenUrl, ss[0], ss[1], out code);
         }
 

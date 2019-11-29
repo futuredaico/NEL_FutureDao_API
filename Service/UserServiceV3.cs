@@ -84,13 +84,12 @@ namespace NEL_FutureDao_API.Service
 
         private void setUserInfo(Controller controller, string userId, string accessToken)
         {
-            //controller.Response.Cookies.Delete("userId");
-            //controller.Response.Cookies.Delete("accessToken");
-            //controller.Response.Cookies.Append("userId", userId);
-            //controller.Response.Cookies.Append("accessToken", accessToken);
-            //controller.Response.Cookies.Append("HttpOnly", "true");
-            controller.Response.Headers.Remove("Set-Cookie");
-            controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; acessToken=" + accessToken + "; Path=/; HttpOnly");
+            controller.Response.Cookies.Delete("userId");
+            controller.Response.Cookies.Delete("accessToken");
+            controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() { Path="/", HttpOnly = true });
+            controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() { Path = "/", HttpOnly = true });
+            //controller.Response.Headers.Remove("Set-Cookie");
+            //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
         }
         private bool getUserInfo(Controller controller, out string code, out string userId)
         {

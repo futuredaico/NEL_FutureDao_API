@@ -35,7 +35,7 @@ namespace NEL_FutureDao_API.Controllers
                 };
 
                 string ipAddr = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-                res = Json(api.getRes(req, ipAddr));
+                res = Json(api.getRes(req, ipAddr, this));
 
                 // 超时记录
                 if (DateTime.Now.Subtract(start).TotalSeconds > logExeTimeMax)
@@ -91,7 +91,7 @@ namespace NEL_FutureDao_API.Controllers
                 }
 
                 string ipAddr = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-                res = Json(api.getRes(req, ipAddr));
+                res = Json(api.getRes(req, ipAddr, this));
 
                 // 超时记录
                 if (DateTime.Now.Subtract(start).TotalSeconds > logExeTimeMax)

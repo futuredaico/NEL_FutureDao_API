@@ -1,4 +1,5 @@
-﻿using NEL.API.RPC;
+﻿using Microsoft.AspNetCore.Mvc;
+using NEL.API.RPC;
 using NEL.NNS.lib;
 using NEL_FutureDao_API;
 using NEL_FutureDao_API.Service;
@@ -18,6 +19,7 @@ namespace NEL.Comm
         private MongoHelper mh = new MongoHelper();
         //
         private UserService us;
+        private UserServiceV3 usV3;
         private ProjService ps;
         private DiscussService ds;
         private FinanceService fs;
@@ -68,8 +70,16 @@ namespace NEL.Comm
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
                         tokenUrl = mh.tokenUrl_testnet,
                         oss = oss,
-                        bucketName = mh.bucketName_testnet,
-                        prefixPassword = mh.prefixPassword
+                        bucketName = mh.bucketName_testnet
+                    };
+                    usV3 = new UserServiceV3
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        tokenUrl = mh.tokenUrl_testnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_testnet
                     };
                     break;
                 case "mainnet":
@@ -104,13 +114,21 @@ namespace NEL.Comm
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
                         tokenUrl = mh.tokenUrl_mainnet,
                         oss = oss,
-                        bucketName = mh.bucketName_mainnet,
-                        prefixPassword = mh.prefixPassword
+                        bucketName = mh.bucketName_mainnet
+                    };
+                    usV3 = new UserServiceV3
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        tokenUrl = mh.tokenUrl_mainnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_mainnet
                     };
                     break;
             }
         }
-        public object getRes(JsonRPCrequest req, string reqAddr)
+        public object getRes(JsonRPCrequest req, string reqAddr, Controller controller)
         {
             JArray result = null;
             try
@@ -118,11 +136,14 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
-                    case "validateLogin":
-                        result = us.validateLoginInfo(req.@params[0].ToString(), req.@params[1].ToString());
+                    case "getUserInfoV3":
+                        result = usV3.getUserInfo(controller);
                         break;
-                    case "getLoginNonce":
-                        result = us.getLoginNonce(req.@params[0].ToString());
+                    case "validateLoginV3":
+                        result = usV3.validateLoginInfo(req.@params[0].ToString(), req.@params[1].ToString(), controller);
+                        break;
+                    case "getLoginNonceV3":
+                        result = usV3.getLoginNonce(req.@params[0].ToString());
                         break;
                     // ******************************************* v3.ed
                     case "exportOrderInfo":

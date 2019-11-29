@@ -36,7 +36,7 @@ namespace NEL_FutureDao_API.Controllers
                 };
 
                 string ipAddr = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-                res = Json(api.getRes(req, ipAddr));
+                res = Json(api.getRes(req, ipAddr, this));
 
                 // 超时记录
                 if (DateTime.Now.Subtract(start).TotalSeconds > logExeTimeMax)
@@ -57,26 +57,10 @@ namespace NEL_FutureDao_API.Controllers
 
             return res;
         }
-        private void print()
-        {
-            var res = Request.ToString();
-            Console.WriteLine(res);
-            Console.WriteLine(Request.ContentType);
-            Console.WriteLine(Request.ContentLength);
-            Console.WriteLine(Request.Scheme);
-            Console.WriteLine(Request.Host);
-            Console.WriteLine(Request.PathBase);
-            Console.WriteLine(Request.Path);
-            Console.WriteLine(Request.QueryString);
-            Console.WriteLine(Request.Method);
-            Console.WriteLine(Request.Headers);
-            Console.WriteLine(Request.Protocol);
-        }
 
         [HttpPost]
         public async Task<JsonResult> Post()
         {
-            print();
                DateTime start = DateTime.Now;
             JsonResult res = null;
             JsonRPCrequest req = null;
@@ -108,7 +92,7 @@ namespace NEL_FutureDao_API.Controllers
                 }
 
                 string ipAddr = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-                res = Json(api.getRes(req, ipAddr));
+                res = Json(api.getRes(req, ipAddr,this));
 
                 // 超时记录
                 if (DateTime.Now.Subtract(start).TotalSeconds > logExeTimeMax)

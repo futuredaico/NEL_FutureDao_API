@@ -87,34 +87,23 @@ namespace NEL_FutureDao_API.Service
         {
             var host = controller.Request.Host.ToString();
             Console.WriteLine(host);
-
-            //controller.Response.Cookies.Delete("userId");
-            //controller.Response.Cookies.Delete("accessToken");
-
             
-            /*
             controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() {
                 Path = "/",
                 HttpOnly = true,
-                Domain = ".test.com",
-                //Expires = DateTimeOffset.MaxValue
             });
-            controller.Response.Cookies.Append("aa", "bb");
-            controller.Response.Headers["Set-Cookie"].ToString();
-            */
-
-            /*controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
+            controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
                 Path = "/",
-                HttpOnly = true,
-                //Expires = DateTimeOffset.MaxValue
+                HttpOnly = true
             });
             
-            */
+            
             //controller.Response.Headers["Access-Control-Allow-Origin"] = "https://aa.nel.group/";
             //controller.Response.Headers.Remove("Set-Cookie");
             //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
-            controller.Response.Headers.Add("Set-Cookie", "userId=" + userId  + "; Path=/; HttpOnly");
-            controller.Response.Headers.Add("Set-Cookie", "accessToken=" + accessToken + "; Path=/; HttpOnly");
+            //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId  + "; Path=/; HttpOnly");
+            //controller.Response.Headers.Add("Set-Cookie", "accessToken=" + accessToken + "; Path=/; HttpOnly");\
+            
         }
         private bool getUserInfo(Controller controller, out string code, out string userId)
         {

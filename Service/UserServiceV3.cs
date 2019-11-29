@@ -85,12 +85,16 @@ namespace NEL_FutureDao_API.Service
 
         private void setUserInfo(Controller controller, string userId, string accessToken)
         {
+            var host = controller.Request.Host.ToString();
+            Console.WriteLine(host);
+
             controller.Response.Cookies.Delete("userId");
             controller.Response.Cookies.Delete("accessToken");
+
             controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() {
-                Domain = "http://192.168.1.160:3000", Path = "/", HttpOnly = true, Expires = DateTimeOffset.MaxValue});
+                Domain = host, Path = "/", HttpOnly = true, Expires = DateTimeOffset.MaxValue});
             controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() { Path = "/", HttpOnly = true, Expires = DateTimeOffset.MaxValue });
-            controller.Response.Headers["Access-Control-Allow-Origin"] = "http://192.168.1.160:3000";
+            controller.Response.Headers["Access-Control-Allow-Origin"] = host;
             //controller.Response.Headers.Remove("Set-Cookie");
             //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
         }

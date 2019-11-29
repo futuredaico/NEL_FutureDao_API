@@ -88,7 +88,7 @@ namespace NEL_FutureDao_API.Service
             controller.Response.Cookies.Delete("accessToken");
             controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() { Path="/", HttpOnly = true });
             controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() { Path = "/", HttpOnly = true });
-            controller.Response.Headers["Access-Control-Allow-Origin"] =  "http://localhost:3000/";
+            controller.Response.Headers["Access-Control-Allow-Origin"] =  "https://apidao.nel.group";
             //controller.Response.Headers.Remove("Set-Cookie");
             //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
         }

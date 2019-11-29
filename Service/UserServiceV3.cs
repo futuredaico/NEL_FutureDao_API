@@ -88,7 +88,8 @@ namespace NEL_FutureDao_API.Service
             var host = controller.Request.Host.ToString();
             Console.WriteLine(host);
             
-            controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() {
+            /*
+            controller.Response.Cookies.Append("userId", userId + "_" + accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
                 Path = "/",
                 HttpOnly = true,
             });
@@ -96,25 +97,29 @@ namespace NEL_FutureDao_API.Service
                 Path = "/",
                 HttpOnly = true
             });
-            
-            
+            */
+
             //controller.Response.Headers["Access-Control-Allow-Origin"] = "https://aa.nel.group/";
             //controller.Response.Headers.Remove("Set-Cookie");
             //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
             //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId  + "; Path=/; HttpOnly");
-            //controller.Response.Headers.Add("Set-Cookie", "accessToken=" + accessToken + "; Path=/; HttpOnly");\
-            
+            controller.Response.Headers.Add("Set-Cookie", "userId=" + userId +"_"+ accessToken + "; Path=/; HttpOnly");
+
         }
         private bool getUserInfo(Controller controller, out string code, out string userId)
         {
             code = "";
             userId = controller.Request.Cookies["userId"];
-            var accessToken = controller.Request.Cookies["accessToken"];
-            if(userId == null || userId == "" || accessToken == null || accessToken == "")
+            //var accessToken = controller.Request.Cookies["accessToken"];
+            /*if(userId == null || userId == "" || accessToken == null || accessToken == "")
             {
                 return false;
             }
-            return TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out code);
+            */
+            var ss = userId.Split("_");
+            Console.WriteLine(ss[0]);
+            Console.WriteLine(ss[1]);
+            return TokenHelper.checkAccessToken(tokenUrl, ss[0], ss[1], out code);
         }
 
         private string getNonceStr(string address)

@@ -91,9 +91,11 @@ namespace NEL_FutureDao_API.Service
             //controller.Response.Cookies.Delete("userId");
             //controller.Response.Cookies.Delete("accessToken");
 
+            
             controller.Response.Cookies.Append("userId", userId, new Microsoft.AspNetCore.Http.CookieOptions() {
                 Path = "/",
                 HttpOnly = true,
+                Domain = ".test.com",
                 //Expires = DateTimeOffset.MaxValue
             });
             controller.Response.Cookies.Append("aa", "bb");

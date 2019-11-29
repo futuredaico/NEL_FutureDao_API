@@ -4,10 +4,6 @@ using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NEL_FutureDao_API.Service
 {
@@ -67,7 +63,7 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes(new JObject { { "nonceStr", nonceStr } });
         }
-        public JArray validateLoginInfo(string address, string signData, Controller controller)
+        public JArray validateLoginInfo(Controller controller, string address, string signData)
         {
             //
             var nonceStr = getNonceStr(address);
@@ -94,14 +90,14 @@ namespace NEL_FutureDao_API.Service
             //controller.Response.Cookies.Append("accessToken", accessToken);
             //controller.Response.Cookies.Append("HttpOnly", "true");
             controller.Response.Headers.Remove("Set-Cookie");
-            controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; acessToken=" + accessToken + "; HttpOnly");
+            controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; acessToken=" + accessToken + "; Path=/; HttpOnly");
         }
         private bool getUserInfo(Controller controller, out string code, out string userId)
         {
             code = "";
             userId = controller.Request.Cookies["userId"];
             var accessToken = controller.Request.Cookies["accessToken"];
-            if(userId == "" || accessToken == "")
+            if(userId == null || userId == "" || accessToken == null || accessToken == "")
             {
                 return false;
             }

@@ -140,7 +140,7 @@ namespace NEL.Comm
                         result = usV3.getUserInfo(controller);
                         break;
                     case "validateLoginV3":
-                        result = usV3.validateLoginInfo(req.@params[0].ToString(), req.@params[1].ToString(), controller);
+                        result = usV3.validateLoginInfo(controller, req.@params[0].ToString(), req.@params[1].ToString());
                         break;
                     case "getLoginNonceV3":
                         result = usV3.getLoginNonce(req.@params[0].ToString());

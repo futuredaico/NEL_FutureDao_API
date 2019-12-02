@@ -164,6 +164,9 @@ namespace NEL.Comm
                     case "getProjListV3":
                         result = ms.getProjList(int.Parse(req.@params[0].ToString()), int.Parse(req.@params[1].ToString()));
                         break;
+                    case "logoutV3":
+                        result = usV3.logout(controller);
+                        break;
                     case "getUserInfoV3":
                         result = usV3.getUserInfo(controller);
                         break;

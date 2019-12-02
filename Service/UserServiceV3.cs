@@ -83,6 +83,10 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
 
+        private void clearUserInfo(Controller controller)
+        {
+            controller.Response.Headers["Set-Cookie"]="userId=_; Path=/; HttpOnly";
+        }
         private void setUserInfo(Controller controller, string userId, string accessToken)
         {
             var host = controller.Request.Host.ToString();
@@ -169,8 +173,6 @@ namespace NEL_FutureDao_API.Service
 
         public JArray getUserInfo(Controller controller)
         {
-            
-
             if (!getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
@@ -180,6 +182,16 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
             return getRes(queryRes[0]);
+        }
+
+        public JArray logout(Controller controller)
+        {
+            if (!getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            clearUserInfo(controller);
+            return getRes();
         }
 
 

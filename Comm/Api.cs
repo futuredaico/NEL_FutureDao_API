@@ -24,6 +24,7 @@ namespace NEL.Comm
         private DiscussService ds;
         private FinanceService fs;
         private RewardService rs;
+        private MoloService ms;
 
         public Api(string node)
         {
@@ -32,6 +33,12 @@ namespace NEL.Comm
             switch (netnode)
             {
                 case "testnet":
+                    ms = new MoloService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                    };
                     rs = new RewardService
                     {
                         mh = mh,
@@ -83,6 +90,12 @@ namespace NEL.Comm
                     };
                     break;
                 case "mainnet":
+                    ms = new MoloService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                    };
                     rs = new RewardService
                     {
                         mh = mh,
@@ -136,6 +149,9 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    case "getProjListV3":
+                        result = ms.getProjList(int.Parse(req.@params[0].ToString()), int.Parse(req.@params[1].ToString()));
+                        break;
                     case "getUserInfoV3":
                         result = usV3.getUserInfo(controller);
                         break;

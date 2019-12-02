@@ -12,6 +12,7 @@ namespace NEL_FutureDao_API.Service
         public string dao_mongodbDatabase { get; set; }
         public string dao_projInfoCol { get; set; } = "daomolochprojinfos";
         public string dao_projmemberCol { get; set; } = "daomolochprojmembers";
+        public string dao_projProposalCol { get; set; } = "daomolochprojproposals";
 
         //
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
@@ -34,7 +35,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("projId", p["projId"]);
                 jo.Add("projName", p["projName"]);
                 jo.Add("projType", p["projType"]);
-                jo.Add("projDetail", p["projDetail"]);
+                jo.Add("projBrief", p["description"]);
                 jo.Add("projCoverUrl", "");
                 jo.Add("shares", shares);
                 jo.Add("members", members);
@@ -73,7 +74,8 @@ namespace NEL_FutureDao_API.Service
             jo.Add("projId", item["projId"]);
             jo.Add("projName", item["projName"]);
             jo.Add("projType", item["projType"]);
-            jo.Add("projDetail", item["projDetail"]);
+            jo.Add("projBrief", item["description"]);
+            jo.Add("projDetail", "");
             jo.Add("projCoverUrl", "");
             jo.Add("projFundTotal", "0");
             jo.Add("projFundSymbol", "eth");
@@ -85,13 +87,52 @@ namespace NEL_FutureDao_API.Service
             return getRes(jo);
         }
 
-        public JArray getProjProposalList(string projId, int pageNum, int pageSize)
+        public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "")
         {
-            return null;
+            var findStr = new JObject { { "projId", projId} }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, dao_projProposalCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+
+            var sortStr = "{'timestamp':-1}";
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, dao_projProposalCol, findStr, sortStr, (pageNum-1)*pageSize, pageSize);
+            if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var rr = queryRes.Select(p => {
+                var jo = new JObject();
+                jo.Add("projId", p["projId"]);
+                jo.Add("proposalIndex", p["proposalIndex"]);
+                jo.Add("proposalTitle", p["title"]);
+                jo.Add("sharesRequested", p["sharesRequested"]);
+                jo.Add("tokenTribute", p["tokenTribute"]);
+                jo.Add("timestamp", p["timestamp"]);
+                jo.Add("yesShares", p["yesShares"]);
+                jo.Add("noShares", p["noShares"]);
+                jo.Add("isVote", p["proposer"].ToString() == address);
+                jo.Add("proposalState", ProposalState.Voting);
+                return jo;
+            });
+            return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
         }
-        public JArray getProjProposalDetail(string projId, string proposalId)
+        public JArray getProjProposalDetail(string projId, string proposalIndex)
         {
-            return null;
+            var findStr = new JObject { {"projId", projId},{ "proposalIndex", proposalIndex } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, dao_projProposalCol, findStr);
+            if (queryRes.Count == 0) getRes();
+
+            var item = queryRes[0];
+            var jo = new JObject();
+            jo["projId"] = projId;
+            jo["proposalIndex"] = proposalIndex;
+            jo["proposalTitle"] = item["proposalTitle"];
+            jo["proposer"] = item["proposer"];
+            jo["username"] = "";
+            jo["headIconUrl"] = "";
+            jo["proposalDesc"] = item["description"];
+            jo.Add("sharesRequested", item["sharesRequested"]);
+            jo.Add("tokenTribute", item["tokenTribute"]);
+            jo.Add("tokenTributeSymbol", "eth");
+            jo.Add("tokenReceiver", item["proposer"]);
+            return getRes(jo);
         }
         public JArray getProjMemberList(string projId, int pageNum, int pageSize)
         {
@@ -109,11 +150,17 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("headIconUrl", "");
                 jo.Add("address", p["memberAddress"]);
                 jo.Add("shares", p["shares"]);
-
                 return jo;
             });
             return getRes(new JObject { { "count", count},{ "list", new JArray { rr} } });
         }
 
+    }
+    class ProposalState
+    {
+        public const string Voting = "";
+        public const string Public = "";
+        public const string Passed = "";
+        public const string NotPassed= "";
     }
 }

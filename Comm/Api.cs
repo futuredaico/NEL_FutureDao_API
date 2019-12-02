@@ -152,6 +152,12 @@ namespace NEL.Comm
                     case "getProjMemberListV3":
                         result = ms.getProjMemberList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
                         break;
+                    case "getProjProposalDetailV3":
+                        result = ms.getProjProposalDetail(req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
+                    case "getProjProposalListV3":
+                        result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString());
+                        break;
                     case "getProjdetailV3":
                         result = ms.getProjDetail(req.@params[0].ToString());
                         break;

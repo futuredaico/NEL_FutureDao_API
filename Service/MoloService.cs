@@ -104,10 +104,11 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("proposalTitle", p["title"]);
                 jo.Add("sharesRequested", p["sharesRequested"]);
                 jo.Add("tokenTribute", p["tokenTribute"]);
+                jo.Add("tokenTributeSymbol", "eth");
                 jo.Add("timestamp", p["timestamp"]);
                 jo.Add("yesShares", p["yesShares"]);
                 jo.Add("noShares", p["noShares"]);
-                jo.Add("isVote", p["proposer"].ToString() == address);
+                jo.Add("hasVote", p["proposer"].ToString() == address);
                 jo.Add("proposalState", ProposalState.Voting);
                 return jo;
             });
@@ -127,7 +128,7 @@ namespace NEL_FutureDao_API.Service
             jo["proposer"] = item["proposer"];
             jo["username"] = "";
             jo["headIconUrl"] = "";
-            jo["proposalDesc"] = item["description"];
+            jo["proposalDetail"] = item["description"];
             jo.Add("sharesRequested", item["sharesRequested"]);
             jo.Add("tokenTribute", item["tokenTribute"]);
             jo.Add("tokenTributeSymbol", "eth");
@@ -158,9 +159,9 @@ namespace NEL_FutureDao_API.Service
     }
     class ProposalState
     {
-        public const string Voting = "";
-        public const string Public = "";
-        public const string Passed = "";
-        public const string NotPassed= "";
+        public const string Voting = "10151";    // 投票中
+        public const string Public = "10152";    // 公式中
+        public const string Passed = "10153";    // 已通过
+        public const string NotPassed= "10154";  // 未通过
     }
 }

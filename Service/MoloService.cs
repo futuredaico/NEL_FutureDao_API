@@ -85,6 +85,35 @@ namespace NEL_FutureDao_API.Service
             return getRes(jo);
         }
 
+        public JArray getProjProposalList(string projId, int pageNum, int pageSize)
+        {
+            return null;
+        }
+        public JArray getProjProposalDetail(string projId, string proposalId)
+        {
+            return null;
+        }
+        public JArray getProjMemberList(string projId, int pageNum, int pageSize)
+        {
+            var findStr = new JObject { {"projId", projId } }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, dao_projmemberCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", 0},{ "list", new JArray()} });
+
+            var sortStr = "{'_id': -1}";
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, dao_projmemberCol, findStr, sortStr, (pageNum-1)*pageSize, pageSize);
+            if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var rr = queryRes.Select(p => {
+                var jo = new JObject();
+                jo.Add("username","");
+                jo.Add("headIconUrl", "");
+                jo.Add("address", p["memberAddress"]);
+                jo.Add("shares", p["shares"]);
+
+                return jo;
+            });
+            return getRes(new JObject { { "count", count},{ "list", new JArray { rr} } });
+        }
 
     }
 }

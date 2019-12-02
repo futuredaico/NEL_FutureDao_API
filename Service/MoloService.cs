@@ -63,8 +63,26 @@ namespace NEL_FutureDao_API.Service
         public JArray getProjDetail(string projId)
         {
             var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, dao_projInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
 
-            return null;
+            var item = queryRes[0];
+
+            var members = getProjTeamCount(item["projId"].ToString(), out long shares);
+            var jo = new JObject();
+            jo.Add("projId", item["projId"]);
+            jo.Add("projName", item["projName"]);
+            jo.Add("projType", item["projType"]);
+            jo.Add("projDetail", item["projDetail"]);
+            jo.Add("projCoverUrl", "");
+            jo.Add("projFundTotal", "0");
+            jo.Add("projFundSymbol", "eth");
+            jo.Add("shares", shares);
+            jo.Add("valuePerShare", 0);
+            jo.Add("projOfficialWeb", item["projUrl"]);
+            jo.Add("discussCount", 0);
+            jo.Add("members", members);
+            return getRes(jo);
         }
 
 

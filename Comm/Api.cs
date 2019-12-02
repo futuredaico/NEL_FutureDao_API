@@ -149,6 +149,9 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    case "getProjdetailV3":
+                        result = ms.getProjDetail(req.@params[0].ToString());
+                        break;
                     case "getProjListV3":
                         result = ms.getProjList(int.Parse(req.@params[0].ToString()), int.Parse(req.@params[1].ToString()));
                         break;

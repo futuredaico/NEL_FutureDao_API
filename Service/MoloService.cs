@@ -84,6 +84,14 @@ namespace NEL_FutureDao_API.Service
             jo.Add("projOfficialWeb", item["projUrl"]);
             jo.Add("discussCount", 0);
             jo.Add("members", members);
+
+            var periodDuration = (long)item["periodDuration"];
+            var votingPeriodDuration = (long)item["votingPeriodDuration"];
+            var gracePeriodDuration = (long)item["gracePeriodDuration"];
+            var votePeriod = periodDuration * votingPeriodDuration;
+            var gracePeriod = periodDuration * gracePeriodDuration;
+            jo.Add("votePeriod", votePeriod);
+            jo.Add("gracePeriod", gracePeriod);
             return getRes(jo);
         }
 
@@ -113,6 +121,24 @@ namespace NEL_FutureDao_API.Service
                 return jo;
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
+        }
+        private long getVotePeriod(string projId, out long gracePeriod)
+        {
+            gracePeriod = 0;
+            var findStr = new JObject { { "projId", projId} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, dao_projInfoCol, findStr);
+            if(queryRes.Count == 0)
+            {
+                return 0;
+            }
+
+            var item = queryRes[0];
+            var periodDuration = (long)item["periodDuration"];
+            var votingPeriodDuration = (long)item["votingPeriodDuration"];
+            var gracePeriodDuration = (long)item["gracePeriodDuration"];
+            var votePeriod = periodDuration * votingPeriodDuration;
+            gracePeriod = periodDuration * gracePeriodDuration;
+            return votePeriod;
         }
         public JArray getProjProposalDetail(string projId, string proposalIndex)
         {

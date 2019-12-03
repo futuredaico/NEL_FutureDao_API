@@ -750,5 +750,12 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
+
+        //molo
+        public JArray addMoloDiscuss()
+        {
+            return null;
+        }
+
     }
 }

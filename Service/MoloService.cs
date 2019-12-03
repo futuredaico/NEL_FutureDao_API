@@ -122,24 +122,6 @@ namespace NEL_FutureDao_API.Service
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
         }
-        private long getVotePeriod(string projId, out long gracePeriod)
-        {
-            gracePeriod = 0;
-            var findStr = new JObject { { "projId", projId} }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, dao_projInfoCol, findStr);
-            if(queryRes.Count == 0)
-            {
-                return 0;
-            }
-
-            var item = queryRes[0];
-            var periodDuration = (long)item["periodDuration"];
-            var votingPeriodDuration = (long)item["votingPeriodDuration"];
-            var gracePeriodDuration = (long)item["gracePeriodDuration"];
-            var votePeriod = periodDuration * votingPeriodDuration;
-            gracePeriod = periodDuration * gracePeriodDuration;
-            return votePeriod;
-        }
         public JArray getProjProposalDetail(string projId, string proposalIndex)
         {
             var findStr = new JObject { {"projId", projId},{ "proposalIndex", proposalIndex } }.ToString();
@@ -158,7 +140,9 @@ namespace NEL_FutureDao_API.Service
             jo.Add("sharesRequested", item["sharesRequested"]);
             jo.Add("tokenTribute", item["tokenTribute"]);
             jo.Add("tokenTributeSymbol", "eth");
-            jo.Add("tokenReceiver", item["proposer"]);
+            jo.Add("applicant", item["applicant"]);
+            jo.Add("applicantUsername", "");
+            jo.Add("applicantHeadIconUrl", "");
             return getRes(jo);
         }
         public JArray getProjMemberList(string projId, int pageNum, int pageSize)

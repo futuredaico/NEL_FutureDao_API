@@ -33,12 +33,7 @@ namespace NEL.Comm
             switch (netnode)
             {
                 case "testnet":
-                    ms = new MoloService
-                    {
-                        mh = mh,
-                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
-                    };
+                    
                     rs = new RewardService
                     {
                         mh = mh,
@@ -87,6 +82,13 @@ namespace NEL.Comm
                         tokenUrl = mh.tokenUrl_testnet,
                         oss = oss,
                         bucketName = mh.bucketName_testnet
+                    };
+                    ms = new MoloService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        us = usV3
                     };
                     break;
                 case "mainnet":
@@ -149,6 +151,36 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    case "getMoloSubDiscussList":
+                        result = ms.getMoloSubDiscussList(controller,
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "getMoloDiscussList":
+                        result = ms.getMoloDiscussList(controller, 
+                            req.@params[0].ToString(), 
+                            int.Parse(req.@params[1].ToString()), 
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "getMoloDiscuss":
+                        result = ms.getMoloDiscuss(req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
+                    case "zanMoloDiscuss":
+                        result = ms.zanMoloDiscuss(controller, 
+                            req.@params[0].ToString(), 
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "addMoloDiscuss":
+                        result = ms.addMoloDiscuss(controller, 
+                            req.@params[0].ToString(), 
+                            req.@params[1].ToString(), 
+                            req.@params[2].ToString()
+                            );
+                        break;
                     case "getProjMemberListV3":
                         result = ms.getProjMemberList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
                         break;

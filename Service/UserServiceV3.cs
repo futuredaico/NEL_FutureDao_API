@@ -110,16 +110,16 @@ namespace NEL_FutureDao_API.Service
             controller.Response.Headers.Add("Set-Cookie", "userId=" + userId +"_"+ accessToken + "; Path=/; HttpOnly");
 
         }
-        private bool getUserInfo(Controller controller, out string code, out string userId)
+        public bool getUserInfo(Controller controller, out string code, out string userId)
         {
-            code = "";
+            code = DaoReturnCode.C_InvalidUserInfo;
             userId = controller.Request.Cookies["userId"];
             //var accessToken = controller.Request.Cookies["accessToken"];
-            /*if(userId == null || userId == "" || accessToken == null || accessToken == "")
+            if(userId == null || userId == "")// || accessToken == null || accessToken == "")
             {
                 return false;
             }
-            */
+            
             var ss = userId.Split("_");
             Console.WriteLine(ss[0]);
             Console.WriteLine(ss[1]);

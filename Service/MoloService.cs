@@ -148,7 +148,7 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray getProjMemberList(string projId, int pageNum, int pageSize)
         {
-            var findStr = new JObject { {"projId", projId } }.ToString();
+            var findStr = new JObject { {"projId", projId },{ "proposalIndex",""} }.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0},{ "list", new JArray()} });
 

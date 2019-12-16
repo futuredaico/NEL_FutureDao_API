@@ -114,19 +114,16 @@ namespace NEL_FutureDao_API.Service
         {
             code = "";
             userId = "";
-            if (controller != null) return true;
             code = DaoReturnCode.C_InvalidUserInfo;
             userId = controller.Request.Cookies["userId"];
-            //var accessToken = controller.Request.Cookies["accessToken"];
-            if(userId == null || userId == "")// || accessToken == null || accessToken == "")
+            var ss = userId.Split("_");
+            userId = ss[0];
+            if (userId == null || userId == "")// || accessToken == null || accessToken == "")
             {
                 return false;
             }
             
-            var ss = userId.Split("_");
-            Console.WriteLine(ss[0]);
-            Console.WriteLine(ss[1]);
-            userId = ss[0];
+            
             return TokenHelper.checkAccessToken(tokenUrl, ss[0], ss[1], out code);
         }
 
@@ -185,6 +182,61 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return getRes();
             return getRes(queryRes[0]);
+        }
+        public JArray modifyUserIcon(Controller controller, string headIconUrl)
+        {
+            if (!getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "userId", userId } }.ToString();
+            string fieldStr = new JObject { { "headIconUrl", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0)
+            {
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
+            }
+
+            //
+            string oldHeadIconUrl = queryRes[0]["headIconUrl"].ToString();
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, oldHeadIconUrl, headIconUrl, out string newHeadIconUrl))
+            {
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
+            }
+            //
+            if (oldHeadIconUrl != newHeadIconUrl)
+            {
+                var updateStr = new JObject { {"$set", new JObject{
+                    { "headIconUrl", newHeadIconUrl},
+                    { "lastUpdateTime", TimeHelper.GetTimeStamp() }
+                } }}.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
+            }
+            return getRes();
+        }
+        public JArray modifyUserName(Controller controller, string username)
+        {
+            if (!getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            string findStr = new JObject { { "userId", userId } }.ToString();
+            string fieldStr = new JObject { { "username", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0)
+            {
+                return getErrorRes(DaoReturnCode.notFindUserInfo);
+            }
+
+            if (queryRes[0]["username"].ToString() != username)
+            {
+                var updateStr = new JObject { { "$set", new JObject {
+                    { "username", username },
+                    { "lastUpdateTime", TimeHelper.GetTimeStamp() }
+                } } }.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
+            }
+            return getRes();
         }
 
         public JArray logout(Controller controller)

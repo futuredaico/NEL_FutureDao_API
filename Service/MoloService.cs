@@ -91,8 +91,8 @@ namespace NEL_FutureDao_API.Service
             jo.Add("valuePerShare", 0);
             jo.Add("discussCount", item["discussCount"]);
             jo.Add("votePeriod", item["votePeriod"]);
-            jo.Add("notePreriod", item["notePreriod"]);
-            jo.Add("cancelPreriod", item["cancelPreriod"]);
+            jo.Add("notePeriod", item["notePeriod"]);
+            jo.Add("cancelPeriod", item["cancelPeriod"]);
             return getRes(jo);
         }
 

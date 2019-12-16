@@ -112,6 +112,9 @@ namespace NEL_FutureDao_API.Service
         }
         public bool getUserInfo(Controller controller, out string code, out string userId)
         {
+            code = "";
+            userId = "";
+            if (controller != null) return true;
             code = DaoReturnCode.C_InvalidUserInfo;
             userId = controller.Request.Cookies["userId"];
             //var accessToken = controller.Request.Cookies["accessToken"];
@@ -146,7 +149,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return false;
             }
-            return true;
+            return EthHelper.verify(nonceStr, signData);
         }
         private string getUserId(string address)
         {
@@ -193,7 +196,6 @@ namespace NEL_FutureDao_API.Service
             clearUserInfo(controller);
             return getRes();
         }
-
 
 
         public class StateValidityOp

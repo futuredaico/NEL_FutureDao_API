@@ -151,6 +151,41 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    // molo.prop.discuss
+                    case "getMoloPropSubDiscussList":
+                        result = ms.getMoloPropSubDiscussList(controller,
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "getMoloPropDiscussList":
+                        result = ms.getMoloPropDiscussList(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString())
+                            );
+                        break;
+                    case "getMoloPropDiscuss":
+                        result = ms.getMoloPropDiscuss(req.@params[0].ToString());
+                        break;
+                    case "zanMoloPropDiscuss":
+                        result = ms.zanMoloPropDiscuss(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "addMoloPropDiscuss":
+                        result = ms.addMoloPropDiscuss(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
+                        break;
+                    // molo.discuss
                     case "getMoloSubDiscussList":
                         result = ms.getMoloSubDiscussList(controller,
                             req.@params[0].ToString(),
@@ -166,7 +201,7 @@ namespace NEL.Comm
                             );
                         break;
                     case "getMoloDiscuss":
-                        result = ms.getMoloDiscuss(req.@params[0].ToString(), req.@params[1].ToString());
+                        result = ms.getMoloDiscuss(req.@params[0].ToString());
                         break;
                     case "zanMoloDiscuss":
                         result = ms.zanMoloDiscuss(controller, 
@@ -181,6 +216,7 @@ namespace NEL.Comm
                             req.@params[2].ToString()
                             );
                         break;
+                    //
                     case "getProjMemberListV3":
                         result = ms.getProjMemberList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
                         break;
@@ -196,6 +232,7 @@ namespace NEL.Comm
                     case "getProjListV3":
                         result = ms.getProjList(int.Parse(req.@params[0].ToString()), int.Parse(req.@params[1].ToString()));
                         break;
+                    //
                     case "logoutV3":
                         result = usV3.logout(controller);
                         break;

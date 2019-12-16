@@ -62,6 +62,17 @@ namespace NEL_FutureDao_API.Service.Help
             string data = string.Format("{0}.{1}.{2}.{3}.{4}", now, projId, preId, content, userId);
             return hash(data);
         }
+        public static string genProjMoloProposalId(string projId, string propsalIndex)
+        {
+            string data = string.Format("{0}{1}", /*now, */projId, propsalIndex);
+            //return hash(data);
+            return data;
+        }
+        public static string genProjMoloProposalDiscussId(string projId, string propsalIndex, string preId, string content, string userId)
+        {
+            string data = string.Format("{0}.{1}.{2}.{3}.{4}", now, projId, propsalIndex, preId, content, userId);
+            return hash(data);
+        }
         public static string genProjRewardId(string projId, string rewardName)
         {
             string data = string.Format("{0}.{1}.{2}", now, projId, rewardName);

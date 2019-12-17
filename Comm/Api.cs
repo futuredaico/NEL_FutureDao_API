@@ -151,6 +151,9 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    case "getTokenBalance":
+                        result = ms.getTokenBalance(controller, req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
                     // molo.prop.discuss
                     case "getMoloPropSubDiscussList":
                         result = ms.getMoloPropSubDiscussList(controller,

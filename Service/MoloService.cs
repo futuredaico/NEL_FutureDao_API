@@ -694,7 +694,8 @@ namespace NEL_FutureDao_API.Service
                 {"discussCount", 0},
                 {"userId", userId},
                 {"time", now},
-                {"lastUpdateTime", now}
+                {"lastUpdateTime", now},
+                {"startTime", 0}
             }.ToString();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, newdata);
             return getRes();
@@ -729,6 +730,26 @@ namespace NEL_FutureDao_API.Service
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, newdata);
             return getRes();
         }
+
+        public JArray getTokenBalance(Controller controller, string projId, string address)
+        {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "projId", projId },{ "proposalIndex",""}, { "address", address } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
+
+            var balance = 0L;
+            var newDelegateKey = "";
+            if (queryRes.Count > 0)
+            {
+                balance = long.Parse(queryRes[0]["balance"].ToString());
+                newDelegateKey = queryRes[0]["newDelegateKey"].ToString();
+            }
+            var res = new JObject { { "balance", balance }, { "newDelegateKey", newDelegateKey } };
+            return getRes(res);
+        }
     }
     class ProposalState
     {
@@ -737,11 +758,6 @@ namespace NEL_FutureDao_API.Service
         public const string PassYes = "10153";      // 已通过
         public const string PassNot= "10154";       // 未通过
         public const string Aborted = "10155";      // 已终止
-    }
-    class HandleState
-    {
-        public const string NeedNot = "0";
-        public const string NeedYes = "1";
     }
 
     

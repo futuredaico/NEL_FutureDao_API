@@ -119,6 +119,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("voteNotCount", p["voteNotCount"]);
                 jo.Add("hasVote", p["proposer"].ToString() == address);
                 jo.Add("proposalState", p["proposalState"]);
+                jo.Add("handleState", p["handleState"]);
                 return jo;
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
@@ -736,6 +737,11 @@ namespace NEL_FutureDao_API.Service
         public const string PassYes = "10153";      // 已通过
         public const string PassNot= "10154";       // 未通过
         public const string Aborted = "10155";      // 已终止
+    }
+    class HandleState
+    {
+        public const string NeedNot = "0";
+        public const string NeedYes = "1";
     }
 
     

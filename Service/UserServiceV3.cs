@@ -27,6 +27,7 @@ namespace NEL_FutureDao_API.Service
         /// 
         public JArray getLoginNonce(string address)
         {
+            address = address.ToLower();
             if (address == "") return getErrorRes(DaoReturnCode.C_InvalidUserInfo);
             var nonceStr = "";
             var now = TimeHelper.GetTimeStamp();
@@ -67,6 +68,7 @@ namespace NEL_FutureDao_API.Service
         public JArray validateLoginInfo(Controller controller, string address, string signData)
         {
             //
+            address = address.ToLower();
             var nonceStr = getNonceStr(address);
             if (!verify(address, signData, nonceStr))
             {
@@ -82,6 +84,16 @@ namespace NEL_FutureDao_API.Service
             //return getRes(new JObject { { "userId", userId }, { "accessToken", accessToken } });
             return getRes();
         }
+        public JArray logout(Controller controller)
+        {
+            if (!getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            clearUserInfo(controller);
+            return getRes();
+        }
+
 
         private void clearUserInfo(Controller controller)
         {
@@ -171,6 +183,7 @@ namespace NEL_FutureDao_API.Service
             return userId;
         }
 
+
         public JArray getUserInfo(Controller controller)
         {
             if (!getUserInfo(controller, out string code, out string userId))
@@ -239,21 +252,10 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
 
-        public JArray logout(Controller controller)
-        {
-            if (!getUserInfo(controller, out string code, out string userId))
-            {
-                return getErrorRes(code);
-            }
-            clearUserInfo(controller);
-            return getRes();
-        }
-
-
-        public class StateValidityOp
-        {
-            public const int Yes = 1;
-            public const int Not = 0;
-        }
+    }
+    public class StateValidityOp
+    {
+        public const int Yes = 1;
+        public const int Not = 0;
     }
 }

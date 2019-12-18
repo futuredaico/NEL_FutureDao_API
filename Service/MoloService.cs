@@ -785,9 +785,11 @@ namespace NEL_FutureDao_API.Service
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, newdata);
             return getRes();
         }
-
+        
+        //
         public JArray getTokenBalance(Controller controller, string projId, string address)
         {
+            address = address.ToLower();
             if (!us.getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
@@ -804,6 +806,23 @@ namespace NEL_FutureDao_API.Service
             }
             var res = new JObject { { "balance", balance }, { "newDelegateKey", newDelegateKey } };
             return getRes(res);
+        }
+        public JArray getProjFundInfo(Controller controller, string projId)
+        {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
+            var fundHash = "";
+            var fundSymbol = "";
+            if(queryRes.Count > 0)
+            {
+                fundHash = queryRes[0]["fundHash"].ToString();
+                fundSymbol = queryRes[0]["fundSymbol"].ToString();
+            } 
+            return getRes(new JObject { { "fundHash", fundHash },{ "fundSymbol", fundSymbol } });
         }
     }
     

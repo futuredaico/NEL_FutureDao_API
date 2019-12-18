@@ -93,6 +93,7 @@ namespace NEL_FutureDao_API.Service
             jo.Add("votePeriod", item["votePeriod"]);
             jo.Add("notePeriod", item["notePeriod"]);
             jo.Add("cancelPeriod", item["cancelPeriod"]);
+            jo.Add("startTime", item["startTime"]);
             return getRes(jo);
         }
 
@@ -751,14 +752,5 @@ namespace NEL_FutureDao_API.Service
             return getRes(res);
         }
     }
-    class ProposalState
-    {
-        public const string Voting = "10151";       // 投票中
-        public const string Noting = "10152";       // 公示中
-        public const string PassYes = "10153";      // 已通过
-        public const string PassNot= "10154";       // 未通过
-        public const string Aborted = "10155";      // 已终止
-    }
-
     
 }

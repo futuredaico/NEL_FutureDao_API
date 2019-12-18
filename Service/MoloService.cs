@@ -26,7 +26,7 @@ namespace NEL_FutureDao_API.Service
         //
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
         private JArray getRes(JToken res = null) => RespHelper.getRes(res);
-
+        // 项目
         public JArray getProjList(int pageNum, int pageSize)
         {
             var findStr = "{}";
@@ -96,7 +96,7 @@ namespace NEL_FutureDao_API.Service
             jo.Add("startTime", item["startTime"]);
             return getRes(jo);
         }
-
+        // 提案
         public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "")
         {
             var findStr = new JObject { { "projId", projId} }.ToString();
@@ -138,18 +138,73 @@ namespace NEL_FutureDao_API.Service
             jo["proposalTitle"] = item["proposalName"];
             jo["proposalDetail"] = item["proposalDetail"];
             jo["proposer"] = item["proposer"];
-            jo["username"] = "";
-            jo["headIconUrl"] = "";
+            var username = getUsername(item["proposer"].ToString(), out string headIconUrl);
+            jo["username"] = username;
+            jo["headIconUrl"] = headIconUrl;
             jo.Add("sharesRequested", item["sharesRequested"]);
             jo.Add("tokenTribute", item["tokenTribute"]);
             jo.Add("tokenTributeSymbol", "eth");
             jo.Add("applicant", item["applicant"]);
-            jo.Add("applicantUsername", "");
-            jo.Add("applicantHeadIconUrl", "");
+            username = getUsername(item["applicant"].ToString(), out headIconUrl);
+            jo.Add("applicantUsername", username);
+            jo.Add("applicantHeadIconUrl", headIconUrl);
             return getRes(jo);
+        }
+        private string getUsername(string address, out string headIconUrl)
+        {
+            headIconUrl = "";
+            var findStr = new JObject { { "address", address } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr);
+            if (queryRes.Count() == 0) return "";
+
+            var item = queryRes[0];
+            headIconUrl = item["headIconUrl"].ToString();
+            return item["username"].ToString();
+        }
+        // 成员
+        public JArray getProjMemberListNew(string projId, int pageNum, int pageSize)
+        {
+            var findStr = new JObject { { "projId", projId }, { "proposalIndex", "" } }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+            //
+            var match = new JObject { { "$match", new JObject { { "projId", projId }, { "proposalIndex", "" } } } }.ToString();
+            var lookup = new JObject { { "$lookup", new JObject {
+                { "from", userInfoCol},
+                {"localField", "address" },
+                {"foreignField", "address" },
+                {"as", "us" },
+            } } }.ToString();
+            var sort = new JObject { { "$sort", new JObject { { "_id", -1 } } } }.ToString();
+            var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
+            var limit = new JObject { { "$limit", pageSize } }.ToString();
+            var list = new List<string> { match, lookup, sort, skip, limit };
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, list);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var rr =
+            queryRes.Select(p => {
+                var jo = new JObject();
+                var username = "";
+                var headIconUrl = "";
+                var us = (JArray)p["us"];
+                if(us.Count > 0)
+                {
+                    username = us[0]["username"].ToString();
+                    headIconUrl = us[0]["headIconUrl"].ToString();
+                }
+                jo.Add("username", username);
+                jo.Add("headIconUrl", headIconUrl);
+                jo.Add("address", p["address"]);
+                jo.Add("shares", p["balance"]);
+                return jo;
+            }).ToArray();
+            return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
         }
         public JArray getProjMemberList(string projId, int pageNum, int pageSize)
         {
+            if (projId != null) return getProjMemberListNew(projId, pageNum, pageSize);
+            //
             var findStr = new JObject { {"projId", projId },{ "proposalIndex",""} }.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0},{ "list", new JArray()} });
@@ -168,7 +223,6 @@ namespace NEL_FutureDao_API.Service
             });
             return getRes(new JObject { { "count", count},{ "list", new JArray { rr} } });
         }
-
 
         //molo.discuss
         private string getRootId(string preDiscussId, string discussId = "", bool isProposal=false)

@@ -762,6 +762,7 @@ namespace NEL_FutureDao_API.Service
                         { "projId", projId},
                         { "contractName", item["name"]},
                         { "contractHash", item["hash"]},
+                        { "fundDecimls", fundDecimls},
                         { "type", "0"},
                         { "createdAt", date},
                         { "updatedAt", date},
@@ -772,6 +773,7 @@ namespace NEL_FutureDao_API.Service
                     var updateStr = new JObject { { "$set", new JObject {
                         { "projId", projId},
                         { "contractName", item["name"]},
+                        { "fundDecimls", fundDecimls},
                         { "type", "0"},
                         { "updatedAt", date},
                     } } }.ToString();

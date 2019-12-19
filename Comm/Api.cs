@@ -170,6 +170,9 @@ namespace NEL.Comm
                             JObject.Parse(req.@params[14].ToString())
                             );
                         break;
+                    case "getVoteInfo":
+                        result = ms.getVoteInfo(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
+                        break;
                     case "getProjFundInfo":
                         result = ms.getProjFundInfo(controller, req.@params[0].ToString());
                         break;

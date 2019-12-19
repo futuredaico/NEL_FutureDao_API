@@ -166,6 +166,27 @@ namespace NEL_FutureDao_API.Service
             jo.Add("applicantHeadIconUrl", headIconUrl);
             return getRes(jo);
         }
+        public JArray getVoteInfo(string projId, string proposalIndex, string address)
+        {
+            var voteCount = "0";
+            var voteType = "";
+            var balance = "0";
+            var findStr = new JObject { { "projId", projId }, { "proposalIndex", proposalIndex }, { "address", address } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
+            if(queryRes.Count > 0)
+            {
+                voteCount = queryRes[0]["balance"].ToString();
+                voteType = queryRes[0]["type"].ToString();
+            }
+            findStr = new JObject { { "projId", projId }, { "proposalIndex", "" }, { "address", address } }.ToString();
+            queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
+            if (queryRes.Count > 0)
+            {
+                balance = queryRes[0]["balance"].ToString();
+            }
+            var res = new JObject { { "voteCount", voteCount }, { "voteType", voteType }, { "balance", balance } };
+            return getRes(res);
+        }
         private string getUsername(string address, out string headIconUrl)
         {
             headIconUrl = "";

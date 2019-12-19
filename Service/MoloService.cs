@@ -127,7 +127,7 @@ namespace NEL_FutureDao_API.Service
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 
-            var sortStr = "{'timestamp':-1}";
+            var sortStr = "{'blockTime':-1}";
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr, sortStr, (pageNum-1)*pageSize, pageSize);
             if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 

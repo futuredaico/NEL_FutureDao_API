@@ -750,8 +750,9 @@ namespace NEL_FutureDao_API.Service
         //
         public JArray saveContractInfo(Controller controller,
             string projVersion, string projName, string projBrief, string projDetail, string projCoverUrl, string officialWeb,
-            string fundHash, string fundSymbol, 
-            long votePeriod, long notePeriod, long cancelPeriod, /* 单位:秒 */
+            string fundHash, string fundSymbol, long fundDecimls,
+            long periodDuration, /* 单位:秒 */
+            long votingPeriodLength, long notingPeriodLength, long cancelPeriodLength, /* 单位:个 */
             string proposalDeposit, string proposalReward, string summonerAddress, JObject contractHash
             )
         {
@@ -759,7 +760,6 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            // TODO: 检查其他
             var findStr = new JObject { { "officialWeb", officialWeb } }.ToString();
             if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr) > 0)
             {
@@ -771,6 +771,7 @@ namespace NEL_FutureDao_API.Service
             var newdata = new JObject {
                 {"projId", projId},
                 {"projName", projName},
+                {"projType", "moloch"},
                 {"projBrief", projBrief},
                 {"projDetail", projDetail},
                 {"projCoverUrl", projCoverUrl},
@@ -778,21 +779,26 @@ namespace NEL_FutureDao_API.Service
                 {"officialWeb", officialWeb},
                 {"fundHash", fundHash},
                 {"fundSymbol", fundSymbol},
-                {"votePeriod", votePeriod},
-                {"notePeriod", notePeriod},
-                {"cancelPeriod", cancelPeriod},
+                {"fundDecimls", fundDecimls},
+                {"periodDuration", periodDuration},
+                {"votingPeriodLength", votingPeriodLength},
+                {"notingPeriodLength", notingPeriodLength},
+                {"cancelPeriodLength", cancelPeriodLength},
+                {"votePeriod", periodDuration * votingPeriodLength},
+                {"notePeriod", periodDuration * notingPeriodLength},
+                {"cancelPeriod", periodDuration * cancelPeriodLength},
                 {"proposalDeposit", proposalDeposit},
                 {"proposalReward", proposalReward},
                 {"summonerAddress", summonerAddress},
                 {"contractHash", contractHash},
-                {"fundTotal", "0"},
-                {"tokenTotal", "0"},
-                {"hasTokenCount", "0"},
                 {"userId", userId},
+                {"fundTotal", "0"},
+                {"tokenTotal", 0},
+                {"hasTokenCount", 0},
                 {"discussCount", 0},
+                {"startTime", 0},
                 {"time", now},
-                {"lastUpdateTime", now},
-                {"startTime", 0}
+                {"lastUpdateTime", now}
             }.ToString();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, newdata);
             return getRes();

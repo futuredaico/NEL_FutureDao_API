@@ -164,10 +164,12 @@ namespace NEL.Comm
                             long.Parse(req.@params[8].ToString()),
                             long.Parse(req.@params[9].ToString()),
                             long.Parse(req.@params[10].ToString()),
-                            req.@params[11].ToString(),
-                            req.@params[12].ToString(),
+                            long.Parse(req.@params[11].ToString()),
+                            long.Parse(req.@params[12].ToString()),
                             req.@params[13].ToString(),
-                            JObject.Parse(req.@params[14].ToString())
+                            req.@params[14].ToString(),
+                            req.@params[15].ToString(),
+                            JObject.Parse(req.@params[16].ToString())
                             );
                         break;
                     case "getVoteInfo":

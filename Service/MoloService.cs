@@ -107,14 +107,16 @@ namespace NEL_FutureDao_API.Service
         private string getProjFundTotal(string projId)
         {
             var findStr = new JObject { { "projId", projId }, { "$or", new JArray { new JObject { { "event", "ProcessProposal" } }, new JObject { { "event", "Withdrawal" } } } } }.ToString();
-            var fieldStr = new JObject { { "tokenTribute", 1 }, { "event", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, "molonotifyinfos", findStr, fieldStr);
+            //var fieldStr = new JObject { { "tokenTribute", 1 }, { "event", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, "molonotifyinfos", findStr); //, fieldStr);
             if (queryRes.Count == 0) return "0";
 
             return queryRes.Sum(p => {
-                var rr = decimal.Parse(p["tokenTribute"].ToString());
-                if (p["event"].ToString() == "Withdrawal") rr *= -1;
-                return rr;
+
+                if (p["event"].ToString() == "Withdrawal") {
+                    return -1*decimal.Parse(p["amount"].ToString());
+                }
+                return decimal.Parse(p["tokenTribute"].ToString());
             }).ToString();
 
         }

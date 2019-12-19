@@ -95,8 +95,8 @@ namespace NEL.Comm
                     ms = new MoloService
                     {
                         mh = mh,
-                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
                     };
                     rs = new RewardService
                     {

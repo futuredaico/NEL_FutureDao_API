@@ -169,7 +169,7 @@ namespace NEL.Comm
                             req.@params[13].ToString(),
                             req.@params[14].ToString(),
                             req.@params[15].ToString(),
-                            JObject.Parse(req.@params[16].ToString())
+                            JArray.Parse(req.@params[16].ToString())
                             );
                         break;
                     case "getVoteInfo":

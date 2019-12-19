@@ -142,12 +142,18 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("timestamp", p["blockTime"]);
                 jo.Add("voteYesCount", p["voteYesCount"]);
                 jo.Add("voteNotCount", p["voteNotCount"]);
-                jo.Add("hasVote", p["proposer"].ToString() == address);
+                //jo.Add("hasVote", p["proposer"].ToString() == address);
+                jo.Add("hasVote", isVote(p["projId"].ToString(), p["proposalIndex"].ToString(), address));
                 jo.Add("proposalState", p["proposalState"]);
                 jo.Add("handleState", p["handleState"]);
                 return jo;
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
+        }
+        private bool isVote(string projId, string proposalIndex, string address)
+        {
+            var findStr = new JObject { { "projId", projId }, { "proposalIndex", proposalIndex }, { "address", address } }.ToString();
+            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr) > 0;
         }
         public JArray getProjProposalDetail(string projId, string proposalIndex)
         {

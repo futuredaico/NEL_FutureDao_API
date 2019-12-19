@@ -151,6 +151,25 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    case "saveContractInfo":
+                        result = ms.saveContractInfo(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            long.Parse(req.@params[8].ToString()),
+                            long.Parse(req.@params[9].ToString()),
+                            long.Parse(req.@params[10].ToString()),
+                            req.@params[11].ToString(),
+                            req.@params[12].ToString(),
+                            req.@params[13].ToString(),
+                            JObject.Parse(req.@params[14].ToString())
+                            );
+                        break;
                     case "getProjFundInfo":
                         result = ms.getProjFundInfo(controller, req.@params[0].ToString());
                         break;

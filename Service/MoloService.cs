@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NEL.NNS.lib;
 using NEL_FutureDao_API.Service.Help;
+using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,7 +89,11 @@ namespace NEL_FutureDao_API.Service
             jo.Add("fundSymbol", item["fundSymbol"]);
             jo.Add("shares", shares);
             jo.Add("member", members);
-            jo.Add("valuePerShare", 0);
+            //
+            var val = decimal.Parse(item["fundTotal"].ToString()) / new decimal(shares);
+            var valStr = val.ToString();
+            if (valStr.Contains(".")) valStr = val.ToString("0.0000");
+            jo.Add("valuePerShare", valStr); ;
             jo.Add("discussCount", item["discussCount"]);
             jo.Add("votePeriod", item["votePeriod"]);
             jo.Add("notePeriod", item["notePeriod"]);
@@ -715,7 +720,7 @@ namespace NEL_FutureDao_API.Service
             string projVersion, string projName, string projBrief, string projDetail, string projCoverUrl, string officialWeb,
             string fundHash, string fundSymbol, 
             long votePeriod, long notePeriod, long cancelPeriod, /* 单位:秒 */
-            string proposalDeposit, string proposalReward, JObject contractHash
+            string proposalDeposit, string proposalReward, string summonerAddress, JObject contractHash
             )
         {
             if(!us.getUserInfo(controller, out string code, out string userId))
@@ -723,6 +728,11 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
             // TODO: 检查其他
+            var findStr = new JObject { { "officialWeb", officialWeb } }.ToString();
+            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr) > 0)
+            {
+                return getErrorRes(DaoReturnCode.RepeatOperate);
+            }
 
             var projId = DaoInfoHelper.genProjId(projName, projVersion);
             var now = TimeHelper.GetTimeStamp();
@@ -741,13 +751,13 @@ namespace NEL_FutureDao_API.Service
                 {"cancelPeriod", cancelPeriod},
                 {"proposalDeposit", proposalDeposit},
                 {"proposalReward", proposalReward},
+                {"summonerAddress", summonerAddress},
                 {"contractHash", contractHash},
                 {"fundTotal", "0"},
                 {"tokenTotal", "0"},
                 {"hasTokenCount", "0"},
                 {"userId", userId},
                 {"discussCount", 0},
-                {"userId", userId},
                 {"time", now},
                 {"lastUpdateTime", now},
                 {"startTime", 0}

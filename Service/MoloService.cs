@@ -85,12 +85,13 @@ namespace NEL_FutureDao_API.Service
             jo.Add("projDetail", item["projDetail"]);
             jo.Add("projCoverUrl", item["projCoverUrl"]);
             jo.Add("officailWeb", item["officailWeb"]);
-            jo.Add("fundTotal", item["fundTotal"]);
+            var fundTotal = getProjFundTotal(projId);
+            jo.Add("fundTotal", fundTotal);
             jo.Add("fundSymbol", item["fundSymbol"]);
             jo.Add("shares", shares);
             jo.Add("member", members);
             //
-            var val = decimal.Parse(item["fundTotal"].ToString()) / new decimal(shares);
+            var val = decimal.Parse(fundTotal) / new decimal(shares);
             var valStr = val.ToString();
             if (valStr.Contains(".")) valStr = val.ToString("0.0000");
             jo.Add("valuePerShare", valStr); ;
@@ -100,6 +101,16 @@ namespace NEL_FutureDao_API.Service
             jo.Add("cancelPeriod", item["cancelPeriod"]);
             jo.Add("startTime", item["startTime"]);
             return getRes(jo);
+        }
+        private string getProjFundTotal(string projId)
+        {
+            var findStr = new JObject { { "projId", projId }, { "event", "ProcessProposal" } }.ToString();
+            var fieldStr = new JObject { { "tokenTribute", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, "molonotifyinfos", findStr, fieldStr);
+            if (queryRes.Count == 0) return "0";
+
+            return queryRes.Sum(p => decimal.Parse(p["tokenTribute"].ToString())).ToString();
+
         }
         // 提案
         public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "")

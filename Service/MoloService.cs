@@ -822,9 +822,25 @@ namespace NEL_FutureDao_API.Service
                 {"lastUpdateTime", now}
             }.ToString();
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, newdata);
-            return getRes();
+            return getRes(new JObject { { "projId", projId } });
         }
 
+        public JArray queryContractInfo(Controller controller, string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            var res = new JObject {
+                { "periodDuration",item["periodDuration"]},
+                { "votingPeriodLength",item["votingPeriodLength"]},
+                { "notingPeriodLength",item["notingPeriodLength"]},
+                { "cancelPeriodLength",item["cancelPeriodLength"]},
+                { "contractHashs",item["contractHashs"]}
+            };
+            return getRes(res);
+        }
         public JArray saveProposal(Controller controller, string projId, string proposalName, string proposalDetail, string sharesRequested, string tokenTribute)
         {
             if(!us.getUserInfo(controller, out string code, out string userId))

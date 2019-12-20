@@ -151,6 +151,10 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    case "queryContractInfo":
+                        result = ms.queryContractInfo(controller, req.@params[0].ToString());
+                        break;
+
                     case "saveContractInfo":
                         result = ms.saveContractInfo(controller,
                             req.@params[0].ToString(),

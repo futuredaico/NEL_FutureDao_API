@@ -93,7 +93,7 @@ namespace NEL_FutureDao_API.Service
             jo.Add("shares", shares);
             jo.Add("member", members);
             //
-            var val = decimal.Parse(fundTotal) / new decimal(shares);
+            var val = shares == 0 ? 0 : decimal.Parse(fundTotal) / new decimal(shares);
             var valStr = val.ToString();
             if (valStr.Contains(".")) valStr = val.ToString("0.0000");
             jo.Add("valuePerShare", valStr); ;

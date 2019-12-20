@@ -184,7 +184,7 @@ namespace NEL_FutureDao_API.Service
             jo["headIconUrl"] = headIconUrl;
             jo.Add("sharesRequested", item["sharesRequested"]);
             jo.Add("tokenTribute", item["tokenTribute"]);
-            jo.Add("tokenTributeSymbol", "eth");
+            jo.Add("tokenTributeSymbol", getProjFundSymbol(projId));
             jo.Add("applicant", item["applicant"]);
             username = getUsername(item["applicant"].ToString(), out headIconUrl);
             jo.Add("applicantUsername", username);

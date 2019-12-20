@@ -131,6 +131,7 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr, sortStr, (pageNum-1)*pageSize, pageSize);
             if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 
+            var symbol = getProjFundSymbol(projId);
             var rr = queryRes.Select(p => {
                 var jo = new JObject();
                 jo.Add("projId", p["projId"]);
@@ -138,7 +139,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("proposalTitle", p["proposalName"]);
                 jo.Add("sharesRequested", p["sharesRequested"]);
                 jo.Add("tokenTribute", p["tokenTribute"]);
-                jo.Add("tokenTributeSymbol", "eth");
+                jo.Add("tokenTributeSymbol", symbol);
                 jo.Add("timestamp", p["blockTime"]);
                 jo.Add("voteYesCount", p["voteYesCount"]);
                 jo.Add("voteNotCount", p["voteNotCount"]);
@@ -149,6 +150,16 @@ namespace NEL_FutureDao_API.Service
                 return jo;
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
+        }
+        private string getProjFundSymbol(string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var fieldStr = new JObject { { "fundSymbol", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return "eth";
+
+            var item = queryRes[0];
+            return item["fundSymbol"].ToString();
         }
         private bool isVote(string projId, string proposalIndex, string address)
         {

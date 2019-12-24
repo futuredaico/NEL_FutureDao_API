@@ -267,6 +267,9 @@ namespace NEL.Comm
                         result = ms.getProjList(int.Parse(req.@params[0].ToString()), int.Parse(req.@params[1].ToString()));
                         break;
                     //
+                    case "modifyUserName":
+                        result = usV3.modifyUserName(controller, req.@params[0].ToString());
+                        break;
                     case "logoutV3":
                         result = usV3.logout(controller);
                         break;

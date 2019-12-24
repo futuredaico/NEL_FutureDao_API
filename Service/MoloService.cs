@@ -852,36 +852,6 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-        public JArray saveProposal(Controller controller, string projId, string proposalName, string proposalDetail, string sharesRequested, string tokenTribute)
-        {
-            if(!us.getUserInfo(controller, out string code, out string userId))
-            {
-                return getErrorRes(code);
-            }
-            // TODO: 检查其他
-            var now = TimeHelper.GetTimeStamp();
-            var newdata = new JObject {
-                {"projId", projId},
-                {"proposalIndex", ""},
-                {"proposalName", proposalName},
-                {"proposalDetail", proposalDetail},
-                {"sharesRequested", sharesRequested},
-                {"proposalSate", tokenTribute},
-                {"voteYesCount", 0},
-                {"voteNotCount", 0},
-                {"proposer", ""},
-                {"delegateKey", ""},
-                {"applicant", ""},
-                {"contractHash", ""},
-                {"userId",userId },
-                {"discussCount", 0},
-                {"time", now},
-                {"lastUpdateTime", now},
-            }.ToString();
-            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, newdata);
-            return getRes();
-        }
-        
         //
         public JArray getTokenBalance(Controller controller, string projId, string address)
         {
@@ -921,5 +891,4 @@ namespace NEL_FutureDao_API.Service
             return getRes(new JObject { { "fundHash", fundHash },{ "fundSymbol", fundSymbol } });
         }
     }
-    
 }

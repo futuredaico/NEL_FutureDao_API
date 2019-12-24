@@ -67,6 +67,8 @@ namespace NEL_FutureDao_API.Service.State
 
         // v3.0
         public const string C_InvalidUserInfo = "10421"; // 无效用户信息
+        public const string C_InvalidProjInfo = "10422"; // 无效用户信息
+        public const string C_InvalidProposalInfo = "10423"; // 无效用户信息
 
     }
 }

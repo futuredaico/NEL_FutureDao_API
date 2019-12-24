@@ -92,11 +92,21 @@ namespace NEL.Comm
                     };
                     break;
                 case "mainnet":
+                    usV3 = new UserServiceV3
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        tokenUrl = mh.tokenUrl_mainnet,
+                        oss = oss,
+                        bucketName = mh.bucketName_mainnet
+                    };
                     ms = new MoloService
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
+                        us = usV3
                     };
                     rs = new RewardService
                     {
@@ -123,15 +133,6 @@ namespace NEL.Comm
                         bucketName = mh.bucketName_mainnet,
                     };
                     us = new UserService
-                    {
-                        mh = mh,
-                        dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
-                        tokenUrl = mh.tokenUrl_mainnet,
-                        oss = oss,
-                        bucketName = mh.bucketName_mainnet
-                    };
-                    usV3 = new UserServiceV3
                     {
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,

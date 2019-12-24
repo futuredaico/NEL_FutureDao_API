@@ -128,12 +128,11 @@ namespace NEL_FutureDao_API.Service
             userId = "";
             code = DaoReturnCode.C_InvalidUserInfo;
             userId = controller.Request.Cookies["userId"];
+            if (userId == null || userId == "" || !userId.Contains("_")) return false;
+
             var ss = userId.Split("_");
             userId = ss[0];
-            if (userId == null || userId == "")// || accessToken == null || accessToken == "")
-            {
-                return false;
-            }
+            if (userId == null || userId == "") return false;
             
             
             return TokenHelper.checkAccessToken(tokenUrl, ss[0], ss[1], out code);

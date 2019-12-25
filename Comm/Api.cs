@@ -183,6 +183,9 @@ namespace NEL.Comm
                     case "getProjFundInfo":
                         result = ms.getProjFundInfo(controller, req.@params[0].ToString());
                         break;
+                    case "getTokenBalanceFromUpStream":
+                        result = ms.getTokenBalanceFromUpStream(controller, req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
                     case "getTokenBalance":
                         result = ms.getTokenBalance(controller, req.@params[0].ToString(), req.@params[1].ToString());
                         break;

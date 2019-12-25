@@ -914,12 +914,23 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
             var fundHash = "";
             var fundSymbol = "";
-            if(queryRes.Count > 0)
+            var fundDecimals = 0L;
+            var proposalDeposit = "";
+            if (queryRes.Count > 0)
             {
-                fundHash = queryRes[0]["fundHash"].ToString();
-                fundSymbol = queryRes[0]["fundSymbol"].ToString();
-            } 
-            return getRes(new JObject { { "fundHash", fundHash },{ "fundSymbol", fundSymbol } });
+                var item = queryRes[0];
+                fundHash = item["fundHash"].ToString();
+                fundSymbol = item["fundSymbol"].ToString();
+                fundDecimals = long.Parse(item["fundDecimals"].ToString());
+                proposalDeposit = item["proposalDeposit"].ToString();
+            }
+            var res = new JObject {
+                { "fundHash", fundHash },
+                { "fundSymbol", fundSymbol },
+                { "fundDecimals", fundDecimals },
+                { "proposalDeposit", proposalDeposit }
+            };
+            return getRes(res);
         }
     }
 }

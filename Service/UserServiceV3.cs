@@ -101,25 +101,7 @@ namespace NEL_FutureDao_API.Service
         }
         private void setUserInfo(Controller controller, string userId, string accessToken)
         {
-            var host = controller.Request.Host.ToString();
-            Console.WriteLine(host);
-            
-            /*
-            controller.Response.Cookies.Append("userId", userId + "_" + accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
-                Path = "/",
-                HttpOnly = true,
-            });
-            controller.Response.Cookies.Append("accessToken", accessToken, new Microsoft.AspNetCore.Http.CookieOptions() {
-                Path = "/",
-                HttpOnly = true
-            });
-            */
-            //controller.Response.Headers["Access-Control-Allow-Origin"] = "https://aa.nel.group/";
-            //controller.Response.Headers.Remove("Set-Cookie");
-            //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId + "; accessToken=" + accessToken + "; Path=/; HttpOnly");
-            //controller.Response.Headers.Add("Set-Cookie", "userId=" + userId  + "; Path=/; HttpOnly");
             controller.Response.Headers.Add("Set-Cookie", "userId=" + userId +"_"+ accessToken + "; Path=/; HttpOnly");
-
         }
         public bool getUserInfo(Controller controller, out string code, out string userId)
         {

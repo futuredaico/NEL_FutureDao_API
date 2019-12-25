@@ -193,6 +193,8 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray getVoteInfo(string projId, string proposalIndex, string address)
         {
+            address = address.ToLower();
+            address = getDelegateOrSlf(address);
             var voteCount = "0";
             var voteType = "";
             var balance = "0";
@@ -211,6 +213,16 @@ namespace NEL_FutureDao_API.Service
             }
             var res = new JObject { { "voteCount", voteCount }, { "voteType", voteType }, { "balance", balance } };
             return getRes(res);
+        }
+        private string getDelegateOrSlf(string address)
+        {
+            var findStr = new JObject { { "newDelegateKey", address } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
+            if(queryRes.Count > 0)
+            {
+                return queryRes[0]["address"].ToString();
+            }
+            return address;
         }
         private string getUsername(string address, out string headIconUrl)
         {

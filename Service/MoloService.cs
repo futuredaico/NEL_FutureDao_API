@@ -786,13 +786,13 @@ namespace NEL_FutureDao_API.Service
             var date = DateTime.Now;
             foreach(var item in contractHashs)
             {
-                findStr = new JObject { { "contractHash", item["hash"] } }.ToString();
+                findStr = new JObject { { "contractHash", item["hash"].ToString().ToLower() } }.ToString();
                 if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, findStr) == 0)
                 {
                     var data = new JObject {
                         { "projId", projId},
                         { "contractName", item["name"]},
-                        { "contractHash", item["hash"]},
+                        { "contractHash", item["hash"].ToString().ToLower()},
                         { "fundDecimals", fundDecimls},
                         { "type", "0"},
                         { "createdAt", date},

@@ -16,6 +16,7 @@ namespace NEL_FutureDao_API.Service
         public string dao_mongodbDatabase { get; set; }
         public string projMoloInfoCol { get; set; } = "moloprojinfos";
         public string projMoloHashInfoCol { get; set; } = "moloprojhashinfos";
+        public string projMoloVersionInfoCol { get; set; } = "moloprojversioninfos";
         public string projMoloBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
         public string projMoloDiscussInfoCol { get; set; } = "moloprojdiscussinfos";
         public string projMoloDiscussZanInfoCol { get; set; } = "moloprojdiscusszaninfos";
@@ -763,6 +764,21 @@ namespace NEL_FutureDao_API.Service
         }
 
         //
+        public JArray querySupportVersion(Controller controller)
+        {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject{ {"activeState",  1} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloVersionInfoCol, findStr);
+            if(queryRes.Count == 0)
+            {
+                return getRes(new JObject { { "count", 0},{ "list", new JArray()} });
+            }
+            var arr = queryRes.Select(p => p["version"].ToString()).ToArray();
+            return getRes(new JObject { { "count", arr.Length }, { "list", new JArray { arr } } });
+        }
         public JArray saveContractInfo(Controller controller,
             string projVersion, string projName, string projBrief, string projDetail, string projCoverUrl, string officailWeb,
             string fundHash, string fundSymbol, long fundDecimls,

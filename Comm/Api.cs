@@ -152,6 +152,9 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // ******************************************* v3.st
+                    case "querySupportVersion":
+                        result = ms.querySupportVersion(controller);
+                        break;
                     case "queryContractInfo":
                         result = ms.queryContractInfo(controller, req.@params[0].ToString());
                         break;

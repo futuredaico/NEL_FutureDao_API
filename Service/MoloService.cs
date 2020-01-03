@@ -792,10 +792,10 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
             var findStr = new JObject { { "officailWeb", officailWeb } }.ToString();
-            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr) > 0)
-            {
-                return getErrorRes(DaoReturnCode.RepeatOperate);
-            }
+            //if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr) > 0)
+            //{
+            //    return getErrorRes(DaoReturnCode.RepeatOperate);
+            //}
 
             var projId = DaoInfoHelper.genProjId(projName, projVersion);
             var now = TimeHelper.GetTimeStamp();

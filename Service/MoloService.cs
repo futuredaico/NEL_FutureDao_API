@@ -24,6 +24,8 @@ namespace NEL_FutureDao_API.Service
         public string projMoloProposalDiscussInfoCol { get; set; } = "moloproposaldiscussinfos";
         public string projMoloProposalDiscussZanInfoCol { get; set; } = "moloproposaldiscusszaninfos";
         public string userInfoCol { get; set; } = "daouserinfos";
+        public OssHelper oss { get; set; }
+        public string bucketName { get; set; }
 
         public UserServiceV3 us { get; set; }
 
@@ -796,6 +798,10 @@ namespace NEL_FutureDao_API.Service
             //{
             //    return getErrorRes(DaoReturnCode.RepeatOperate);
             //}
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newHeadIconUrl))
+            {
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
+            }
 
             var projId = DaoInfoHelper.genProjId(projName, projVersion);
             var now = TimeHelper.GetTimeStamp();
@@ -810,7 +816,7 @@ namespace NEL_FutureDao_API.Service
                         { "contractName", item["name"]},
                         { "contractHash", item["hash"].ToString().ToLower()},
                         { "fundDecimals", fundDecimls},
-                        { "type", "0"},
+                        { "type", "1"},
                         { "createdAt", date},
                         { "updatedAt", date},
                     }.ToString();

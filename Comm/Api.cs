@@ -88,7 +88,9 @@ namespace NEL.Comm
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
-                        us = usV3
+                        us = usV3,
+                        oss = oss,
+                        bucketName = mh.bucketName_testnet
                     };
                     break;
                 case "mainnet":
@@ -106,7 +108,9 @@ namespace NEL.Comm
                         mh = mh,
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_mainnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_mainnet,
-                        us = usV3
+                        us = usV3,
+                        oss = oss,
+                        bucketName = mh.bucketName_mainnet
                     };
                     rs = new RewardService
                     {

@@ -119,7 +119,11 @@ namespace NEL_FutureDao_API.Service
                 if (p["event"].ToString() == "Withdrawal") {
                     return -1*decimal.Parse(p["amount"].ToString());
                 }
-                return decimal.Parse(p["tokenTribute"].ToString());
+                if(p["didPass"].ToString() == "1")
+                {
+                    return decimal.Parse(p["tokenTribute"].ToString());
+                }
+                return 0;
             }).ToString();
 
         }

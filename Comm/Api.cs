@@ -185,7 +185,10 @@ namespace NEL.Comm
                             req.@params[13].ToString(),
                             req.@params[14].ToString(),
                             req.@params[15].ToString(),
-                            JArray.Parse(req.@params[16].ToString())
+                            JArray.Parse(req.@params[16].ToString()),
+                            long.Parse(req.@params[17].ToString()),
+                            long.Parse(req.@params[18].ToString()),
+                            long.Parse(req.@params[19].ToString())
                             );
                         break;
                     case "getVoteInfo":

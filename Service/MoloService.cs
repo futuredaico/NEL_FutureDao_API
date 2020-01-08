@@ -246,11 +246,16 @@ namespace NEL_FutureDao_API.Service
         // 成员
         public JArray getProjMemberList(string projId, int pageNum, int pageSize)
         {
-            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", "" }, { "balance", new JObject { { "$gt", 0 } } } }.ToString();
+            var findJo = new JObject {
+                { "projId", projId },
+                { "proposalQueueIndex", "" },
+                { "balance", new JObject { { "$gt", 0 } } }
+            };
+            var findStr = findJo.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
             //
-            var match = new JObject { { "$match", new JObject { { "projId", projId }, { "proposalIndex", "" } } } }.ToString();
+            var match = new JObject { { "$match", findJo } }.ToString();
             var lookup = new JObject { { "$lookup", new JObject {
                 { "from", userInfoCol},
                 {"localField", "address" },
@@ -791,7 +796,8 @@ namespace NEL_FutureDao_API.Service
             string fundHash, string fundSymbol, long fundDecimls,
             long periodDuration, /* 单位:秒 */
             long votingPeriodLength, long notingPeriodLength, long cancelPeriodLength, /* 单位:个 */
-            string proposalDeposit, string proposalReward, string summonerAddress, JArray contractHashs
+            string proposalDeposit, string proposalReward, string summonerAddress, JArray contractHashs,
+            long emergencyExitWait, long bailoutWait, long startBlockTime
             )
         {
             if(!us.getUserInfo(controller, out string code, out string userId))
@@ -867,7 +873,9 @@ namespace NEL_FutureDao_API.Service
                 {"tokenTotal", 0},
                 {"hasTokenCount", 0},
                 {"discussCount", 0},
-                {"startTime", 0},
+                {"emergencyExitWait",emergencyExitWait},
+                {"bailoutWait", bailoutWait},
+                {"startTime", startBlockTime},
                 {"time", now},
                 {"lastUpdateTime", now}
             }.ToString();

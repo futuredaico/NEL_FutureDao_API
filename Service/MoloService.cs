@@ -63,7 +63,7 @@ namespace NEL_FutureDao_API.Service
         private long getProjTeamCount(string projId, out long shares)
         {
             shares = 0;
-            var findStr = new JObject { { "projId", projId },{ "proposalIndex",""} }.ToString();
+            var findStr = new JObject { { "projId", projId },{ "proposalQueueIndex",""} }.ToString();
             var fieldStr = new JObject { { "balance", 1 }}.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr, fieldStr);
             var count = queryRes.Where(p => long.Parse(p["balance"].ToString()) > 0).ToArray().Count();
@@ -86,6 +86,7 @@ namespace NEL_FutureDao_API.Service
             jo.Add("projId", item["projId"]);
             jo.Add("projName", item["projName"]);
             jo.Add("projType", item["projType"]);
+            jo.Add("projVersion", item["projVersion"]);
             jo.Add("projBrief", item["projBrief"]);
             jo.Add("projDetail", item["projDetail"]);
             jo.Add("projCoverUrl", item["projCoverUrl"]);

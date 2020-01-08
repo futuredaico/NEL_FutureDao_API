@@ -155,6 +155,10 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // molo_v2.0_ed
+                    case "":
+                        break;
+                    // molo_v2.0_st
                     // ******************************************* v3.st
                     case "querySupportVersion":
                         result = ms.querySupportVersion(controller);

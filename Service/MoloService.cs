@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NEL.NNS.lib;
+using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
@@ -844,7 +845,7 @@ namespace NEL_FutureDao_API.Service
                 {"projType", "moloch"},
                 {"projBrief", projBrief},
                 {"projDetail", projDetail},
-                {"projCoverUrl", projCoverUrl},
+                {"projCoverUrl", newHeadIconUrl},
                 {"projVersion", projVersion},
                 {"officailWeb", officailWeb},
                 {"fundHash", fundHash},

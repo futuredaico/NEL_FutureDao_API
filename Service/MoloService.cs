@@ -129,8 +129,13 @@ namespace NEL_FutureDao_API.Service
 
         }
         // 提案
-        public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "")
+        public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "", string type="1")
         {
+            var findJo = new JObject { { "projId", projId } };
+            if(type != "1")
+            {
+                findJo.Add("proposalState", "10150");
+            }
             var findStr = new JObject { { "projId", projId} }.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
@@ -144,9 +149,30 @@ namespace NEL_FutureDao_API.Service
                 var jo = new JObject();
                 jo.Add("projId", p["projId"]);
                 jo.Add("proposalIndex", p["proposalIndex"]);
+                jo.Add("proposalQueueIndex", p["proposalQueueIndex"]);
                 jo.Add("proposalTitle", p["proposalName"]);
-                jo.Add("sharesRequested", p["sharesRequested"]);
-                jo.Add("tokenTribute", p["tokenTribute"]);
+                //jo.Add("sharesRequested", p["sharesRequested"]);
+                //jo.Add("tokenTribute", p["tokenTribute"]);
+                if(jo["lootRequested"] != null)
+                {
+                    jo.Add("version", "2.0");
+                    jo.Add("sharesRequested", p["sharesRequested"]);
+                    jo.Add("lootRequested", p["lootRequested"]);
+                    jo.Add("tributeOffered", p["tributeOffered"]);
+                    jo.Add("tributeOfferedSymbol", p["tributeOfferedSymbol"]);
+                    jo.Add("paymentRequested", p["paymentRequested"]);
+                    jo.Add("paymentRequestedSymbol", p["paymentRequestedSymbol"]);
+                } else
+                {
+                    jo.Add("version", "1.0");
+                    jo.Add("sharesRequested", p["sharesRequested"]);
+                    jo.Add("lootRequested", 0);
+                    jo.Add("tributeOffered", p["tokenTribute"]);
+                    jo.Add("tributeOfferedSymbol", p["tokenTributeSymbol"]);
+                    jo.Add("paymentRequested", 0);
+                    jo.Add("paymentRequestedSymbol", "");
+                }
+
                 jo.Add("tokenTributeSymbol", symbol);
                 jo.Add("timestamp", p["blockTime"]);
                 jo.Add("voteYesCount", p["voteYesCount"]);
@@ -190,15 +216,36 @@ namespace NEL_FutureDao_API.Service
             var username = getUsername(item["proposer"].ToString(), out string headIconUrl);
             jo["username"] = username;
             jo["headIconUrl"] = headIconUrl;
-            jo.Add("sharesRequested", item["sharesRequested"]);
-            jo.Add("tokenTribute", item["tokenTribute"]);
-            jo.Add("tokenTributeSymbol", getProjFundSymbol(projId));
+            //jo.Add("sharesRequested", item["sharesRequested"]);
+            //jo.Add("tokenTribute", item["tokenTribute"]);
+            //jo.Add("tokenTributeSymbol", getProjFundSymbol(projId));
+            if(jo["lootRequested"] != null)
+            {
+                jo.Add("version", "2.0");
+                jo.Add("sharesRequested", item["sharesRequested"]);
+                jo.Add("lootRequested", item["lootRequested"]);
+                jo.Add("tributeOffered", item["tributeOffered"]);
+                jo.Add("tributeOfferedSymbol", item["tributeOfferedSymbol"]);
+                jo.Add("paymentRequested", item["paymentRequested"]);
+                jo.Add("paymentRequestedSymbol", item["paymentRequestedSymbol"]);
+            } else
+            {
+                jo.Add("version", "1.0");
+                jo.Add("sharesRequested", item["sharesRequested"]);
+                jo.Add("lootRequested", 0);
+                jo.Add("tributeOffered", item["tokenTribute"]);
+                jo.Add("tributeOfferedSymbol", item["tokenTributeSymbol"]);
+                jo.Add("paymentRequested", 0);
+                jo.Add("paymentRequestedSymbol", "");
+            }
+
             jo.Add("applicant", item["applicant"]);
             username = getUsername(item["applicant"].ToString(), out headIconUrl);
             jo.Add("applicantUsername", username);
             jo.Add("applicantHeadIconUrl", headIconUrl);
             return getRes(jo);
         }
+        
         public JArray getVoteInfo(string projId, string proposalIndex, string address)
         {
             address = address.ToLower();

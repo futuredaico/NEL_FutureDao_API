@@ -276,7 +276,13 @@ namespace NEL.Comm
                         result = ms.getProjProposalDetail(req.@params[0].ToString(), req.@params[1].ToString());
                         break;
                     case "getProjProposalListV3":
-                        result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString());
+                        if(req.@params.Length < 4)
+                        {
+                            result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString());
+                        } else
+                        {
+                            result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString(), req.@params[4].ToString());
+                        }
                         break;
                     case "getProjdetailV3":
                         result = ms.getProjDetail(req.@params[0].ToString());

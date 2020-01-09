@@ -136,7 +136,7 @@ namespace NEL_FutureDao_API.Service
             {
                 findJo.Add("proposalState", "10150");
             }
-            var findStr = new JObject { { "projId", projId} }.ToString();
+            var findStr = findJo.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 

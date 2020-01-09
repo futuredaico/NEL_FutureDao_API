@@ -188,7 +188,7 @@ namespace NEL_FutureDao_API.Service
                 //jo.Add("sharesRequested", p["sharesRequested"]);
                 //jo.Add("tokenTribute", p["tokenTribute"]);
                 //jo.Add("tokenTributeSymbol", symbol);
-                if (jo["lootRequested"] != null)
+                if (p["lootRequested"] != null)
                 {
                     jo.Add("version", "2.0");
                     jo.Add("sharesRequested", p["sharesRequested"]);
@@ -196,7 +196,6 @@ namespace NEL_FutureDao_API.Service
                     jo.Add("tributeOffered", p["tributeOffered"]);
                     jo.Add("tributeOfferedSymbol", p["tributeOfferedSymbol"]);
                     jo.Add("paymentRequested", p["paymentRequested"]);
-                    jo.Add("paymentRequestedSymbol", p["paymentRequestedSymbol"]);
                     jo.Add("paymentRequestedSymbol", p["paymentRequestedSymbol"]);
                     jo.Add("startingPeriod", p["startingPeriod"]);
                 } else
@@ -213,7 +212,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("timestamp", p["blockTime"]);
                 jo.Add("voteYesCount", p["voteYesCount"]);
                 jo.Add("voteNotCount", p["voteNotCount"]);
-                //jo.Add("hasVote", p["proposer"].ToString() == address);
+                jo.Add("isMine", p["proposer"].ToString().ToLower() == address.ToLower());
                 jo.Add("hasVote", isVote(p["projId"].ToString(), p["proposalIndex"].ToString(), address));
                 jo.Add("proposalState", p["proposalState"]);
                 jo.Add("handleState", p["handleState"]);

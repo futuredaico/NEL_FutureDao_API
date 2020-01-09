@@ -235,6 +235,7 @@ namespace NEL_FutureDao_API.Service
             var jo = new JObject();
             jo["projId"] = projId;
             jo["proposalIndex"] = proposalIndex;
+            jo["proposalQueueIndex"] = item["proposalQueueIndex"];
             jo["proposalTitle"] = item["proposalName"];
             jo["proposalDetail"] = item["proposalDetail"];
             jo["proposer"] = item["proposer"];

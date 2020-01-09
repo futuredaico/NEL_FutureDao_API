@@ -244,7 +244,7 @@ namespace NEL_FutureDao_API.Service
             //jo.Add("sharesRequested", item["sharesRequested"]);
             //jo.Add("tokenTribute", item["tokenTribute"]);
             //jo.Add("tokenTributeSymbol", getProjFundSymbol(projId));
-            if(jo["lootRequested"] != null)
+            if(item["lootRequested"] != null)
             {
                 jo.Add("version", "2.0");
                 jo.Add("sharesRequested", item["sharesRequested"]);

@@ -156,7 +156,12 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // molo_v2.0_ed
-                    case "":
+                    case "getProjFundTotal":
+                        result = ms.getProjFundTotal(
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
                         break;
                     // molo_v2.0_st
                     // ******************************************* v3.st

@@ -18,6 +18,7 @@ namespace NEL_FutureDao_API.Service
         public string projMoloHashInfoCol { get; set; } = "moloprojhashinfos";
         public string projMoloVersionInfoCol { get; set; } = "moloprojversioninfos";
         public string projMoloBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
+        public string projMoloFundInfoCol { get; set; } = "moloprojfundinfos";
         public string projMoloDiscussInfoCol { get; set; } = "moloprojdiscussinfos";
         public string projMoloDiscussZanInfoCol { get; set; } = "moloprojdiscusszaninfos";
         public string projMoloProposalInfoCol { get; set; } = "moloproposalinfos";
@@ -139,6 +140,27 @@ namespace NEL_FutureDao_API.Service
                 return 0;
             }).ToString();
 
+        }
+        public JArray getProjFundTotal(string projId, int pageNum, int pageSize)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr);
+            if(count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
+
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr, 
+                "{}", (pageNum-1)*pageSize, pageSize);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var list = queryRes.Select(p => new JObject {
+                { "fundTotal", p["fundTotal"]},
+                { "fundSymbol", p["fundSymbol"]}
+            }).ToArray();
+
+            var res = new JObject {
+                {"count", count },
+                {"list", new JArray{ list } }
+            };
+            return getRes(res);
         }
         // 提案
         public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "", string type="1")

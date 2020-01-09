@@ -106,6 +106,18 @@ namespace NEL_FutureDao_API.Service
             jo.Add("notePeriod", item["notePeriod"]);
             jo.Add("cancelPeriod", item["cancelPeriod"]);
             jo.Add("startTime", item["startTime"]);
+            //
+            jo.Add("contractHash", "");
+            jo.Add("contractName", "");
+            var hashArr = (JArray)item["contractHashs"];
+            var info = hashArr.Where(p => p["name"].ToString().ToLower() == "moloch").ToArray();
+            if(info != null && info.Length > 0)
+            {
+                jo["contractHash"] = info[0]["hash"];
+                jo["contractName"] = info[0]["name"];
+            }
+            
+            jo.Add("summonerAddress", item["summonerAddress"]);
             return getRes(jo);
         }
         private string getProjFundTotal(string projId)
@@ -144,7 +156,7 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr, sortStr, (pageNum-1)*pageSize, pageSize);
             if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 
-            var symbol = getProjFundSymbol(projId);
+            //var symbol = getProjFundSymbol(projId);
             var rr = queryRes.Select(p => {
                 var jo = new JObject();
                 jo.Add("projId", p["projId"]);
@@ -153,7 +165,8 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("proposalTitle", p["proposalName"]);
                 //jo.Add("sharesRequested", p["sharesRequested"]);
                 //jo.Add("tokenTribute", p["tokenTribute"]);
-                if(jo["lootRequested"] != null)
+                //jo.Add("tokenTributeSymbol", symbol);
+                if (jo["lootRequested"] != null)
                 {
                     jo.Add("version", "2.0");
                     jo.Add("sharesRequested", p["sharesRequested"]);
@@ -162,6 +175,8 @@ namespace NEL_FutureDao_API.Service
                     jo.Add("tributeOfferedSymbol", p["tributeOfferedSymbol"]);
                     jo.Add("paymentRequested", p["paymentRequested"]);
                     jo.Add("paymentRequestedSymbol", p["paymentRequestedSymbol"]);
+                    jo.Add("paymentRequestedSymbol", p["paymentRequestedSymbol"]);
+                    jo.Add("startingPeriod", p["startingPeriod"]);
                 } else
                 {
                     jo.Add("version", "1.0");
@@ -171,9 +186,8 @@ namespace NEL_FutureDao_API.Service
                     jo.Add("tributeOfferedSymbol", p["tokenTributeSymbol"]);
                     jo.Add("paymentRequested", 0);
                     jo.Add("paymentRequestedSymbol", "");
+                    jo.Add("startingPeriod", -1);
                 }
-
-                jo.Add("tokenTributeSymbol", symbol);
                 jo.Add("timestamp", p["blockTime"]);
                 jo.Add("voteYesCount", p["voteYesCount"]);
                 jo.Add("voteNotCount", p["voteNotCount"]);
@@ -184,16 +198,6 @@ namespace NEL_FutureDao_API.Service
                 return jo;
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
-        }
-        private string getProjFundSymbol(string projId)
-        {
-            var findStr = new JObject { { "projId", projId } }.ToString();
-            var fieldStr = new JObject { { "fundSymbol", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return "eth";
-
-            var item = queryRes[0];
-            return item["fundSymbol"].ToString();
         }
         private bool isVote(string projId, string proposalIndex, string address)
         {
@@ -228,6 +232,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("tributeOfferedSymbol", item["tributeOfferedSymbol"]);
                 jo.Add("paymentRequested", item["paymentRequested"]);
                 jo.Add("paymentRequestedSymbol", item["paymentRequestedSymbol"]);
+                jo.Add("startingPeriod", item["startingPeriod"]);
             } else
             {
                 jo.Add("version", "1.0");
@@ -237,6 +242,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("tributeOfferedSymbol", item["tokenTributeSymbol"]);
                 jo.Add("paymentRequested", 0);
                 jo.Add("paymentRequestedSymbol", "");
+                jo.Add("startingPeriod", -1);
             }
 
             jo.Add("applicant", item["applicant"]);

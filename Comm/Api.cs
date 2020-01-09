@@ -276,7 +276,7 @@ namespace NEL.Comm
                         result = ms.getProjProposalDetail(req.@params[0].ToString(), req.@params[1].ToString());
                         break;
                     case "getProjProposalListV3":
-                        if(req.@params.Length < 4)
+                        if(req.@params.Length < 5)
                         {
                             result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString());
                         } else

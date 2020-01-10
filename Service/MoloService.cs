@@ -808,6 +808,17 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.headIconNotUpload);
             }
 
+            var nlist = projDetail.catchFileUrl();
+            foreach (var ii in nlist)
+            {
+                if (ii.Trim().Length == 0) continue;
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, "", ii, out string newUrl))
+                {
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
+                projDetail = projDetail.Replace(ii, newUrl);
+            }
+
             var projId = DaoInfoHelper.genProjId(projName, projVersion);
             var now = TimeHelper.GetTimeStamp();
             var date = DateTime.Now;

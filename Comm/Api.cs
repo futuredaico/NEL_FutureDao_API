@@ -212,6 +212,7 @@ namespace NEL.Comm
                     case "getTokenBalance":
                         result = ms.getTokenBalance(controller, req.@params[0].ToString(), req.@params[1].ToString());
                         break;
+                    #region discuss
                     // molo.prop.discuss
                     case "getMoloPropSubDiscussList":
                         result = ms.getMoloPropSubDiscussList(controller,
@@ -277,9 +278,19 @@ namespace NEL.Comm
                             req.@params[2].ToString()
                             );
                         break;
+                    #endregion
                     //
                     case "getProjMemberListV3":
-                        result = ms.getProjMemberList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
+                        if(req.@params.Length > 3)
+                        {
+                            result = ms.getProjMemberList(
+                                req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()),
+                                req.@params[3].ToString());
+                        } else
+                        {
+                            result = ms.getProjMemberList(
+                                req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
+                        }
                         break;
                     case "getProjProposalDetailV3":
                         result = ms.getProjProposalDetail(req.@params[0].ToString(), req.@params[1].ToString());

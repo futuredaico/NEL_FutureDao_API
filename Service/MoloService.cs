@@ -326,12 +326,16 @@ namespace NEL_FutureDao_API.Service
             return item["username"].ToString();
         }
         // 成员
-        public JArray getProjMemberList(string projId, int pageNum, int pageSize)
+        public JArray getProjMemberList(string projId, int pageNum, int pageSize, string role="0")
         {
+            var key = "balance";
+            if (role == "1") key = "sharesBalance";
+            if (role == "2") key = "lootBalance";
             var findJo = new JObject {
                 { "projId", projId },
                 { "proposalQueueIndex", "" },
-                { "balance", new JObject { { "$gt", 0 } } }
+                //{ "balance", new JObject { { "$gt", 0 } } }
+                { key, new JObject { { "$gt", 0 } } }
             };
             var findStr = findJo.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);

@@ -369,7 +369,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("username", username);
                 jo.Add("headIconUrl", headIconUrl);
                 jo.Add("address", p["address"]);
-                jo.Add("shares", p["balance"]);
+                jo.Add("shares", p[key]);
                 return jo;
             }).ToArray();
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });

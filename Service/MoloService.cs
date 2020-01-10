@@ -19,6 +19,7 @@ namespace NEL_FutureDao_API.Service
         public string projMoloVersionInfoCol { get; set; } = "moloprojversioninfos";
         public string projMoloBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
         public string projMoloFundInfoCol { get; set; } = "moloprojfundinfos";
+        public string projMoloTokenInfoCol { get; set; } = "moloprojtokeninfos";
         public string projMoloDiscussInfoCol { get; set; } = "moloprojdiscussinfos";
         public string projMoloDiscussZanInfoCol { get; set; } = "moloprojdiscusszaninfos";
         public string projMoloProposalInfoCol { get; set; } = "moloproposalinfos";
@@ -46,15 +47,15 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 
             var rr = queryRes.Select(p => {
-                var members = getProjTeamCount(p["projId"].ToString(), out long shares);
+                //var members = getProjTeamCount(p["projId"].ToString(), out long shares);// 后面会废弃
                 var jo = new JObject();
                 jo.Add("projId", p["projId"]);
                 jo.Add("projName", p["projName"]);
                 jo.Add("projType", p["projType"]);
                 jo.Add("projBrief", p["projBrief"]);
                 jo.Add("projCoverUrl", p["projCoverUrl"]);
-                jo.Add("shares", shares);
-                jo.Add("members", members);
+                jo.Add("shares", p["tokenTotal"]);
+                jo.Add("members", p["hasTokenCount"]);
                 return jo;
             }).ToArray();
 
@@ -82,7 +83,7 @@ namespace NEL_FutureDao_API.Service
 
             var item = queryRes[0];
 
-            var members = getProjTeamCount(item["projId"].ToString(), out long shares);
+            //var members = getProjTeamCount(item["projId"].ToString(), out long shares); // 后面会废弃
             var jo = new JObject();
             jo.Add("projId", item["projId"]);
             jo.Add("projName", item["projName"]);
@@ -92,16 +93,17 @@ namespace NEL_FutureDao_API.Service
             jo.Add("projDetail", item["projDetail"]);
             jo.Add("projCoverUrl", item["projCoverUrl"]);
             jo.Add("officailWeb", item["officailWeb"]);
-            var fundTotal = getProjFundTotal(projId);
+            var fundTotal = "0";// getProjFundTotal(projId);// 后面会废弃
             jo.Add("fundTotal", fundTotal);
             jo.Add("fundSymbol", item["fundSymbol"]);
-            jo.Add("shares", shares);
-            jo.Add("member", members);
+            jo.Add("shares", item["tokenTotal"]);
+            jo.Add("member", item["hasTokenCount"]);
             //
-            var val = shares == 0 ? 0 : decimal.Parse(fundTotal) / new decimal(shares);
-            var valStr = val.ToString();
-            if (valStr.Contains(".")) valStr = val.ToString("0.0000");
-            jo.Add("valuePerShare", valStr); ;
+            //var val = shares == 0 ? 0 : decimal.Parse(fundTotal) / new decimal(shares);
+            //var valStr = val.ToString();
+            //if (valStr.Contains(".")) valStr = val.ToString("0.0000");
+            //jo.Add("valuePerShare", valStr); ;
+            jo.Add("valuePerShare", "0"); ;
             jo.Add("discussCount", item["discussCount"]);
             jo.Add("votePeriod", item["votePeriod"]);
             jo.Add("notePeriod", item["notePeriod"]);
@@ -160,6 +162,11 @@ namespace NEL_FutureDao_API.Service
                 {"count", count },
                 {"list", new JArray{ list } }
             };
+            return getRes(res);
+        }
+        public JArray getProjBidPrice(string pair="ETH-USDT")
+        {
+            var res = new JObject { { "price", "136.71" } };
             return getRes(res);
         }
         // 提案
@@ -364,6 +371,7 @@ namespace NEL_FutureDao_API.Service
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
         }
 
+        #region 评论接口
         //molo.discuss
         private string getRootId(string preDiscussId, string discussId = "", bool isProposal=false)
         {
@@ -849,7 +857,8 @@ namespace NEL_FutureDao_API.Service
             }).ToArray();
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
         }
-
+        #endregion
+        
         //
         public JArray querySupportVersion(Controller controller)
         {
@@ -872,7 +881,7 @@ namespace NEL_FutureDao_API.Service
             long periodDuration, /* 单位:秒 */
             long votingPeriodLength, long notingPeriodLength, long cancelPeriodLength, /* 单位:个 */
             string proposalDeposit, string proposalReward, string summonerAddress, JArray contractHashs,
-            long emergencyExitWait, long bailoutWait, long startBlockTime
+            long emergencyExitWait, long bailoutWait, long startBlockTime, JArray fundInfoArr
             )
         {
             if(!us.getUserInfo(controller, out string code, out string userId))
@@ -919,6 +928,19 @@ namespace NEL_FutureDao_API.Service
                     mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, updateStr, findStr);
                 }
             }
+            foreach(var item in fundInfoArr)
+            {
+                findStr = new JObject { { "fundHash", item["fundHash"] } }.ToString();
+                if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloTokenInfoCol, findStr) == 0)
+                {
+                    var data = new JObject {
+                        { "fundHash", item["fundHash"] },
+                        { "fundSymbol", item["fundSymbol"] },
+                        { "fundDecimals", item["fundDecimals"] }
+                    }.ToString();
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
+                }
+            }
             //
             var newdata = new JObject {
                 {"projId", projId},
@@ -943,8 +965,8 @@ namespace NEL_FutureDao_API.Service
                 {"proposalReward", proposalReward},
                 {"summonerAddress", summonerAddress.ToLower()},
                 {"contractHashs", contractHashs},
+                {"fundInfoArr", fundInfoArr},
                 {"userId", userId},
-                {"fundTotal", "0"},
                 {"tokenTotal", 0},
                 {"hasTokenCount", 0},
                 {"discussCount", 0},

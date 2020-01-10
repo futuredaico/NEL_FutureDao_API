@@ -156,6 +156,9 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // molo_v2.0_ed
+                    case "getProjBidPrice":
+                        result = ms.getProjBidPrice();
+                        break;
                     case "getProjFundTotal":
                         result = ms.getProjFundTotal(
                             req.@params[0].ToString(),
@@ -193,7 +196,8 @@ namespace NEL.Comm
                             JArray.Parse(req.@params[16].ToString()),
                             long.Parse(req.@params[17].ToString()),
                             long.Parse(req.@params[18].ToString()),
-                            long.Parse(req.@params[19].ToString())
+                            long.Parse(req.@params[19].ToString()), 
+                            JArray.Parse(req.@params[20].ToString())
                             );
                         break;
                     case "getVoteInfo":

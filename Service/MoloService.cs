@@ -1000,7 +1000,7 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-        //
+        // 
         public JArray getTokenBalance(Controller controller, string projId, string address)
         {
             address = address.ToLower();
@@ -1008,7 +1008,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            var findStr = new JObject { { "projId", projId },{ "proposalIndex",""}, { "address", address } }.ToString();
+            var findStr = new JObject { { "projId", projId },{ "proposalQueueIndex", ""}, { "address", address } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
 
             var balance = 0L;
@@ -1028,7 +1028,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            var findStr = new JObject { { "projId", projId }, { "proposalIndex", "" }, { "newDelegateKey", address } }.ToString();
+            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", "" }, { "newDelegateKey", address } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
             var upAddress = "";
             var upBalance = 0L;
@@ -1040,6 +1040,7 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "upAddress", upAddress }, { "upBalance", upBalance } };
             return getRes(res);
         }
+        //
         public JArray getProjFundInfo(Controller controller, string projId)
         {
             if (!us.getUserInfo(controller, out string code, out string userId))

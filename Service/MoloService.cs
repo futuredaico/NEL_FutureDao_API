@@ -885,7 +885,8 @@ namespace NEL_FutureDao_API.Service
             long periodDuration, /* 单位:秒 */
             long votingPeriodLength, long notingPeriodLength, long cancelPeriodLength, /* 单位:个 */
             string proposalDeposit, string proposalReward, string summonerAddress, JArray contractHashs,
-            long emergencyExitWait, long bailoutWait, long startBlockTime, JArray fundInfoArr
+            long emergencyExitWait/* 提案处理期限 */, 
+            long bailoutWait/* 剔除成员执行期限 */, long startBlockTime, JArray fundInfoArr
             )
         {
             if(!us.getUserInfo(controller, out string code, out string userId))
@@ -901,6 +902,12 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.headIconNotUpload);
             }
+            if (fundHash.ToLower().Trim().Length == 0
+                && fundInfoArr.Count == 0)
+            {
+                return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+            }
+
             // 详情中url处理
             var nlist = projDetail.catchFileUrl();
             foreach (var ii in nlist)
@@ -945,32 +952,31 @@ namespace NEL_FutureDao_API.Service
             }
             foreach(var item in fundInfoArr)
             {
-                findStr = new JObject { { "fundHash", item["fundHash"] } }.ToString();
+                findStr = new JObject { { "fundHash", item["hash"] } }.ToString();
                 if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloTokenInfoCol, findStr) == 0)
                 {
                     var data = new JObject {
-                        { "fundHash", item["fundHash"] },
-                        { "fundSymbol", item["fundSymbol"] },
-                        { "fundDecimals", item["fundDecimals"] }
+                        { "fundHash", item["hash"] },
+                        { "fundSymbol", item["symbol"] },
+                        { "fundDecimals", item["decimals"] }
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
                 }
             }
+            
+
+            // 兼容v1 和 v2 版本
+            if (fundHash.ToLower().Length == 0)
+            {
+                fundHash = fundInfoArr[0]["hash"].ToString();
+                fundSymbol = fundInfoArr[0]["symbol"].ToString();
+                fundDecimals = long.Parse(fundInfoArr[0]["decimals"].ToString());
+            }
+
             //
             processSummonerEventBalance(projId, summonerAddress.ToLower());
             //
-            if(fundHash.ToLower().Trim().Length == 0
-                && fundInfoArr.Count == 0)
-            {
-                return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
-            }
-
-            if(fundHash.ToLower().Length == 0)
-            {
-                fundHash = fundInfoArr[0]["fundHash"].ToString();
-                fundSymbol = fundInfoArr[0]["fundSymbol"].ToString();
-                fundDecimals = long.Parse(fundInfoArr[0]["fundDecimals"].ToString());
-            }
+            
 
             //
             var newdata = new JObject {

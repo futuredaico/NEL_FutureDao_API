@@ -904,6 +904,13 @@ namespace NEL_FutureDao_API.Service
                 fundHash = fundInfoArr[0]["hash"].ToString();
                 fundSymbol = fundInfoArr[0]["symbol"].ToString();
                 fundDecimals = long.Parse(fundInfoArr[0]["decimals"].ToString());
+            } else
+            {
+                fundInfoArr.Add(new JObject {
+                    {"hash", fundHash },
+                    {"symbol", fundSymbol },
+                    {"decimals", fundDecimals },
+                });
             }
             // 封面
             if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newHeadIconUrl))
@@ -1147,7 +1154,6 @@ namespace NEL_FutureDao_API.Service
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 
-
             var sortStr = "{'fundHash':1}";
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize);
             if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
@@ -1162,6 +1168,11 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray getProjDeposit4MultiAsset(Controller controller, string projId)
         {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+
             var findStr = new JObject { {"projId", projId } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
             if (queryRes.Count == 0) getRes();

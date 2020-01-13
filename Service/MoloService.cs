@@ -893,21 +893,23 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(code);
             }
-            var findStr = new JObject { { "officailWeb", officailWeb } }.ToString();
-            //if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr) > 0)
-            //{
-            //    return getErrorRes(DaoReturnCode.RepeatOperate);
-            //}
-            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newHeadIconUrl))
-            {
-                return getErrorRes(DaoReturnCode.headIconNotUpload);
-            }
             if (fundHash.ToLower().Trim().Length == 0
                 && fundInfoArr.Count == 0)
             {
                 return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
             }
-
+            // 兼容v1 和 v2 版本
+            if (fundHash.ToLower().Length == 0)
+            {
+                fundHash = fundInfoArr[0]["hash"].ToString();
+                fundSymbol = fundInfoArr[0]["symbol"].ToString();
+                fundDecimals = long.Parse(fundInfoArr[0]["decimals"].ToString());
+            }
+            // 封面
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newHeadIconUrl))
+            {
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
+            }
             // 详情中url处理
             var nlist = projDetail.catchFileUrl();
             foreach (var ii in nlist)
@@ -925,7 +927,7 @@ namespace NEL_FutureDao_API.Service
             var date = DateTime.Now;
             foreach(var item in contractHashs)
             {
-                findStr = new JObject { { "contractHash", item["hash"].ToString().ToLower() } }.ToString();
+                var findStr = new JObject { { "contractHash", item["hash"].ToString().ToLower() } }.ToString();
                 if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, findStr) == 0)
                 {
                     var data = new JObject {
@@ -952,7 +954,7 @@ namespace NEL_FutureDao_API.Service
             }
             foreach(var item in fundInfoArr)
             {
-                findStr = new JObject { { "fundHash", item["hash"] } }.ToString();
+                var findStr = new JObject { { "fundHash", item["hash"] } }.ToString();
                 if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloTokenInfoCol, findStr) == 0)
                 {
                     var data = new JObject {
@@ -960,23 +962,28 @@ namespace NEL_FutureDao_API.Service
                         { "fundSymbol", item["symbol"] },
                         { "fundDecimals", item["decimals"] }
                     }.ToString();
-                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloTokenInfoCol, data);
                 }
+
+                findStr = new JObject { { "projId", projId }, { "fundHash", item["hash"] } }.ToString();
+                if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr) == 0)
+                {
+                    var data = new JObject {
+                        { "projId", projId},
+                        { "fundHash", item["hash"] },
+                        { "fundSymbol", item["symbol"] },
+                        { "fundDecimals", item["decimals"] },
+                        { "fundTotal", "0" },
+                        { "fundTotalTp", "0" },
+                    }.ToString();
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, data);
+                }
+
             }
             
-
-            // 兼容v1 和 v2 版本
-            if (fundHash.ToLower().Length == 0)
-            {
-                fundHash = fundInfoArr[0]["hash"].ToString();
-                fundSymbol = fundInfoArr[0]["symbol"].ToString();
-                fundDecimals = long.Parse(fundInfoArr[0]["decimals"].ToString());
-            }
-
             //
             processSummonerEventBalance(projId, summonerAddress.ToLower());
             //
-            
 
             //
             var newdata = new JObject {
@@ -1130,8 +1137,17 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-        public JArray getProjFundInfoMulti(Controller controller, string projId)
+        public JArray getProjFundInfoMulti(Controller controller, string projId, int pageNum, int pageSize)
         {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "projId", projId} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+
             return null;
         }
     }

@@ -1137,18 +1137,43 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-        public JArray getProjFundInfoMulti(Controller controller, string projId, int pageNum, int pageSize)
+        public JArray getProjFundInfo4MultiAsset(Controller controller, string projId, int pageNum, int pageSize)
         {
             if (!us.getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
             }
             var findStr = new JObject { { "projId", projId} }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+
+            var sortStr = "{'fundHash':1}";
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var arr = queryRes.Select(p => new JObject {
+                {"fundHash", p["fundHash"] },
+                {"fundSymbol", p["fundSymbol"] },
+                {"fundDecimals", p["fundDecimals"] }
+            });
+            var res = new JObject { { "count", count }, { "list", new JArray { arr } } };
+            return getRes(res) ;
+        }
+        public JArray getProjDeposit4MultiAsset(Controller controller, string projId)
+        {
+            var findStr = new JObject { {"projId", projId } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
-            if (queryRes.Count == 0) return getRes();
+            if (queryRes.Count == 0) getRes();
 
-
-            return null;
+            var item = queryRes[0];
+            var res = new JObject {
+                { "fundHash", item["fundHash"] },
+                { "fundSymbol", item["fundSymbol"] },
+                { "fundDecimals", item["fundDecimals"] },
+                { "proposalDeposit", item["proposalDeposit"] }
+            };
+            return getRes(res);
         }
     }
 }

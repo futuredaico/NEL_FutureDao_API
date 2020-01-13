@@ -156,6 +156,14 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // molo_v2.0_ed
+                    case "getProjDeposit4MultiAsset":
+                        result = ms.getProjDeposit4MultiAsset(controller, req.@params[0].ToString());
+                        break;
+                    case "getProjFundInfo4MultiAsset":
+                        result = ms.getProjFundInfo4MultiAsset(controller, req.@params[0].ToString(),
+                             int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString()));
+                        break;
                     case "getProjBidPrice":
                         result = ms.getProjBidPrice();
                         break;

@@ -173,9 +173,12 @@ namespace NEL_FutureDao_API.Service
         public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "", string type="1")
         {
             var findJo = new JObject { { "projId", projId } };
-            if(type != "1")
+            if(type == "0")
             {
                 findJo.Add("proposalState", "10150");
+            } else
+            {
+                findJo.Add("proposalState", new JObject { { "$ne", "10150" } });
             }
             var findStr = findJo.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr);

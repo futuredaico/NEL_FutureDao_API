@@ -156,11 +156,8 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // molo_v2.0_ed
-                    case "getProjDeposit4MultiAsset":
-                        result = ms.getProjDeposit4MultiAsset(controller, req.@params[0].ToString());
-                        break;
-                    case "getProjFundInfo4MultiAsset":
-                        result = ms.getProjFundInfo4MultiAsset(controller, req.@params[0].ToString(),
+                    case "getProjFundList":
+                        result = ms.getProjFundList(controller, req.@params[0].ToString(),
                              int.Parse(req.@params[1].ToString()),
                             int.Parse(req.@params[2].ToString()));
                         break;
@@ -211,8 +208,8 @@ namespace NEL.Comm
                     case "getVoteInfo":
                         result = ms.getVoteInfo(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
-                    case "getProjFundInfo":
-                        result = ms.getProjFundInfo(controller, req.@params[0].ToString());
+                    case "getProjDepositInfo":
+                        result = ms.getProjDepositInfo(controller, req.@params[0].ToString());
                         break;
                     case "getTokenBalanceFromUpStream":
                         result = ms.getTokenBalanceFromUpStream(controller, req.@params[0].ToString(), req.@params[1].ToString());

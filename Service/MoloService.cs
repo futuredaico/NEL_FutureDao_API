@@ -1116,7 +1116,7 @@ namespace NEL_FutureDao_API.Service
             return getRes(res);
         }
         //
-        public JArray getProjFundInfo(Controller controller, string projId)
+        public JArray getProjDepositInfo(Controller controller, string projId)
         {
             if (!us.getUserInfo(controller, out string code, out string userId))
             {
@@ -1144,7 +1144,7 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-        public JArray getProjFundInfo4MultiAsset(Controller controller, string projId, int pageNum, int pageSize)
+        public JArray getProjFundList(Controller controller, string projId, int pageNum, int pageSize)
         {
             if (!us.getUserInfo(controller, out string code, out string userId))
             {
@@ -1165,26 +1165,6 @@ namespace NEL_FutureDao_API.Service
             });
             var res = new JObject { { "count", count }, { "list", new JArray { arr } } };
             return getRes(res) ;
-        }
-        public JArray getProjDeposit4MultiAsset(Controller controller, string projId)
-        {
-            if (!us.getUserInfo(controller, out string code, out string userId))
-            {
-                return getErrorRes(code);
-            }
-
-            var findStr = new JObject { {"projId", projId } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
-            if (queryRes.Count == 0) getRes();
-
-            var item = queryRes[0];
-            var res = new JObject {
-                { "fundHash", item["fundHash"] },
-                { "fundSymbol", item["fundSymbol"] },
-                { "fundDecimals", item["fundDecimals"] },
-                { "proposalDeposit", item["proposalDeposit"] }
-            };
-            return getRes(res);
         }
     }
 }

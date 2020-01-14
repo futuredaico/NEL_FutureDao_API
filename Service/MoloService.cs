@@ -876,7 +876,10 @@ namespace NEL_FutureDao_API.Service
             {
                 return getRes(new JObject { { "count", 0},{ "list", new JArray()} });
             }
-            var arr = queryRes.Select(p => p["version"].ToString()).ToArray();
+            var arr = queryRes.Select(p => new JObject {
+                {"type",p["type"] },
+                {"version",p["version"] }
+            }).ToArray();
             return getRes(new JObject { { "count", arr.Length }, { "list", new JArray { arr } } });
         }
         public JArray saveContractInfo(Controller controller,
@@ -906,11 +909,14 @@ namespace NEL_FutureDao_API.Service
                 fundDecimals = long.Parse(fundInfoArr[0]["decimals"].ToString());
             } else
             {
-                fundInfoArr.Add(new JObject {
-                    {"hash", fundHash },
-                    {"symbol", fundSymbol },
-                    {"decimals", fundDecimals },
-                });
+                if(fundInfoArr.All(p => p["hash"].ToString().ToLower() != fundHash.ToLower()))
+                {
+                    fundInfoArr.Add(new JObject {
+                        {"hash", fundHash },
+                        {"symbol", fundSymbol },
+                        {"decimals", fundDecimals },
+                    });
+                }
             }
             // 封面
             if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newHeadIconUrl))

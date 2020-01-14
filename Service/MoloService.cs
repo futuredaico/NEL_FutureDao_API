@@ -1080,6 +1080,7 @@ namespace NEL_FutureDao_API.Service
                 { "votingPeriodLength",item["votingPeriodLength"]},
                 { "notingPeriodLength",item["notingPeriodLength"]},
                 { "cancelPeriodLength",item["cancelPeriodLength"]},
+                { "emergencyExitWait",item["emergencyExitWait"]},
                 { "contractHashs",item["contractHashs"]}
             };
             return getRes(res);
@@ -1174,6 +1175,23 @@ namespace NEL_FutureDao_API.Service
             });
             var res = new JObject { { "count", count }, { "list", new JArray { arr } } };
             return getRes(res) ;
+        }
+
+        public JArray getSharesBalance(Controller controller, string projId, string address)
+        {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", "" },{ "address", address} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
+            var balance = 0L;
+            if (queryRes.Count > 0)
+            {
+                balance = long.Parse(queryRes[0]["balance"].ToString());
+            }
+            var res = new JObject { { "balance", balance } };
+            return getRes(res);
         }
     }
 }

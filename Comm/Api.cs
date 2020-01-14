@@ -156,6 +156,9 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // molo_v2.0_ed
+                    case "getSharesBalance":
+                        result = ms.getSharesBalance(controller, req.@params[0].ToString(), req.@params[1].ToString());
+                        break;
                     case "getProjFundList":
                         result = ms.getProjFundList(controller, req.@params[0].ToString(),
                              int.Parse(req.@params[1].ToString()),

@@ -234,7 +234,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("voteYesCount", p["voteYesCount"]);
                 jo.Add("voteNotCount", p["voteNotCount"]);
                 jo.Add("isMine", p["proposer"].ToString().ToLower() == address.ToLower());
-                jo.Add("hasVote", isVote(p["projId"].ToString(), p["proposalIndex"].ToString(), address));
+                jo.Add("hasVote", isVote(p["projId"].ToString(), p["proposalQueueIndex"].ToString(), address));
                 jo.Add("proposalState", p["proposalState"]);
                 jo.Add("handleState", p["handleState"]);
                 return jo;

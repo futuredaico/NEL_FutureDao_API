@@ -208,22 +208,28 @@ namespace NEL_FutureDao_API.Service
                     jo.Add("version", "2.0");
                     jo.Add("sharesRequested", p["sharesRequested"]);
                     jo.Add("lootRequested", p["lootRequested"]);
+                    jo.Add("tributeToken", p["tributeToken"]);
                     jo.Add("tributeOffered", p["tributeOffered"]);
                     jo.Add("tributeOfferedSymbol", p["tributeOfferedSymbol"]);
                     jo.Add("paymentRequested", p["paymentRequested"]);
                     jo.Add("paymentRequestedSymbol", p["paymentRequestedSymbol"]);
                     jo.Add("startingPeriod", p["startingPeriod"]);
+                    jo.Add("proposalType", getProposalType(p));
                 } else
                 {
                     jo.Add("version", "1.0");
                     jo.Add("sharesRequested", p["sharesRequested"]);
                     jo.Add("lootRequested", 0);
+                    jo.Add("tributeToken", "");
                     jo.Add("tributeOffered", p["tokenTribute"]);
                     jo.Add("tributeOfferedSymbol", p["tokenTributeSymbol"]);
                     jo.Add("paymentRequested", 0);
                     jo.Add("paymentRequestedSymbol", "");
                     jo.Add("startingPeriod", -1);
+                    jo.Add("proposalType", ProposalType.ApplyShare);
                 }
+                jo.Add("applicant", p["applicant"].ToString());
+
                 jo.Add("timestamp", p["blockTime"]);
                 jo.Add("voteYesCount", p["voteYesCount"]);
                 jo.Add("voteNotCount", p["voteNotCount"]);
@@ -234,6 +240,32 @@ namespace NEL_FutureDao_API.Service
                 return jo;
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
+        }
+        private string getProposalType(JToken jt)
+        {
+            var sharesRequested = jt["sharesRequested"].ToString();
+            var lootRequested = jt["lootRequested"].ToString();
+            var paymentRequested = jt["paymentRequested"].ToString();
+            var tributeToken = jt["tributeToken"].ToString();
+
+            var proposalType = ProposalType.PickOutMember;
+            var sum = decimal.Parse(sharesRequested) + decimal.Parse(lootRequested) + decimal.Parse(paymentRequested);
+            if (sum > 0)
+            {
+                proposalType = ProposalType.ApplyShare;
+            }
+            else
+            {
+                if (tributeToken != null && tributeToken.Trim().Length > 0)
+                {
+                    proposalType = ProposalType.AddSupportToken;
+                }
+                else
+                {
+                    proposalType = ProposalType.PickOutMember;
+                }
+            }
+            return proposalType;
         }
         private bool isVote(string projId, string proposalIndex, string address)
         {
@@ -265,6 +297,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("version", "2.0");
                 jo.Add("sharesRequested", item["sharesRequested"]);
                 jo.Add("lootRequested", item["lootRequested"]);
+                jo.Add("tributeToken", item["tributeToken"]);
                 jo.Add("tributeOffered", item["tributeOffered"]);
                 jo.Add("tributeOfferedSymbol", item["tributeOfferedSymbol"]);
                 jo.Add("paymentRequested", item["paymentRequested"]);
@@ -275,12 +308,15 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("version", "1.0");
                 jo.Add("sharesRequested", item["sharesRequested"]);
                 jo.Add("lootRequested", 0);
+                jo.Add("tributeToken", "");
                 jo.Add("tributeOffered", item["tokenTribute"]);
                 jo.Add("tributeOfferedSymbol", item["tokenTributeSymbol"]);
                 jo.Add("paymentRequested", 0);
                 jo.Add("paymentRequestedSymbol", "");
                 jo.Add("startingPeriod", -1);
             }
+            //
+            jo.Add("proposalType", getProposalType(item));
 
             jo.Add("applicant", item["applicant"]);
             username = getUsername(item["applicant"].ToString(), out headIconUrl);
@@ -1193,5 +1229,12 @@ namespace NEL_FutureDao_API.Service
             return getRes(res) ;
         }
 
+    }
+
+    class ProposalType
+    {
+        public const string ApplyShare = "0";           // 申请股份
+        public const string AddSupportToken = "1";      // 添加代币
+        public const string PickOutMember = "3";        // 剔除成员
     }
 }

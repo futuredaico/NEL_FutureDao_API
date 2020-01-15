@@ -291,14 +291,14 @@ namespace NEL_FutureDao_API.Service
             var voteCount = "0";
             var voteType = "";
             var balance = "0";
-            var findStr = new JObject { { "projId", projId }, { "proposalIndex", proposalIndex }, { "address", address } }.ToString();
+            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", proposalIndex }, { "address", address } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
             if(queryRes.Count > 0)
             {
                 voteCount = queryRes[0]["balance"].ToString();
                 voteType = queryRes[0]["type"].ToString();
             }
-            findStr = new JObject { { "projId", projId }, { "proposalIndex", "" }, { "address", address } }.ToString();
+            findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", "" }, { "address", address } }.ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
             if (queryRes.Count > 0)
             {

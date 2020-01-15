@@ -178,7 +178,12 @@ namespace NEL_FutureDao_API.Service
                 findJo.Add("proposalState", "10150");
             } else
             {
-                findJo.Add("proposalState", new JObject { { "$ne", "10150" } });
+                //findJo.Add("proposalState", new JObject { { "$ne", "10150" } });
+                var findJA = new JArray {
+                    new JObject{{ "proposalState", new JObject { { "$ne", "10150" } } } },
+                    new JObject{{ "proposalState", new JObject { { "$ne", "10155" } } } },
+                };
+                findJo.Add("$and", findJA);
             }
             var findStr = findJo.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr);
@@ -1099,13 +1104,22 @@ namespace NEL_FutureDao_API.Service
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
 
             var balance = 0L;
+            var sharesBalance = 0L;
+            var lootBalance = 0L;
             var newDelegateKey = "";
             if (queryRes.Count > 0)
             {
                 balance = long.Parse(queryRes[0]["balance"].ToString());
+                sharesBalance = long.Parse(queryRes[0]["sharesBalance"].ToString());
+                lootBalance = long.Parse(queryRes[0]["lootBalance"].ToString());
                 newDelegateKey = queryRes[0]["newDelegateKey"].ToString();
             }
-            var res = new JObject { { "balance", balance }, { "newDelegateKey", newDelegateKey } };
+            var res = new JObject {
+                { "balance", balance },
+                { "sharesBalance", sharesBalance },
+                { "lootBalance", lootBalance },
+                { "newDelegateKey", newDelegateKey }
+            };
             return getRes(res);
         }
         public JArray getTokenBalanceFromUpStream(Controller controller, string projId, string address)

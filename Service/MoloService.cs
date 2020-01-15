@@ -256,7 +256,7 @@ namespace NEL_FutureDao_API.Service
             }
             else
             {
-                if (tributeToken != null && tributeToken.Trim().Length > 0)
+                if (tributeToken != null && tributeToken.ToString() != "0x0000000000000000000000000000000000000000")
                 {
                     proposalType = ProposalType.AddSupportToken;
                 }
@@ -1235,6 +1235,6 @@ namespace NEL_FutureDao_API.Service
     {
         public const string ApplyShare = "0";           // 申请股份
         public const string AddSupportToken = "1";      // 添加代币
-        public const string PickOutMember = "3";        // 剔除成员
+        public const string PickOutMember = "2";        // 剔除成员
     }
 }

@@ -892,7 +892,8 @@ namespace NEL_FutureDao_API.Service
             long votingPeriodLength, long notingPeriodLength, long cancelPeriodLength, /* 单位:个 */
             string proposalDeposit, string proposalReward, string summonerAddress, JArray contractHashs,
             long emergencyExitWait/* 提案处理期限 */, 
-            long bailoutWait/* 剔除成员执行期限 */, long startBlockTime, JArray fundInfoArr
+            long bailoutWait/* 剔除成员执行期限 */, long startBlockTime, JArray fundInfoArr,
+            string txid=""
             )
         {
             if(!us.getUserInfo(controller, out string code, out string userId))
@@ -1026,6 +1027,7 @@ namespace NEL_FutureDao_API.Service
                 {"summonerAddress", summonerAddress.ToLower()},
                 {"contractHashs", contractHashs},
                 {"fundInfoArr", fundInfoArr},
+                {"txid", txid},
                 {"userId", userId},
                 {"tokenTotal", 1},
                 {"hasTokenCount", 1},
@@ -1177,21 +1179,5 @@ namespace NEL_FutureDao_API.Service
             return getRes(res) ;
         }
 
-        public JArray getSharesBalance(Controller controller, string projId, string address)
-        {
-            if (!us.getUserInfo(controller, out string code, out string userId))
-            {
-                return getErrorRes(code);
-            }
-            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", "" },{ "address", address} }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
-            var balance = 0L;
-            if (queryRes.Count > 0)
-            {
-                balance = long.Parse(queryRes[0]["balance"].ToString());
-            }
-            var res = new JObject { { "balance", balance } };
-            return getRes(res);
-        }
     }
 }

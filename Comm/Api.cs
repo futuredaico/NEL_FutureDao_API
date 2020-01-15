@@ -156,9 +156,6 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // molo_v2.0_ed
-                    case "getSharesBalance":
-                        result = ms.getSharesBalance(controller, req.@params[0].ToString(), req.@params[1].ToString());
-                        break;
                     case "getProjFundList":
                         result = ms.getProjFundList(controller, req.@params[0].ToString(),
                              int.Parse(req.@params[1].ToString()),
@@ -184,6 +181,34 @@ namespace NEL.Comm
                         break;
 
                     case "saveContractInfo":
+                        if(req.@params.Length > 21)
+                        {
+                            result = ms.saveContractInfo(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            long.Parse(req.@params[8].ToString()),
+                            long.Parse(req.@params[9].ToString()),
+                            long.Parse(req.@params[10].ToString()),
+                            long.Parse(req.@params[11].ToString()),
+                            long.Parse(req.@params[12].ToString()),
+                            req.@params[13].ToString(),
+                            req.@params[14].ToString(),
+                            req.@params[15].ToString(),
+                            JArray.Parse(req.@params[16].ToString()),
+                            long.Parse(req.@params[17].ToString()),
+                            long.Parse(req.@params[18].ToString()),
+                            long.Parse(req.@params[19].ToString()),
+                            JArray.Parse(req.@params[20].ToString()),
+                            req.@params[21].ToString()
+                            );
+                            break;
+                        }
                         result = ms.saveContractInfo(controller,
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),

@@ -232,7 +232,7 @@ namespace NEL_FutureDao_API.Service
         }
         private bool isVote(string projId, string proposalIndex, string address)
         {
-            var findStr = new JObject { { "projId", projId }, { "proposalIndex", proposalIndex }, { "address", address } }.ToString();
+            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", proposalIndex }, { "address", address } }.ToString();
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr) > 0;
         }
         public JArray getProjProposalDetail(string projId, string proposalIndex)

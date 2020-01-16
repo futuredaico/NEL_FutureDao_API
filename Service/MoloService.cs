@@ -968,6 +968,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.headIconNotUpload);
             }
+            projCoverUrl = newHeadIconUrl;
             // 详情中url处理
             var nlist = projDetail.catchFileUrl();
             foreach (var ii in nlist)

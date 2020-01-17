@@ -155,6 +155,7 @@ namespace NEL_FutureDao_API.Service
 
             var list = queryRes.Select(p => new JObject {
                 { "fundTotal", p["fundTotal"]},
+                { "fundHash", p["fundHash"]},
                 { "fundSymbol", p["fundSymbol"]}
             }).ToArray();
 

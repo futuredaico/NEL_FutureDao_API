@@ -74,14 +74,13 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.C_InvalidUserInfo);
             }
-            var userId = getUserId(address);
+            var userId = getUserId(address, out string accessToken);
             if (userId == "")
             {
                 return getErrorRes(DaoReturnCode.C_InvalidUserInfo);
             }
-            var accessToken = TokenHelper.applyAccessToken(tokenUrl, userId);
+            //var accessToken = TokenHelper.applyAccessToken(tokenUrl, userId);
             setUserInfo(controller, userId, accessToken);
-            //return getRes(new JObject { { "userId", userId }, { "accessToken", accessToken } });
             return getRes();
         }
         public JArray logout(Controller controller)
@@ -91,10 +90,16 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
             clearUserInfo(controller);
+            clearAccessToken(userId);
             return getRes();
         }
 
-
+        private void clearAccessToken(string userId)
+        {
+            var findStr = new JObject { { "userId", userId } }.ToString();
+            var updateStr = new JObject { { "$set", new JObject { { "accessToken", "" } } } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
+        }
         private void clearUserInfo(Controller controller)
         {
             controller.Response.Headers["Set-Cookie"]="userId=_; Path=/; HttpOnly";
@@ -113,10 +118,28 @@ namespace NEL_FutureDao_API.Service
 
             var ss = userId.Split("_");
             userId = ss[0];
+            var accessToken = ss[1];
             if (userId == null || userId == "") return false;
-            
-            
-            return TokenHelper.checkAccessToken(tokenUrl, ss[0], ss[1], out code);
+            if (accessToken == null || accessToken == "") return false;
+
+            //return TokenHelper.checkAccessToken(tokenUrl, ss[0], ss[1], out code);
+            return checkUserInfo(userId, accessToken);
+
+        }
+        private bool checkUserInfo(string userId, string accessToken)
+        {
+            var findStr = new JObject { { "userId", userId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr);
+            if (queryRes.Count == 0) return false;
+            //
+
+            var item = queryRes[0];
+            if (item["accessToken"] != null) return false;
+
+            var token = item["accessToken"].ToString();
+            if (token.Trim().Length == 0) return false;
+
+            return token == accessToken;
         }
 
         private string getNonceStr(string address)
@@ -140,8 +163,9 @@ namespace NEL_FutureDao_API.Service
             }
             return EthHelper.verify(nonceStr, signData);
         }
-        private string getUserId(string address)
+        private string getUserId(string address, out string accessToken)
         {
+            accessToken = "";
             var findStr = new JObject { { "address", address } }.ToString();
             var fieldStr = new JObject { { "userId", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
@@ -158,6 +182,8 @@ namespace NEL_FutureDao_API.Service
                 userId = DaoInfoHelper.genUserId(address, address, address);
                 updateJo.Add("userId", userId);
             }
+            accessToken = DaoInfoHelper.genUserToken(userId, address);
+            updateJo.Add("accessToken", accessToken);
             var updateStr = new JObject { { "$set", updateJo } }.ToString();
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, updateStr, findStr);
             return userId;

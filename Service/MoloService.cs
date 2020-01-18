@@ -1088,7 +1088,7 @@ namespace NEL_FutureDao_API.Service
         {
             var sharesBalance = 1L;
             var now = TimeHelper.GetTimeStamp();
-            var findStr = new JObject { { "address", address } }.ToString();
+            var findStr = new JObject { { "projId", projId},{ "address", address } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
             if(queryRes.Count == 0)
             {

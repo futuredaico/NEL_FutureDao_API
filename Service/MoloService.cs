@@ -277,7 +277,7 @@ namespace NEL_FutureDao_API.Service
         {
             var findStr = new JObject { {"projId", projId},{ "proposalIndex", proposalIndex } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr);
-            if (queryRes.Count == 0) getRes();
+            if (queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
             var jo = new JObject();
@@ -317,7 +317,8 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("startingPeriod", -1);
             }
             //
-            jo.Add("proposalType", getProposalType(item));
+            //jo.Add("proposalType", getProposalType(item));
+            jo.Add("proposalType", ProposalType.ApplyShare);
 
             jo.Add("applicant", item["applicant"]);
             username = getUsername(item["applicant"].ToString(), out headIconUrl);

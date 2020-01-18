@@ -167,7 +167,8 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray getProjBidPrice(string pair="ETH-USDT")
         {
-            var res = new JObject { { "price", "136.71" } };
+            //var res = new JObject { { "price", "136.71" } };
+            var res = new JObject { { "price", "168.14" } };
             return getRes(res);
         }
         // 提案

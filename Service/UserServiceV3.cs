@@ -134,7 +134,7 @@ namespace NEL_FutureDao_API.Service
             //
 
             var item = queryRes[0];
-            if (item["accessToken"] != null) return false;
+            if (item["accessToken"] == null) return false;
 
             var token = item["accessToken"].ToString();
             if (token.Trim().Length == 0) return false;

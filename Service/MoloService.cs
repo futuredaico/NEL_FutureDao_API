@@ -183,7 +183,7 @@ namespace NEL_FutureDao_API.Service
                 //findJo.Add("proposalState", new JObject { { "$ne", "10150" } });
                 var findJA = new JArray {
                     new JObject{{ "proposalState", new JObject { { "$ne", "10150" } } } },
-                    new JObject{{ "proposalState", new JObject { { "$ne", "10155" } } } },
+                    new JObject{{ "proposalState", new JObject { { "$ne", "10151" } } } },
                 };
                 findJo.Add("$and", findJA);
             }
@@ -232,7 +232,7 @@ namespace NEL_FutureDao_API.Service
                 }
                 jo.Add("applicant", p["applicant"].ToString());
 
-                jo.Add("timestamp", p["blockTime"]);
+                jo.Add("timestamp", p["voteStartTime"]);
                 jo.Add("voteYesCount", p["voteYesCount"]);
                 jo.Add("voteNotCount", p["voteNotCount"]);
                 jo.Add("isMine", p["proposer"].ToString().ToLower() == address.ToLower());

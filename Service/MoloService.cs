@@ -1149,10 +1149,14 @@ namespace NEL_FutureDao_API.Service
             var newDelegateKey = "";
             if (queryRes.Count > 0)
             {
-                balance = long.Parse(queryRes[0]["balance"].ToString());
-                sharesBalance = long.Parse(queryRes[0]["sharesBalance"].ToString());
-                lootBalance = long.Parse(queryRes[0]["lootBalance"].ToString());
-                newDelegateKey = queryRes[0]["newDelegateKey"].ToString();
+                var item = queryRes[0];
+                balance = long.Parse(item["balance"].ToString());
+                sharesBalance = long.Parse(item["sharesBalance"].ToString());
+                lootBalance = long.Parse(item["lootBalance"].ToString());
+                if(item["newDelegateKey"] != null)
+                {
+                    newDelegateKey = item["newDelegateKey"].ToString();
+                }
             }
             var res = new JObject {
                 { "balance", balance },

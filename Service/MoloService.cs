@@ -318,8 +318,8 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("startingPeriod", -1);
             }
             //
-            //jo.Add("proposalType", getProposalType(item));
-            jo.Add("proposalType", ProposalType.ApplyShare);
+            jo.Add("proposalType", getProposalType(item));
+            //jo.Add("proposalType", ProposalType.ApplyShare);
 
             jo.Add("applicant", item["applicant"]);
             username = getUsername(item["applicant"].ToString(), out headIconUrl);

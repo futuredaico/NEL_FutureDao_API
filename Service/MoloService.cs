@@ -245,9 +245,29 @@ namespace NEL_FutureDao_API.Service
         }
         private string getProposalType(JToken jt)
         {
+            var zeroAddr = "0x0000000000000000000000000000000000000000";
+            var tributeToken = jt["tributeToken"].ToString();
+            var paymentToken = jt["paymentToken"].ToString();
+            if(tributeToken == zeroAddr && paymentToken == zeroAddr)
+            {
+                return ProposalType.PickOutMember;
+            }
+            if(tributeToken != zeroAddr && paymentToken == zeroAddr)
+            {
+                return ProposalType.AddSupportToken;
+            }
+            if (tributeToken != zeroAddr && paymentToken != zeroAddr)
+            {
+                return ProposalType.ApplyShare;
+            }
+            return "notKwon";
+        }
+        private string getProposalTypeOld(JToken jt)
+        {
             var sharesRequested = jt["sharesRequested"].ToString();
             var lootRequested = jt["lootRequested"].ToString();
             var paymentRequested = jt["paymentRequested"].ToString();
+            var tributeOffered = jt["tributeOffered"].ToString();
             var tributeToken = jt["tributeToken"].ToString();
 
             var proposalType = ProposalType.PickOutMember;

@@ -1188,10 +1188,10 @@ namespace NEL_FutureDao_API.Service
         //
         public JArray getProjDepositInfo(Controller controller, string projId)
         {
-            if (!us.getUserInfo(controller, out string code, out string userId))
-            {
-                return getErrorRes(code);
-            }
+            //if (!us.getUserInfo(controller, out string code, out string userId))
+            //{
+            //    return getErrorRes(code);
+            //}
             var findStr = new JObject { { "projId", projId } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
             var fundHash = "";

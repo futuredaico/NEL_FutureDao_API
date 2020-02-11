@@ -325,6 +325,7 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("paymentRequested", item["paymentRequested"]);
                 jo.Add("paymentRequestedSymbol", item["paymentRequestedSymbol"]);
                 jo.Add("startingPeriod", item["startingPeriod"]);
+                jo.Add("proposalType", getProposalType(item));
             } else
             {
                 jo.Add("version", "1.0");
@@ -336,10 +337,9 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("paymentRequested", 0);
                 jo.Add("paymentRequestedSymbol", "");
                 jo.Add("startingPeriod", -1);
+                jo.Add("proposalType", ProposalType.ApplyShare);
             }
             //
-            jo.Add("proposalType", getProposalType(item));
-            //jo.Add("proposalType", ProposalType.ApplyShare);
 
             jo.Add("applicant", item["applicant"]);
             username = getUsername(item["applicant"].ToString(), out headIconUrl);

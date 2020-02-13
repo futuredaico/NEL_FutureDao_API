@@ -1125,6 +1125,7 @@ namespace NEL_FutureDao_API.Service
                     { "lootBalance", 0},
                     { "lootBalanceTp", 0},
                     { "newDelegateKey", ""},
+                    { "creator","1" },
                     { "time", now},
                     { "lastUpdateTime", now},
                 }.ToString();

@@ -156,6 +156,20 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // molo_v2.0_ed
+                    case "getLastUpdatorInfo":
+                        result = ms.getLastUpdatorInfo(
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "modifyProjInfo":
+                        result = ms.modifyProjInfo(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString()
+                            );
+                        break;
                     case "getProjFundList":
                         result = ms.getProjFundList(controller, req.@params[0].ToString(),
                              int.Parse(req.@params[1].ToString()),

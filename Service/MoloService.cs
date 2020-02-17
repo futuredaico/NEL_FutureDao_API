@@ -1094,6 +1094,7 @@ namespace NEL_FutureDao_API.Service
                 {"fundInfoArr", fundInfoArr},
                 {"txid", txid},
                 {"userId", userId},
+                {"lastUpdatorId", userId},
                 {"tokenTotal", 1},
                 {"hasTokenCount", 1},
                 {"discussCount", 0},
@@ -1256,6 +1257,81 @@ namespace NEL_FutureDao_API.Service
             });
             var res = new JObject { { "count", count }, { "list", new JArray { arr } } };
             return getRes(res) ;
+        }
+
+        //
+        private string getUserAddress(string userId)
+        {
+            var findStr = new JObject { { "userId", userId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr);
+            if (queryRes.Count == 0) return "";
+
+            return queryRes[0]["address"].ToString();
+        }
+        public JArray modifyProjInfo(Controller controller, string projId, string projBrief, string projDetail, string projCoverUrl, string officailWeb)
+        {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr); 
+            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.C_InvalidProjInfo);
+            
+            
+            // 详情中url处理
+            var nlist = projDetail.catchFileUrl();
+            foreach (var ii in nlist)
+            {
+                if (ii.Trim().Length == 0) continue;
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, "", ii, out string newUrl))
+                {
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
+                projDetail = projDetail.Replace(ii, newUrl);
+            }
+            // 封面
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newHeadIconUrl))
+            {
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
+            }
+            projCoverUrl = newHeadIconUrl;
+            //
+            var item = queryRes[0];
+            if(item["projBrief"].ToString() != projBrief
+                || item["projDetail"].ToString() != projDetail
+                || item["projCoverUrl"].ToString() != projCoverUrl
+                || item["officailWeb"].ToString() != officailWeb)
+            {
+                var updateStr = new JObject { { "$set", new JObject {
+                    { "projBrief", projBrief},
+                    { "projDetail", projDetail},
+                    { "projCoverUrl", projCoverUrl},
+                    { "officailWeb", officailWeb},
+                    { "lastUpdatorId", userId},
+                } } }.ToString();
+                mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, updateStr, findStr);
+            }
+            return getRes();
+        }
+        public JArray getLastUpdatorInfo(string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
+            if(queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            var id = item["userId"].ToString();
+            if(item["lastUpdatorId"] != null)
+            {
+                id = item["lastUpdatorId"].ToString();
+            }
+            var addr = getUserAddress(id);
+            var res = new JObject {
+                {"lastUpdatorAddress",  addr},
+                {"lastUpdateTime", item["lastUpdateTime"] }
+            };
+            return getRes(res);
         }
 
     }

@@ -1268,11 +1268,23 @@ namespace NEL_FutureDao_API.Service
 
             return queryRes[0]["address"].ToString();
         }
+        private bool isMember(string projId, string userId)
+        {
+            var addr = getUserAddress(userId);
+            if (addr == "") return false;
+
+            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", "" }, { "type", "0" }, { "address", addr },{ "balance", new JObject { { "$gt", 0} } } }.ToString();
+            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr) > 0;
+        }
         public JArray modifyProjInfo(Controller controller, string projId, string projBrief, string projDetail, string projCoverUrl, string officailWeb)
         {
             if (!us.getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
+            }
+            if(!isMember(projId, userId))
+            {
+                return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyProj);
             }
             var findStr = new JObject { { "projId", projId } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr); 

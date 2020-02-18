@@ -1321,6 +1321,7 @@ namespace NEL_FutureDao_API.Service
                     { "projCoverUrl", projCoverUrl},
                     { "officailWeb", officailWeb},
                     { "lastUpdatorId", userId},
+                    { "lastUpdateTime", TimeHelper.GetTimeStamp()},
                 } } }.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, updateStr, findStr);
             }

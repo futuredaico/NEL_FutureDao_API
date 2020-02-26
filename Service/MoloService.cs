@@ -956,12 +956,12 @@ namespace NEL_FutureDao_API.Service
             long periodDuration, /* 单位:秒 */
             long votingPeriodLength, long notingPeriodLength, long cancelPeriodLength, /* 单位:个 */
             string proposalDeposit, string proposalReward, string summonerAddress, JArray contractHashs,
-            long emergencyExitWait/* 提案处理期限 */, 
+            long emergencyExitWait/* 提案处理期限 */,
             long bailoutWait/* 剔除成员执行期限 */, long startBlockTime, JArray fundInfoArr,
-            string txid=""
+            string txid = ""
             )
         {
-            if(!us.getUserInfo(controller, out string code, out string userId))
+            if (!us.getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
             }
@@ -976,9 +976,10 @@ namespace NEL_FutureDao_API.Service
                 fundHash = fundInfoArr[0]["hash"].ToString();
                 fundSymbol = fundInfoArr[0]["symbol"].ToString();
                 fundDecimals = long.Parse(fundInfoArr[0]["decimals"].ToString());
-            } else
+            }
+            else
             {
-                if(fundInfoArr.All(p => p["hash"].ToString().ToLower() != fundHash.ToLower()))
+                if (fundInfoArr.All(p => p["hash"].ToString().ToLower() != fundHash.ToLower()))
                 {
                     fundInfoArr.Add(new JObject {
                         {"hash", fundHash },
@@ -1005,24 +1006,13 @@ namespace NEL_FutureDao_API.Service
                 projDetail = projDetail.Replace(ii, newUrl);
             }
 
-            var nlist = projDetail.catchFileUrl();
-            foreach (var ii in nlist)
-            {
-                if (ii.Trim().Length == 0) continue;
-                if (!DaoInfoHelper.StoreFile(oss, bucketName, "", ii, out string newUrl))
-                {
-                    return getErrorRes(DaoReturnCode.headIconNotUpload);
-                }
-                projDetail = projDetail.Replace(ii, newUrl);
-            }
-
             var projId = DaoInfoHelper.genProjId(projName, projVersion);
             var now = TimeHelper.GetTimeStamp();
             var date = DateTime.Now;
-            foreach(var item in contractHashs)
+            foreach (var item in contractHashs)
             {
                 var findStr = new JObject { { "contractHash", item["hash"].ToString().ToLower() } }.ToString();
-                if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, findStr) == 0)
+                if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, findStr) == 0)
                 {
                     var data = new JObject {
                         { "projId", projId},
@@ -1034,7 +1024,8 @@ namespace NEL_FutureDao_API.Service
                         { "updatedAt", date},
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
-                } else
+                }
+                else
                 {
                     var updateStr = new JObject { { "$set", new JObject {
                         { "projId", projId},
@@ -1046,10 +1037,10 @@ namespace NEL_FutureDao_API.Service
                     mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, updateStr, findStr);
                 }
             }
-            foreach(var item in fundInfoArr)
+            foreach (var item in fundInfoArr)
             {
                 var findStr = new JObject { { "fundHash", item["hash"] } }.ToString();
-                if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloTokenInfoCol, findStr) == 0)
+                if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloTokenInfoCol, findStr) == 0)
                 {
                     var data = new JObject {
                         { "fundHash", item["hash"] },
@@ -1074,7 +1065,7 @@ namespace NEL_FutureDao_API.Service
                 }
 
             }
-            
+
             //
             processSummonerEventBalance(projId, summonerAddress.ToLower());
             //
@@ -1086,7 +1077,7 @@ namespace NEL_FutureDao_API.Service
                 {"projType", "moloch"},
                 {"projBrief", projBrief},
                 {"projDetail", projDetail},
-                {"projCoverUrl", newHeadIconUrl},
+                {"projCoverUrl", projCoverUrl},
                 {"projVersion", projVersion},
                 {"officailWeb", officailWeb},
                 {"fundHash", fundHash},

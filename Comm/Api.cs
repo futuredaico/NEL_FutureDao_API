@@ -155,6 +155,37 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // molo_v2.0_ed
+                    case "getLastUpdatorInfo":
+                        result = ms.getLastUpdatorInfo(
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "modifyProjInfo":
+                        result = ms.modifyProjInfo(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString()
+                            );
+                        break;
+                    case "getProjFundList":
+                        result = ms.getProjFundList(controller, req.@params[0].ToString(),
+                             int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString()));
+                        break;
+                    case "getProjBidPrice":
+                        result = ms.getProjBidPrice();
+                        break;
+                    case "getProjFundTotal":
+                        result = ms.getProjFundTotal(
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    // molo_v2.0_st
                     // ******************************************* v3.st
                     case "querySupportVersion":
                         result = ms.querySupportVersion(controller);
@@ -164,6 +195,34 @@ namespace NEL.Comm
                         break;
 
                     case "saveContractInfo":
+                        if(req.@params.Length > 21)
+                        {
+                            result = ms.saveContractInfo(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            long.Parse(req.@params[8].ToString()),
+                            long.Parse(req.@params[9].ToString()),
+                            long.Parse(req.@params[10].ToString()),
+                            long.Parse(req.@params[11].ToString()),
+                            long.Parse(req.@params[12].ToString()),
+                            req.@params[13].ToString(),
+                            req.@params[14].ToString(),
+                            req.@params[15].ToString(),
+                            JArray.Parse(req.@params[16].ToString()),
+                            long.Parse(req.@params[17].ToString()),
+                            long.Parse(req.@params[18].ToString()),
+                            long.Parse(req.@params[19].ToString()),
+                            JArray.Parse(req.@params[20].ToString()),
+                            req.@params[21].ToString()
+                            );
+                            break;
+                        }
                         result = ms.saveContractInfo(controller,
                             req.@params[0].ToString(),
                             req.@params[1].ToString(),
@@ -181,14 +240,18 @@ namespace NEL.Comm
                             req.@params[13].ToString(),
                             req.@params[14].ToString(),
                             req.@params[15].ToString(),
-                            JArray.Parse(req.@params[16].ToString())
+                            JArray.Parse(req.@params[16].ToString()),
+                            long.Parse(req.@params[17].ToString()),
+                            long.Parse(req.@params[18].ToString()),
+                            long.Parse(req.@params[19].ToString()), 
+                            JArray.Parse(req.@params[20].ToString())
                             );
                         break;
                     case "getVoteInfo":
                         result = ms.getVoteInfo(req.@params[0].ToString(), req.@params[1].ToString(), req.@params[2].ToString());
                         break;
-                    case "getProjFundInfo":
-                        result = ms.getProjFundInfo(controller, req.@params[0].ToString());
+                    case "getProjDepositInfo":
+                        result = ms.getProjDepositInfo(controller, req.@params[0].ToString());
                         break;
                     case "getTokenBalanceFromUpStream":
                         result = ms.getTokenBalanceFromUpStream(controller, req.@params[0].ToString(), req.@params[1].ToString());
@@ -196,6 +259,7 @@ namespace NEL.Comm
                     case "getTokenBalance":
                         result = ms.getTokenBalance(controller, req.@params[0].ToString(), req.@params[1].ToString());
                         break;
+                    #region discuss
                     // molo.prop.discuss
                     case "getMoloPropSubDiscussList":
                         result = ms.getMoloPropSubDiscussList(controller,
@@ -261,15 +325,31 @@ namespace NEL.Comm
                             req.@params[2].ToString()
                             );
                         break;
+                    #endregion
                     //
                     case "getProjMemberListV3":
-                        result = ms.getProjMemberList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
+                        if(req.@params.Length > 3)
+                        {
+                            result = ms.getProjMemberList(
+                                req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()),
+                                req.@params[3].ToString());
+                        } else
+                        {
+                            result = ms.getProjMemberList(
+                                req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()));
+                        }
                         break;
                     case "getProjProposalDetailV3":
                         result = ms.getProjProposalDetail(req.@params[0].ToString(), req.@params[1].ToString());
                         break;
                     case "getProjProposalListV3":
-                        result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString());
+                        if(req.@params.Length < 5)
+                        {
+                            result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString());
+                        } else
+                        {
+                            result = ms.getProjProposalList(req.@params[0].ToString(), int.Parse(req.@params[1].ToString()), int.Parse(req.@params[2].ToString()), req.@params[3].ToString(), req.@params[4].ToString());
+                        }
                         break;
                     case "getProjdetailV3":
                         result = ms.getProjDetail(req.@params[0].ToString());

@@ -37,6 +37,11 @@ namespace NEL_FutureDao_API.Service.Help
             string data = string.Format("{0}.{1}.{2},{3}", now, username, email, pswd);
             return hash(data);
         }
+        public static string genUserToken(string userId, string address)
+        {
+            string data = string.Format("{0}.{1}.{2}.{3}", now, userId, address, new Random().Next());
+            return hash(data);
+        }
         public static string genProjId(string name, string title)
         {
             string data = string.Format("{0}.{1}.{2}", now, name, title);

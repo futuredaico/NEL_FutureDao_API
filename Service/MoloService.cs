@@ -1247,7 +1247,13 @@ namespace NEL_FutureDao_API.Service
             }
             var findStr = new JObject { { "projId", projId} }.ToString();
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr);
-            if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+            //if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+            if (count == 0)
+            {
+                var rr = getProjFundV1Add(projId);
+                count = rr.Count();
+                return getRes(new JObject { { "count", count }, { "list", rr } });
+            }
 
             var sortStr = "{'fundHash':1}";
             var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloFundInfoCol, findStr, sortStr, pageSize*(pageNum-1), pageSize);
@@ -1260,6 +1266,31 @@ namespace NEL_FutureDao_API.Service
             });
             var res = new JObject { { "count", count }, { "list", new JArray { arr } } };
             return getRes(res) ;
+        }
+        private JArray getProjFundV1Add(string projId)
+        {
+            JArray arr = new JArray();
+            //
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
+            if (queryRes.Count == 0) return arr;
+
+            var item = queryRes[0];
+            if (item["fundInfoArr"] != null)
+            {
+                arr = (JArray)item["fundInfoArr"];
+            } 
+            //
+            var res = new JObject {
+                {"fundHash", item["fundHash"] },
+                {"fundSymbol", item["fundSymbol"] },
+                {"fundDecimals", item["fundDecimals"] }
+            };
+            if (arr.All(p => p["fundHash"].ToString() != res["fundHash"].ToString()))
+            {
+                arr.Add(res);
+            }
+            return arr;
         }
 
         //
@@ -1337,7 +1368,11 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
-            var id = item["userId"].ToString();
+            var id = "";
+            if(item["userId"] != null)
+            {
+                id = item["userId"].ToString();
+            }
             if(item["lastUpdatorId"] != null)
             {
                 id = item["lastUpdatorId"].ToString();

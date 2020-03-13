@@ -274,8 +274,17 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(DaoReturnCode.C_InvalidProjInfo);
             }
             var item = queryRes[0];
-            item["role"] = item["userId"].ToString() == userId ? TeamRoleType.Admin : TeamRoleType.Member;
-            return getRes(item);
+            var jo = new JObject();
+            jo["projId"] = item["projId"];
+            jo["projName"] = item["projName"];
+            jo["projTitle"] = item["projTitle"];
+            jo["projBrief"] = item["projBrief"];
+            jo["officialWeb"] = item["officialWeb"];
+            jo["projCoverUrl"] = item["projCoverUrl"];
+            jo["projVideoUrl"] = item["projVideoUrl"];
+            jo["projDetail"] = item["projDetail"];
+            jo["role"] = item["userId"].ToString() == userId ? TeamRoleType.Admin : TeamRoleType.Member;
+            return getRes(jo);
         }
         //
         // 查询项目(管理中/关注中/参与中)

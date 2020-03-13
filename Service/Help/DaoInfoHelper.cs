@@ -34,7 +34,8 @@ namespace NEL_FutureDao_API.Service.Help
         public static string now => DateTime.Now.ToString("u");
         public static string genUserId(string username, string email, string pswd)
         {
-            string data = string.Format("{0}.{1}.{2},{3}", now, username, email, pswd);
+            //string data = string.Format("{0}.{1}.{2},{3}", now, username, email, pswd);
+            string data = string.Format("{0}.{1}.{2},{3}", "-", username, email, pswd);
             return hash(data);
         }
         public static string genUserToken(string userId, string address)

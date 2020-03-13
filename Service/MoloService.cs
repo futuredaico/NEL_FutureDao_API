@@ -48,15 +48,22 @@ namespace NEL_FutureDao_API.Service
             if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 
             var rr = queryRes.Select(p => {
-                //var members = getProjTeamCount(p["projId"].ToString(), out long shares);// 后面会废弃
                 var jo = new JObject();
                 jo.Add("projId", p["projId"]);
                 jo.Add("projName", p["projName"]);
                 jo.Add("projType", p["projType"]);
                 jo.Add("projBrief", p["projBrief"]);
                 jo.Add("projCoverUrl", p["projCoverUrl"]);
-                jo.Add("shares", p["tokenTotal"]);
-                jo.Add("members", p["hasTokenCount"]);
+                var projState = p["projState"];
+                if (projState != null && projState.ToString() == ProjState.IdeaPub)
+                {
+                    jo["projState"] = p["projState"];
+                }
+                else
+                {
+                    jo["shares"] = p["tokenTotal"];
+                    jo["members"] = p["hasTokenCount"];
+                }
                 return jo;
             }).ToArray();
 

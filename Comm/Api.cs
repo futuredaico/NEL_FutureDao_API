@@ -25,6 +25,7 @@ namespace NEL.Comm
         private FinanceService fs;
         private RewardService rs;
         private MoloService ms;
+        private FutureService fs2;
 
         public Api(string node)
         {
@@ -92,6 +93,13 @@ namespace NEL.Comm
                         oss = oss,
                         bucketName = mh.bucketName_testnet
                     };
+                    fs2 = new FutureService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        us = usV3,
+                    };
                     break;
                 case "mainnet":
                     usV3 = new UserServiceV3
@@ -155,6 +163,103 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    //
+                    case "queryUpdateList":
+                        result = fs2.queryUpdateList(controller,
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "queryUpdate":
+                        result = fs2.queryUpdate(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "modifyUpdate":
+                        result = fs2.modifyUpdate(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString()
+                            );
+                        break;
+                    case "deleteUpdate":
+                        result = fs2.deleteUpdate(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "createUpdate":
+                        result = fs2.createUpdate(controller, 
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "queryMemberList":
+                        result = fs2.queryMemberList(controller,
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "deleteMember":
+                        result = fs2.deleteMember(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "inviteMember":
+                        result = fs2.inviteMember(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    //
+                    case "queryProjListAtJoin":
+                        result = fs2.queryProjListAtJoin(controller);
+                        break;
+                    case "queryProjListAtStar":
+                        result = fs2.queryProjListAtStar(controller);
+                        break;
+                    case "queryProjListAtManage":
+                        result = fs2.queryProjListAtManage(controller);
+                        break;
+                    case "queryProj":
+                        result = fs2.queryProj(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "modifyProj":
+                        result = fs2.modifyProj(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString()
+                            );
+                        break;
+                    case "deleteProj":
+                        result = fs2.deleteProj(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "createProj":
+                        result = fs2.createProj(controller, 
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString()
+                            );
+                        break;
+
                     // molo_v2.0_ed
                     case "getLastUpdatorInfo":
                         result = ms.getLastUpdatorInfo(
@@ -377,6 +482,7 @@ namespace NEL.Comm
                         result = usV3.getLoginNonce(req.@params[0].ToString());
                         break;
                     // ******************************************* v3.ed
+                    /*
                     case "exportOrderInfo":
                         result = rs.exportOrderInfo(
                             req.@params[0].ToString(),
@@ -903,6 +1009,7 @@ namespace NEL.Comm
                     case "checkUsername":
                         result = us.checkUsername(req.@params[0].ToString());
                         break;
+                    */
                     //
                     case "getnodetype":
                         result = new JArray { new JObject { { "nodeType", netnode } } };

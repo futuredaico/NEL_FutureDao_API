@@ -70,6 +70,10 @@ namespace NEL_FutureDao_API.Service
             //
             address = address.ToLower();
             var nonceStr = getNonceStr(address);
+            if(nonceStr == "")
+            {
+                return getErrorRes(DaoReturnCode.C_InvalidUserInfo);
+            }
             if (!verify(address, signData, nonceStr))
             {
                 return getErrorRes(DaoReturnCode.C_InvalidUserInfo);
@@ -110,8 +114,13 @@ namespace NEL_FutureDao_API.Service
         }
         public bool getUserInfo(Controller controller, out string code, out string userId)
         {
+            return getUserInfo(controller, out code, out userId, out string address);
+        }
+        public bool getUserInfo(Controller controller, out string code, out string userId, out string address)
+        {
             code = "";
             userId = "";
+            address = "";
             code = DaoReturnCode.C_InvalidUserInfo;
             userId = controller.Request.Cookies["userId"];
             if (userId == null || userId == "" || !userId.Contains("_")) return false;
@@ -123,11 +132,12 @@ namespace NEL_FutureDao_API.Service
             if (accessToken == null || accessToken == "") return false;
 
             //return TokenHelper.checkAccessToken(tokenUrl, ss[0], ss[1], out code);
-            return checkUserInfo(userId, accessToken);
+            return checkUserInfo(userId, accessToken, out address);
 
         }
-        private bool checkUserInfo(string userId, string accessToken)
+        private bool checkUserInfo(string userId, string accessToken, out string address)
         {
+            address = "";
             var findStr = new JObject { { "userId", userId } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr);
             if (queryRes.Count == 0) return false;
@@ -139,9 +149,10 @@ namespace NEL_FutureDao_API.Service
             var token = item["accessToken"].ToString();
             if (token.Trim().Length == 0) return false;
 
+            address = item["address"].ToString();
+
             return token == accessToken;
         }
-
         private string getNonceStr(string address)
         {
             var findStr = new JObject { { "address", address } }.ToString();

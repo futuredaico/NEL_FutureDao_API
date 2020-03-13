@@ -1371,6 +1371,7 @@ namespace NEL_FutureDao_API.Service
         public const string COMIC = "comic"; // 动漫
         public const string MOVIE = "movie"; // 电影
         public const string OTHER = "other"; // 其他
+        public const string Future = "future"; // 其他
 
         public static string to(string type)
         {

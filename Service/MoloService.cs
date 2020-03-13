@@ -54,16 +54,18 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("projType", p["projType"]);
                 jo.Add("projBrief", p["projBrief"]);
                 jo.Add("projCoverUrl", p["projCoverUrl"]);
-                var projState = p["projState"];
-                if (projState != null && projState.ToString() == ProjState.IdeaPub)
+                jo["projState"] = "";
+                if (p["projState"] != null)
                 {
                     jo["projState"] = p["projState"];
                 }
-                else
+                jo["shares"] = 0;
+                if(p["tokenTotal"] != null)
                 {
                     jo["shares"] = p["tokenTotal"];
-                    jo["members"] = p["hasTokenCount"];
-                }
+                } 
+                jo["members"] = p["hasTokenCount"];
+                
                 return jo;
             }).ToArray();
 

@@ -14,22 +14,28 @@ namespace NEL_FutureDao_API.Service
 
         public JArray listMethod()
         {
-            if(!File.Exists(exeFileName))
+            try
             {
-                exeFileName = "cat ../../../Comm/Api.cs | grep case | grep -vw grep";
+                if (!File.Exists(exeFileName))
+                {
+                    exeFileName = "cat ../../../Comm/Api.cs | grep case | grep -vw grep";
+                }
+                var resStr = exeFileName.Bash();
+                var resArr = resStr.Split("\n");
+                var list = resArr.Where(p => p.Trim().Length > 0).Select(p =>
+                {
+                    var st = p.IndexOf("\"");
+                    var ed = p.LastIndexOf("\"");
+                    if (st < 0 || ed < 0) return "";
+                    var ns = p.Substring(st + 1, ed - st - 1);
+                    return ns;
+                }).Where(p => p != "testnet" && p != "mainnet" && p.Trim().Length > 0).ToList();
+                return new JArray { new JObject { { "count", list.Count }, { "list", new JArray { list } } } };
+            } catch(Exception ex)
+            {
+                return new JArray { new JObject { { "exeFileName", exeFileName},{ "error", ex.ToString()} } };
             }
-            var resStr = exeFileName.Bash();
-            var resArr = resStr.Split("\n");
-            var list = resArr.Select(p =>
-            {
-                var st = p.IndexOf("\"");
-                var ed = p.LastIndexOf("\"");
-                var ns = p.Substring(st + 1, ed - st + 1);
-                return ns;
-            }).Where(p=>p != "testnet" && p != "mainnet").ToList();
-
-
-            return new JArray { new JObject { { "exeFileName", exeFileName},{ "count", list.Count},{ "list", new JArray { list } } } };
+            
         }
     }
 }

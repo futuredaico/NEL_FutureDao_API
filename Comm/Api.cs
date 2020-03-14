@@ -21,11 +21,12 @@ namespace NEL.Comm
         private UserService us;
         private UserServiceV3 usV3;
         private ProjService ps;
+        private FutureService fs2;
         private DiscussService ds;
         private FinanceService fs;
         private RewardService rs;
         private MoloService ms;
-        private FutureService fs2;
+        private ShellService ss;
 
         public Api(string node)
         {
@@ -34,7 +35,6 @@ namespace NEL.Comm
             switch (netnode)
             {
                 case "testnet":
-                    
                     rs = new RewardService
                     {
                         mh = mh,
@@ -84,6 +84,13 @@ namespace NEL.Comm
                         oss = oss,
                         bucketName = mh.bucketName_testnet
                     };
+                    fs2 = new FutureService
+                    {
+                        mh = mh,
+                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
+                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
+                        us = usV3,
+                    };
                     ms = new MoloService
                     {
                         mh = mh,
@@ -91,14 +98,12 @@ namespace NEL.Comm
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
                         us = usV3,
                         oss = oss,
-                        bucketName = mh.bucketName_testnet
+                        bucketName = mh.bucketName_testnet,
+                        fs = fs2
                     };
-                    fs2 = new FutureService
+                    ss = new ShellService
                     {
-                        mh = mh,
-                        dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
-                        dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
-                        us = usV3,
+                        exeFileName = mh.exeFileName
                     };
                     break;
                 case "mainnet":
@@ -1010,6 +1015,9 @@ namespace NEL.Comm
                         result = us.checkUsername(req.@params[0].ToString());
                         break;
                     */
+                    case "listMethod":
+                        result = ss.listMethod();
+                        break;
                     //
                     case "getnodetype":
                         result = new JArray { new JObject { { "nodeType", netnode } } };

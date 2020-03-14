@@ -417,18 +417,6 @@ namespace NEL_FutureDao_API.Service
         private bool checkNormalLen(string ss) => ss.Length <= 40;
         private bool checkUpdateLen(string title) => title.Length <= 80;
 
-        private bool isValidUser(string userId)
-        {
-            string findStr = new JObject { { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "emailVerifyState", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return false;
-
-            var state = queryRes[0]["emailVerifyState"].ToString();
-            return state == EmailState.hasVerify
-                    || state == EmailState.hasVerifyAtChangeEmail
-                    || state == EmailState.hasVerifyAtResetPassword;
-        }
         private bool hasRepeatProj(string projName, string projTitle)
         {
             string findStr = new JObject { { "$or", new JArray{
@@ -456,6 +444,23 @@ namespace NEL_FutureDao_API.Service
         private string getProjIdFilter(string projId)
         {
             return MongoFieldHelper.toFilter(new string[] { projId, projId.toTemp() }, "projId").ToString();
+        }
+        //
+        public void processProjTeam(string projId, string address, long time, string invitorId="", bool isAdmin=true)
+        {
+            var userId = DaoInfoHelper.genUserId(address, address, address);
+            var rInfo = isAdmin ? TeamRole.Admin : TeamRole.Member;
+            var newdata = new JObject {
+                { "projId", projId },
+                { "userId", userId},
+                { "address", address },
+                { "role", rInfo.name},
+                { "roleLevel", rInfo.level},
+                { "invitorId", invitorId },
+                { "time", time},
+                { "lastUpdateTime", time},
+            }.ToString();
+            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, newdata);
         }
         
         //2. invite + delete + modify + query
@@ -581,7 +586,6 @@ namespace NEL_FutureDao_API.Service
             }).ToArray();
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
         }
-        //
         
         //3. create + delete + modify + query
         public JArray createUpdate(Controller controller, string projId, string updateTitle, string updateDetail)
@@ -677,6 +681,8 @@ namespace NEL_FutureDao_API.Service
             }
             if (updateJo.Count > 0)
             {
+                updateJo.Add("lastUpdatorId", userId);
+                updateJo.Add("lastUpdateTime", TimeHelper.GetTimeStamp());
                 string findStr = new JObject { { "projId", projId }, { "updateId", updateId } }.ToString();
                 var updateStr = new JObject { { "$set", updateJo } }.ToString();
                 mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, updateStr, findStr);
@@ -696,29 +702,30 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.T_HaveNotPermissionModifyUpdate);
             }
-            //
-            var findStr = new JObject {{ "updateId", updateId } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
-            if (queryRes.Count == 0)
-            {
-                return getErrorRes(DaoReturnCode.S_InvalidUpdateId);
-            }
 
-            var item = queryRes[0];
-            var updateTitle = item["updateTitle"].ToString();
-            var updateDetail = item["updateDetail"].ToString();
-            var lastUpdateTime = item["lastUpdateTime"].ToString();
-            getUserInfo(userId, out string username, out string headIconUrl);
+            var match = new JObject { { "$match", new JObject { { "projId", projId }, { "updateId", updateId } } } }.ToString();
+            var lookup = new JObject { { "$lookup", new JObject {
+                {"from", userInfoCol },
+                {"localField", "lastUpdatorId"},
+                {"foreignField", "userId" },
+                {"as","us" }
+            } } }.ToString();
+            var list = new List<string> { match, lookup };
+            var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, list);
+            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.S_InvalidUpdateId);
 
-            var res = new JObject {
-                { "updateTitle",updateTitle},
-                { "updateDetail",updateDetail},
-                { "lastUpdateTime",lastUpdateTime},
-                { "username",username},
-                { "headIconUrl",headIconUrl},
-                { "isMember",isMember},
-            };
-            return getRes(res); ;
+            var item = (JObject)queryRes[0];
+            var data = new JObject();
+            data["projId"] = item["projId"];
+            data["updateId"] = item["updateId"];
+            data["updateTitle"] = item["updateTitle"];
+            data["updateDetail"] = item["updateDetail"];
+            data["lastUpdateTime"] = item["lastUpdateTime"];
+            data["username"] = ((JArray)item["us"])[0]["username"].ToString();
+            data["headIconUrl"] = ((JArray)item["us"])[0]["headIconUrl"].ToString();
+            data["isMember"] = isMember;
+
+            return getRes(data);
         }
         public JArray queryUpdateList(Controller controller, string projId, int pageNum, int pageSize)
         {
@@ -756,72 +763,103 @@ namespace NEL_FutureDao_API.Service
         }
 
 
-        // ---------------->
-        public JArray queryUpdateOld(string projId, string updateId, string userId/*游客为空串*/)
+        // 4.首页展示
+        public JArray queryProjList() { return null; /*与moloch共用*/}
+        public JArray queryProjDetail(Controller controller, string projId)
         {
-            string findStr = new JObject { { "projId", projId }, { "updateId", updateId } }.ToString();
-            string fieldStr = new JObject { { "updateTitle", 1 }, { "updateDetail", 1 }, { "lastUpdatorId", 1 }, { "lastUpdateTime", 1 }, { "time", 1 }, { "discussCount", 1 }, { "zanCount", 1 }, { "_id", 0 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0)
-            {
-                return getRes();
-            }
+            // 无需权限, 游客亦可查看
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
-            var lastUpdatorId = item["lastUpdatorId"].ToString();
-            getUserInfo(lastUpdatorId, out string username, out string headIconUrl);
-            bool isMember = isProjMember(projId, userId);
-            long rank = getUpdateRank(projId, long.Parse(item["time"].ToString()));
-            item["username"] = username;
-            item["headIconUrl"] = headIconUrl;
-            item["isMember"] = isMember;
-            item["rank"] = rank;
-            var res = (JObject)item;
-            res.Remove("time");
+            us.getUserInfo(controller, out string code, out string userId);
+            getStarState(projId, userId, out bool isStar, out bool isJoin);
+            item["isStar"] = isStar;
+            item["isJoin"] = isJoin;
+            item["hasIssueAmt"] = "0";
+            item["hasSellAmt"] = "0";
+            item["hasSupport"] = "0";
+            item["fundReservePoolTotal"] = "0";
+            if (getProjFinanceInfo(projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal))
+            {
+                item["hasIssueAmt"] = hasIssueAmt;
+                item["hasSellAmt"] = hasSellAmt;
+                item["hasSupport"] = hasSupport;
+                item["fundReservePoolTotal"] = fundReservePoolTotal;
+            }
+            item["type"] = "";
+            item["platform"] = "";
+            item["fundName"] = "";
+            if (getProjFinanceType(projId, out string type, out string platform, out string fundName))
+            {
+                item["type"] = type;
+                item["platform"] = platform;
+                item["fundName"] = fundName;
+            }
+            return getRes(item);
+        }
+        public JArray queryProjUpdateList(string projId, int pageNum=1, int pageSize=10)
+        {
+            // 无需权限, 游客亦可查看
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", count},{ "list", new JArray()} });
+
+            var sortStr = new JObject { { "time", -1 } }.ToString();
+            var skip = pageSize * (pageNum - 1);
+            var limit = pageSize;
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr, sortStr, skip, limit);
+            if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var list = queryRes.Select(p => {
+                var data = new JObject();
+                data["projId"] = p["projId"];
+                data["updateId"] = p["updateId"];
+                data["updateTitle"] = p["updateTitle"];
+                data["updateDetail"] = p["updateDetail"];
+                data["lastUpdateTime"] = p["lastUpdateTime"];
+                data["discussCount"] = p["discussCount"];
+                data["zanCount"] = p["zanCount"];
+                return data;
+            }).ToArray();
+            var res = new JObject { { "count", count }, { "list", new JArray { list } } };
             return getRes(res);
         }
-        public JArray queryUpdateForAll(string projId, string updateId, string userId/*游客为空串*/)
+        public JArray queryProjUpdateDetail(Controller controller, string projId, string updateId)
         {
-            var match1 = new JObject { { "$match", new JObject { { "projId", projId }, { "updateId", updateId } } } }.ToString();
-            var match = JsonConvert.SerializeObject(new JObject { { "$match", new JObject { { "projId", projId }, { "updateId", updateId } } } });
+            // 无需权限, 游客亦可查看
+            var match = new JObject { { "$match", new JObject { { "projId", projId }, { "updateId", updateId } } } }.ToString();
             var lookup = new JObject { { "$lookup", new JObject {
                 {"from", userInfoCol },
                 {"localField", "lastUpdatorId"},
                 {"foreignField", "userId" },
                 {"as","us" }
             } } }.ToString();
-            var project = new JObject { { "$project", new JObject {
-                { "updateTitle", 1 },
-                { "updateDetail", 1 },
-                { "lastUpdatorId", 1 },
-                { "lastUpdateTime", 1 },
-                { "time", 1 },
-                { "discussCount", 1 },
-                { "zanCount", 1 },
-                { "us.username",1},
-                { "us.headIconUrl",1},
-                { "_id", 0 }
-            } } }.ToString();
-            var list = new List<string> { match, lookup, project };
+            var list = new List<string> { match, lookup};
             var queryRes = mh.Aggregate(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, list);
-            if (queryRes.Count == 0)
-            {
-                return getRes();
-            }
+            if (queryRes.Count == 0) return getErrorRes(DaoReturnCode.S_InvalidUpdateId);
 
             var item = (JObject)queryRes[0];
-            item["username"] = ((JArray)item["us"])[0]["username"].ToString();
-            item["headIconUrl"] = ((JArray)item["us"])[0]["headIconUrl"].ToString();
-            item.Remove("us");
+            var data = new JObject();
+            data["projId"] = item["projId"];
+            data["updateId"] = item["updateId"];
+            data["updateTitle"] = item["updateTitle"];
+            data["updateDetail"] = item["updateDetail"];
+            data["lastUpdateTime"] = item["lastUpdateTime"];
+            data["discussCount"] = item["discussCount"];
+            data["zanCount"] = item["zanCount"];
+            data["username"] = ((JArray)item["us"])[0]["username"].ToString();
+            data["headIconUrl"] = ((JArray)item["us"])[0]["headIconUrl"].ToString();
 
+            us.getUserInfo(controller, out string code, out string userId);
             bool isMember = isProjMember(projId, userId);
-            long rank = getUpdateRank(projId, long.Parse(item["time"].ToString()));
             bool isZan = isZanUpdate(updateId, userId);
-            item["isMember"] = isMember;
-            item["rank"] = rank;
-            item["isZan"] = isZan;
-            item.Remove("time");
-            return getRes(item);
+            long rank = getUpdateRank(projId, long.Parse(item["lastUpdateTime"].ToString()));
+            data["isMember"] = isMember;
+            data["isZan"] = isZan;
+            data["rank"] = rank;
+            return getRes(data);
         }
 
         private bool isZanUpdate(string updateId, string userId)
@@ -829,21 +867,6 @@ namespace NEL_FutureDao_API.Service
             if (userId == "") return false;
             string findStr = new JObject { { "updateId", updateId }, { "userId", userId } }.ToString();
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateStarInfoCol, findStr) > 0;
-        }
-
-        private bool getUserInfo(string userId, out string username, out string headIconUrl)
-        {
-            username = "";
-            headIconUrl = "";
-            string findStr = new JObject { { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "username", 1 }, { "headIconUrl", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return false;
-
-            var item = queryRes[0];
-            username = item["username"].ToString();
-            headIconUrl = item["headIconUrl"].ToString();
-            return true;
         }
         private long getUpdateRank(string projId, long time)
         {
@@ -853,6 +876,8 @@ namespace NEL_FutureDao_API.Service
         }
 
 
+
+        // ------------------------------------------------------------------------------->
         public JArray commitProjAudit(string userId, string accessToken, string projId)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
@@ -893,112 +918,6 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
 
-
-        //
-        public JArray queryProjList(int pageNum = 1, int pageSize = 10)
-        {
-            var findStr = "{}";
-            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
-            if (count == 0)
-            {
-                return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
-            }
-
-            var sortStr = "{'hasTokenCount':-1}";
-            var skip = pageSize * (pageNum - 1);
-            var limit = pageSize;
-            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, sortStr, skip, limit);
-            if(queryRes.Count == 0)
-            {
-                return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
-            }
-
-            var list = queryRes.Select(p => {
-                var jo = new JObject();
-                jo["projId"] = p["projId"];
-                jo["projName"] = p["projName"];
-                jo["projBrief"] = p["projBrief"];
-                jo["projType"] = p["projType"];
-
-                var projState = p["projState"];
-                if(projState != null && projState.ToString() == ProjState.IdeaPub)
-                {
-                    jo["projState"] = p["projState"];
-                } else
-                {
-                    jo["tokenTotal"] = p["tokenTotal"];
-                    jo["hasTokenCount"] = p["hasTokenCount"];
-                }
-                return jo;
-            });
-
-            return getRes(new JObject { { "count", count }, { "list", queryRes } });
-        }
-        public JArray queryProjDetail(Controller controller, string projId)
-        {
-            // TODO: 
-            //if (!us.getUserInfo(controller, out string code, out string userId, out string userAddress))
-            //{
-            //}
-            var userId = "";
-            var findStr = new JObject { { "projId", projId } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
-            if (queryRes.Count == 0) return getRes();
-
-            var item = queryRes[0];
-            getStarState(projId, userId, out bool isStar, out bool isSupport);
-            item["isSupport"] = isSupport;
-            item["isStar"] = isStar;
-            item["hasIssueAmt"] = "0";
-            item["hasSellAmt"] = "0";
-            item["hasSupport"] = "0";
-            item["fundReservePoolTotal"] = "0";
-            if (getProjFinanceInfo(projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal))
-            {
-                item["hasIssueAmt"] = hasIssueAmt;
-                item["hasSellAmt"] = hasSellAmt;
-                item["hasSupport"] = hasSupport;
-                item["fundReservePoolTotal"] = fundReservePoolTotal;
-            }
-            item["type"] = "";
-            item["platform"] = "";
-            item["fundName"] = "";
-            if (getProjFinanceType(projId, out string type, out string platform, out string fundName))
-            {
-                item["type"] = type;
-                item["platform"] = platform;
-                item["fundName"] = fundName;
-            }
-            return getRes(item);
-        }
-        //
-        public JArray queryProjUpdateList(Controller controller, string projId)
-        {
-            return null;
-        }
-        public JArray queryProjUpdateDetail(Controller controller, string projId, string updateId)
-        {
-            return null;
-        }
-
-
-        //
-        public JArray manualAddProj(Controller controller, string projName, string projTitle, string projType, string projVersion, string projDetail, string projCoverUrl, string minimumTribute, string approved, string email, string summoner, string molochDaoAddress, JArray contractHash)
-        {
-            /*
-             * 
-查子合约哈希
-查支持资产哈希
-查资产 哈希/精度/名称
-查 时间段/投票期长度/公示期长度/取消期长度/押金/奖励
-             */
-            //
-
-            return getRes();
-        }
-
-
-        // ------------------------------------------------------------------------------->
         private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal)
         {
             hasIssueAmt = "";
@@ -1032,19 +951,19 @@ namespace NEL_FutureDao_API.Service
             tokenName = queryRes[0]["fundName"].ToString();
             return true;
         }
-        private void getStarState(string projId, string userId, out bool isStar, out bool isSupport)
+        private void getStarState(string projId, string userId, out bool isStar, out bool isJoin)
         {
             isStar = false;
-            isSupport = false;
+            isJoin = false;
             if (userId == "") return;
 
             string findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
-            string fieldStr = new JObject { { "starState", 1 }, { "supportState", 1 } }.ToString();
+            string fieldStr = new JObject { { "starState", 1 }, { "joinState", 1 } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr, fieldStr);
             if (queryRes.Count == 0) return;
 
             isStar = queryRes[0]["starState"].ToString() == StarState.StarYes;
-            isSupport = queryRes[0]["supportState"].ToString() == StarState.SupportYes;
+            isJoin = queryRes[0]["joinState"].ToString() == StarState.SupportYes;
             return;
         }
         public JArray getProjInfo(string projId)
@@ -1172,20 +1091,7 @@ namespace NEL_FutureDao_API.Service
             return getRes();
         }
 
-        // 
-        public JArray getStarMangeProjCount(string userId, string accessToken)
-        {
-            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
-            {
-                return getErrorRes(code);
-            }
-            string findStr = new JObject { { "userId", userId }, { "starState", StarState.StarYes } }.ToString();
-            long starCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
-            findStr = new JObject { { "userId", userId }, { "emailVerifyState", EmailState.hasVerifyAtInvitedYes } }.ToString();
-            long manageCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
-
-            return getRes(new JObject { { "starCount", starCount }, { "manageCount", manageCount } });
-        }
+        //
     }
 
     class TeamRole

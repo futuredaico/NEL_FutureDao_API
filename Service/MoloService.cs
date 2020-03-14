@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NEL.NNS.lib;
-using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
 using Newtonsoft.Json.Linq;
@@ -31,6 +30,7 @@ namespace NEL_FutureDao_API.Service
         public string bucketName { get; set; }
 
         public UserServiceV3 us { get; set; }
+        public FutureService fs { get; set; }
 
         //
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
@@ -42,9 +42,10 @@ namespace NEL_FutureDao_API.Service
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
             if (count == 0) return getRes(new JObject { { "count", 0},{ "list", new JArray()} });
 
-            var fieldStr = new JObject { { "_id",0} }.ToString();
             var sortStr = "{'time':-1}";
-            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr, sortStr, (pageNum - 1) * pageSize, pageSize, fieldStr);
+            var skip = pageSize * (pageNum - 1);
+            var limit = pageSize;
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr, sortStr, skip, limit);
             if(queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 
             var rr = queryRes.Select(p => {
@@ -72,19 +73,6 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "count", count }, { "list", new JArray { rr } } };
             return getRes(res);
         }
-        private long getProjTeamCount(string projId, out long shares)
-        {
-            shares = 0;
-            var findStr = new JObject { { "projId", projId },{ "proposalQueueIndex",""} }.ToString();
-            var fieldStr = new JObject { { "balance", 1 }}.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr, fieldStr);
-            var count = queryRes.Where(p => long.Parse(p["balance"].ToString()) > 0).ToArray().Count();
-            if(count > 0)
-            {
-                shares = queryRes.Sum(p => long.Parse(p["balance"].ToString()));
-            }
-            return count;
-        }
         public JArray getProjDetail(string projId)
         {
             var findStr = new JObject { { "projId", projId } }.ToString();
@@ -92,8 +80,6 @@ namespace NEL_FutureDao_API.Service
             if (queryRes.Count == 0) return getRes();
 
             var item = queryRes[0];
-
-            //var members = getProjTeamCount(item["projId"].ToString(), out long shares); // 后面会废弃
             var jo = new JObject();
             jo.Add("projId", item["projId"]);
             jo.Add("projName", item["projName"]);
@@ -103,17 +89,14 @@ namespace NEL_FutureDao_API.Service
             jo.Add("projDetail", item["projDetail"]);
             jo.Add("projCoverUrl", item["projCoverUrl"]);
             jo.Add("officailWeb", item["officailWeb"]);
-            var fundTotal = "0";// getProjFundTotal(projId);// 后面会废弃
-            jo.Add("fundTotal", fundTotal);
+            // 单资产 -> 多资产
+            //var fundTotal = getProjFundTotal(projId);// 后面会废弃
+            jo.Add("fundTotal", "0");
+            jo.Add("valuePerShare", "0");
             jo.Add("fundSymbol", item["fundSymbol"]);
             jo.Add("shares", item["tokenTotal"]);
             jo.Add("member", item["hasTokenCount"]);
             //
-            //var val = shares == 0 ? 0 : decimal.Parse(fundTotal) / new decimal(shares);
-            //var valStr = val.ToString();
-            //if (valStr.Contains(".")) valStr = val.ToString("0.0000");
-            //jo.Add("valuePerShare", valStr); ;
-            jo.Add("valuePerShare", "0"); ;
             jo.Add("discussCount", item["discussCount"]);
             jo.Add("votePeriod", item["votePeriod"]);
             jo.Add("notePeriod", item["notePeriod"]);
@@ -132,26 +115,6 @@ namespace NEL_FutureDao_API.Service
             
             jo.Add("summonerAddress", item["summonerAddress"]);
             return getRes(jo);
-        }
-        private string getProjFundTotal(string projId)
-        {
-            var findStr = new JObject { { "projId", projId }, { "$or", new JArray { new JObject { { "event", "ProcessProposal" } }, new JObject { { "event", "Withdrawal" } } } } }.ToString();
-            //var fieldStr = new JObject { { "tokenTribute", 1 }, { "event", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, "molonotifyinfos", findStr); //, fieldStr);
-            if (queryRes.Count == 0) return "0";
-
-            return queryRes.Sum(p => {
-
-                if (p["event"].ToString() == "Withdrawal") {
-                    return -1*decimal.Parse(p["amount"].ToString());
-                }
-                if(p["didPass"].ToString() == "1")
-                {
-                    return decimal.Parse(p["tokenTribute"].ToString());
-                }
-                return 0;
-            }).ToString();
-
         }
         public JArray getProjFundTotal(string projId, int pageNum, int pageSize)
         {
@@ -253,60 +216,9 @@ namespace NEL_FutureDao_API.Service
             });
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
         }
-        private string getProposalType(JToken jt)
-        {
-            var zeroAddr = "0x0000000000000000000000000000000000000000";
-            var tributeToken = jt["tributeToken"].ToString();
-            var paymentToken = jt["paymentToken"].ToString();
-            if(tributeToken == zeroAddr && paymentToken == zeroAddr)
-            {
-                return ProposalType.PickOutMember;
-            }
-            if(tributeToken != zeroAddr && paymentToken == zeroAddr)
-            {
-                return ProposalType.AddSupportToken;
-            }
-            if (tributeToken != zeroAddr && paymentToken != zeroAddr)
-            {
-                return ProposalType.ApplyShare;
-            }
-            return "notKwon";
-        }
-        private string getProposalTypeOld(JToken jt)
-        {
-            var sharesRequested = jt["sharesRequested"].ToString();
-            var lootRequested = jt["lootRequested"].ToString();
-            var paymentRequested = jt["paymentRequested"].ToString();
-            var tributeOffered = jt["tributeOffered"].ToString();
-            var tributeToken = jt["tributeToken"].ToString();
-
-            var proposalType = ProposalType.PickOutMember;
-            var sum = decimal.Parse(sharesRequested) + decimal.Parse(lootRequested) + decimal.Parse(paymentRequested);
-            if (sum > 0)
-            {
-                proposalType = ProposalType.ApplyShare;
-            }
-            else
-            {
-                if (tributeToken != null && tributeToken.ToString() != "0x0000000000000000000000000000000000000000")
-                {
-                    proposalType = ProposalType.AddSupportToken;
-                }
-                else
-                {
-                    proposalType = ProposalType.PickOutMember;
-                }
-            }
-            return proposalType;
-        }
-        private bool isVote(string projId, string proposalIndex, string address)
-        {
-            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", proposalIndex }, { "address", address } }.ToString();
-            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr) > 0;
-        }
         public JArray getProjProposalDetail(string projId, string proposalIndex)
         {
-            var findStr = new JObject { {"projId", projId},{ "proposalIndex", proposalIndex } }.ToString();
+            var findStr = new JObject { { "projId", projId }, { "proposalIndex", proposalIndex } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloProposalInfoCol, findStr);
             if (queryRes.Count == 0) return getRes();
 
@@ -324,7 +236,7 @@ namespace NEL_FutureDao_API.Service
             //jo.Add("sharesRequested", item["sharesRequested"]);
             //jo.Add("tokenTribute", item["tokenTribute"]);
             //jo.Add("tokenTributeSymbol", getProjFundSymbol(projId));
-            if(item["lootRequested"] != null)
+            if (item["lootRequested"] != null)
             {
                 jo.Add("version", "2.0");
                 jo.Add("sharesRequested", item["sharesRequested"]);
@@ -336,7 +248,8 @@ namespace NEL_FutureDao_API.Service
                 jo.Add("paymentRequestedSymbol", item["paymentRequestedSymbol"]);
                 jo.Add("startingPeriod", item["startingPeriod"]);
                 jo.Add("proposalType", getProposalType(item));
-            } else
+            }
+            else
             {
                 jo.Add("version", "1.0");
                 jo.Add("sharesRequested", item["sharesRequested"]);
@@ -357,7 +270,31 @@ namespace NEL_FutureDao_API.Service
             jo.Add("applicantHeadIconUrl", headIconUrl);
             return getRes(jo);
         }
-        
+        private string getProposalType(JToken jt)
+        {
+            var zeroAddr = "0x0000000000000000000000000000000000000000";
+            var tributeToken = jt["tributeToken"].ToString();
+            var paymentToken = jt["paymentToken"].ToString();
+            if(tributeToken == zeroAddr && paymentToken == zeroAddr)
+            {
+                return ProposalType.PickOutMember;
+            }
+            if(tributeToken != zeroAddr && paymentToken == zeroAddr)
+            {
+                return ProposalType.AddSupportToken;
+            }
+            if (tributeToken != zeroAddr && paymentToken != zeroAddr)
+            {
+                return ProposalType.ApplyShare;
+            }
+            return "notKwon";
+        }
+        private bool isVote(string projId, string proposalIndex, string address)
+        {
+            var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", proposalIndex }, { "address", address } }.ToString();
+            return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr) > 0;
+        }
+        // 投票
         public JArray getVoteInfo(string projId, string proposalIndex, string address)
         {
             address = address.ToLower();
@@ -451,6 +388,7 @@ namespace NEL_FutureDao_API.Service
             }).ToArray();
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
         }
+
 
         #region 评论接口
         //molo.discuss
@@ -970,10 +908,12 @@ namespace NEL_FutureDao_API.Service
             string txid = ""
             )
         {
+            // 权限
             if (!us.getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
             }
+            // 资产处理
             if (fundHash.ToLower().Trim().Length == 0
                 && fundInfoArr.Count == 0)
             {
@@ -982,12 +922,14 @@ namespace NEL_FutureDao_API.Service
             // 兼容v1 和 v2 版本
             if (fundHash.ToLower().Length == 0)
             {
+                // v2 多资产
                 fundHash = fundInfoArr[0]["hash"].ToString();
                 fundSymbol = fundInfoArr[0]["symbol"].ToString();
                 fundDecimals = long.Parse(fundInfoArr[0]["decimals"].ToString());
             }
             else
             {
+                // v1 单资产
                 if (fundInfoArr.All(p => p["hash"].ToString().ToLower() != fundHash.ToLower()))
                 {
                     fundInfoArr.Add(new JObject {
@@ -1018,6 +960,63 @@ namespace NEL_FutureDao_API.Service
             var projId = DaoInfoHelper.genProjId(projName, projVersion);
             var now = TimeHelper.GetTimeStamp();
             var date = DateTime.Now;
+            summonerAddress = summonerAddress.ToLower();
+
+            // 项目哈希表
+            processProjHash(projId, fundDecimals, contractHashs);
+            // 项目代币表 + 项目资金表
+            processProjTokenAndFund(projId, fundInfoArr);
+            // 项目股份余额表
+            processProjSummonerEventBalance(projId, summonerAddress);
+            // 项目团队表 --> 管理中列表显示
+            processProjTeam(projId, summonerAddress, now);
+            //
+            // 项目信息表
+            var newdata = new JObject {
+                {"projId", projId},
+                {"projName", projName},
+                {"projType", "moloch"},
+                {"projBrief", projBrief},
+                {"projDetail", projDetail},
+                {"projCoverUrl", projCoverUrl},
+                {"projVersion", projVersion},
+                {"officailWeb", officailWeb},
+                {"fundHash", fundHash},
+                {"fundSymbol", fundSymbol},
+                {"fundDecimals", fundDecimals},
+                {"periodDuration", periodDuration},
+                {"votingPeriodLength", votingPeriodLength},
+                {"notingPeriodLength", notingPeriodLength},
+                {"cancelPeriodLength", cancelPeriodLength},
+                {"votePeriod", periodDuration * votingPeriodLength},
+                {"notePeriod", periodDuration * notingPeriodLength},
+                {"cancelPeriod", periodDuration * cancelPeriodLength},
+                {"proposalDeposit", proposalDeposit},
+                {"proposalReward", proposalReward},
+                {"summonerAddress", summonerAddress},
+                {"contractHashs", contractHashs},
+                {"fundInfoArr", fundInfoArr},
+                {"txid", txid},
+                {"userId", userId},
+                {"lastUpdatorId", userId},
+                {"tokenTotal", 1},
+                {"hasTokenCount", 1},
+                {"discussCount", 0},
+                {"emergencyExitWait",emergencyExitWait},
+                {"bailoutWait", bailoutWait},
+                {"startTime", startBlockTime},
+                {"time", now},
+                {"lastUpdateTime", now}
+            }.ToString();
+            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, newdata);
+
+            // pendings
+            processPendings(projId, contractHashs);
+
+            return getRes(new JObject { { "projId", projId } });
+        }
+        private void processProjHash(string projId, long fundDecimals, JArray contractHashs)
+        {
             foreach (var item in contractHashs)
             {
                 var findStr = new JObject { { "contractHash", item["hash"].ToString().ToLower() } }.ToString();
@@ -1029,8 +1028,8 @@ namespace NEL_FutureDao_API.Service
                         { "contractHash", item["hash"].ToString().ToLower()},
                         { "fundDecimals", fundDecimals},
                         { "type", "1"},
-                        { "createdAt", date},
-                        { "updatedAt", date},
+                        //{ "createdAt", date},
+                        //{ "updatedAt", date},
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
                 }
@@ -1041,11 +1040,15 @@ namespace NEL_FutureDao_API.Service
                         { "contractName", item["name"]},
                         { "fundDecimals", fundDecimals},
                         { "type", "1"},
-                        { "updatedAt", date},
+                        //{ "createdAt", date},
+                        //{ "updatedAt", date},
                     } } }.ToString();
                     mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, updateStr, findStr);
                 }
             }
+        }
+        private void processProjTokenAndFund(string projId, JArray fundInfoArr)
+        {
             foreach (var item in fundInfoArr)
             {
                 var findStr = new JObject { { "fundHash", item["hash"] } }.ToString();
@@ -1074,52 +1077,8 @@ namespace NEL_FutureDao_API.Service
                 }
 
             }
-
-            //
-            processSummonerEventBalance(projId, summonerAddress.ToLower());
-            //
-
-            //
-            var newdata = new JObject {
-                {"projId", projId},
-                {"projName", projName},
-                {"projType", "moloch"},
-                {"projBrief", projBrief},
-                {"projDetail", projDetail},
-                {"projCoverUrl", projCoverUrl},
-                {"projVersion", projVersion},
-                {"officailWeb", officailWeb},
-                {"fundHash", fundHash},
-                {"fundSymbol", fundSymbol},
-                {"fundDecimals", fundDecimals},
-                {"periodDuration", periodDuration},
-                {"votingPeriodLength", votingPeriodLength},
-                {"notingPeriodLength", notingPeriodLength},
-                {"cancelPeriodLength", cancelPeriodLength},
-                {"votePeriod", periodDuration * votingPeriodLength},
-                {"notePeriod", periodDuration * notingPeriodLength},
-                {"cancelPeriod", periodDuration * cancelPeriodLength},
-                {"proposalDeposit", proposalDeposit},
-                {"proposalReward", proposalReward},
-                {"summonerAddress", summonerAddress.ToLower()},
-                {"contractHashs", contractHashs},
-                {"fundInfoArr", fundInfoArr},
-                {"txid", txid},
-                {"userId", userId},
-                {"lastUpdatorId", userId},
-                {"tokenTotal", 1},
-                {"hasTokenCount", 1},
-                {"discussCount", 0},
-                {"emergencyExitWait",emergencyExitWait},
-                {"bailoutWait", bailoutWait},
-                {"startTime", startBlockTime},
-                {"time", now},
-                {"lastUpdateTime", now}
-            }.ToString();
-            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, newdata);
-            return getRes(new JObject { { "projId", projId } });
         }
-        private void processSummonerEventBalance(string projId, string address)
+        private void processProjSummonerEventBalance(string projId, string address)
         {
             var sharesBalance = 1L;
             var now = TimeHelper.GetTimeStamp();
@@ -1146,7 +1105,22 @@ namespace NEL_FutureDao_API.Service
                 return;
             }
         }
-
+        private void processProjTeam(string projId, string summonerAddress, long time)
+        {
+            fs.processProjTeam(projId, summonerAddress, time);
+        }
+        private void processPendings(string projId, JArray contractHashs, bool waitRunAfter = false)
+        {
+            foreach(var item in contractHashs)
+            {
+                var jo = new JObject();
+                jo["projId"] = projId;
+                jo["contractHash"] = item["hash"];
+                jo["contractName"] = item["name"];
+                jo["approved"] = waitRunAfter ? ApprovedState.WaitRunAfter : ApprovedState.OverRunAfter;
+                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, "pendingapprovalprojs", jo.ToString());
+            }
+        }
 
 
         public JArray queryContractInfo(Controller controller, string projId)
@@ -1394,6 +1368,29 @@ namespace NEL_FutureDao_API.Service
             return getRes(res);
         }
 
+
+        // 手动添加moloch项目
+        public JArray manualAddProj(Controller controller, string projName, string projTitle, string projType, string projVersion, string projDetail, string projCoverUrl, string minimumTribute, string approved, string email, string summoner, string molochDaoAddress, JArray contractHash)
+        {
+            /*
+             * 
+查子合约哈希
+查支持资产哈希
+查资产 哈希/精度/名称
+查 时间段/投票期长度/公示期长度/取消期长度/押金/奖励
+
+            入库项目表
+            入库项目团队表 ---> 管理中项目列表显示
+            入库项目哈希表
+            入库项目股份余额表
+            入库项目资金余额表
+            入库项目代币信息表
+             */
+            //
+
+            return getRes();
+        }
+
     }
 
     class ProposalType
@@ -1401,5 +1398,11 @@ namespace NEL_FutureDao_API.Service
         public const string ApplyShare = "0";           // 申请股份
         public const string AddSupportToken = "1";      // 添加代币
         public const string PickOutMember = "2";        // 剔除成员
+    }
+    class ApprovedState
+    {
+        public const string WaitRunAfter = "4";
+        public const string OverRunAfter = "5";
+        public const string ActingRunAfter = "6";
     }
 }

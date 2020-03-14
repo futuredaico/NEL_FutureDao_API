@@ -23,6 +23,7 @@ namespace NEL.NNS.lib
         public string bucketName_mainnet = string.Empty;
         public string ossUrlPrefix = string.Empty;
         public string prefixPassword = string.Empty;
+        public string exeFileName = string.Empty;
         //
         public string startMonitorFlag = string.Empty;
 
@@ -47,6 +48,8 @@ namespace NEL.NNS.lib
             bucketName_mainnet = config["bucketName_mainnet"];
             ossUrlPrefix = config["ossUrlPrefix"];
             prefixPassword = config["prefixPassword"];
+            //
+            exeFileName = config["exeFileName"];
             //
             startMonitorFlag = config["startMonitorFlag"];
         }

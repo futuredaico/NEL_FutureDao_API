@@ -316,17 +316,29 @@ namespace NEL_FutureDao_API.Service
             {
                 return getRes(new JObject { { "count", count }, { "list", new JArray { } } });
             }
-            var res = queryRes.Select(p =>
-            {
+            var res = queryRes.Select(p => {
                 var ps = ((JArray)p["ps"])[0];
-                return new JObject {
+                //
+                var jo = new JObject {
                     { "projId", ps["projId"]},
                     { "projName", ps["projName"]},
                     { "projBrief", ps["projBrief"]},
                     { "projCoverUrl", ps["projCoverUrl"]},
-                    { "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
-                    { "hasTokenCount", ps["hasTokenCount"]}
+                    //{ "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
+                    //{ "hasTokenCount", ps["hasTokenCount"]}
                 };
+                jo["projState"] = "";
+                if (ps["projState"] != null)
+                {
+                    jo["projState"] = ps["projState"];
+                }
+                jo["shares"] = 0;
+                if (ps["tokenTotal"] != null)
+                {
+                    jo["shares"] = ps["tokenTotal"];
+                }
+                jo["members"] = ps["hasTokenCount"];
+                return jo;
             }).ToArray();
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
         }
@@ -358,14 +370,27 @@ namespace NEL_FutureDao_API.Service
 
             var res = queryRes.Select(p => {
                 var ps = ((JArray)p["ps"])[0];
-                return new JObject {
+                //
+                var jo = new JObject {
                     { "projId", ps["projId"]},
                     { "projName", ps["projName"]},
                     { "projBrief", ps["projBrief"]},
                     { "projCoverUrl", ps["projCoverUrl"]},
-                    { "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
-                    { "hasTokenCount", ps["hasTokenCount"]}
+                    //{ "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
+                    //{ "hasTokenCount", ps["hasTokenCount"]}
                 };
+                jo["projState"] = "";
+                if (ps["projState"] != null)
+                {
+                    jo["projState"] = ps["projState"];
+                }
+                jo["shares"] = 0;
+                if (ps["tokenTotal"] != null)
+                {
+                    jo["shares"] = ps["tokenTotal"];
+                }
+                jo["members"] = ps["hasTokenCount"];
+                return jo;
             }).ToArray();
 
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
@@ -398,14 +423,27 @@ namespace NEL_FutureDao_API.Service
 
             var res = queryRes.Select(p => {
                 var ps = ((JArray)p["ps"])[0];
-                return new JObject {
+                //
+                var jo =  new JObject {
                     { "projId", ps["projId"]},
                     { "projName", ps["projName"]},
                     { "projBrief", ps["projBrief"]},
                     { "projCoverUrl", ps["projCoverUrl"]},
-                    { "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
-                    { "hasTokenCount", ps["hasTokenCount"]}
+                    //{ "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
+                    //{ "hasTokenCount", ps["hasTokenCount"]}
                 };
+                jo["projState"] = "";
+                if (ps["projState"] != null)
+                {
+                    jo["projState"] = ps["projState"];
+                }
+                jo["shares"] = 0;
+                if (ps["tokenTotal"] != null)
+                {
+                    jo["shares"] = ps["tokenTotal"];
+                }
+                jo["members"] = ps["hasTokenCount"];
+                return jo;
             }).ToArray();
 
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });

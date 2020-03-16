@@ -31,7 +31,7 @@ namespace NEL_FutureDao_API.Service
         public string projFinanceCol { get; set; } = "daoprojfinanceinfos";
         public string projFinanceFundPoolCol { get; set; } = "daoprojfinancefundpoolinfos";
 
-        public string projBalanceInfoCol { get; set; } = "";
+        public string projBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
 
         public string tokenUrl { get; set; } = "";
         public OssHelper oss { get; set; }
@@ -878,6 +878,24 @@ namespace NEL_FutureDao_API.Service
 
 
         // ------------------------------------------------------------------------------->
+        public JArray queryJoinOrgAddressList(Controller controller)
+        {
+            return null;
+        }
+        public JArray saveContractInfo(Controller controller,
+            string address, string fundHash/*融资代币*/, string fundName/*融资名称*/,
+            string tokenName/*项目代币名称*/, string tokenSymbol/*项目代币符号*/,
+            string reserveRundRatio/*储备比例*/, JArray faucetJA/*水龙头列表*/, 
+            string adminAddress, string txid
+            )
+        {
+            return null;
+        }
+
+
+
+
+
         public JArray commitProjAudit(string userId, string accessToken, string projId)
         {
             if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))

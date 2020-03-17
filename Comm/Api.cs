@@ -224,6 +224,9 @@ namespace NEL.Comm
                             );
                         break;
                     //
+                    case "queryProjCount":
+                        result = fs2.queryProjCount(controller);
+                        break;
                     case "queryProjListAtJoin":
                         result = fs2.queryProjListAtJoin(controller);
                         break;

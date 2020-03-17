@@ -307,7 +307,7 @@ namespace NEL_FutureDao_API.Service
                 {"foreignField", "projId" },
                 { "as", "ps"}
             } } }.ToString();
-            var sort = new JObject { { "$sort", new JObject { { "lastUpdatTime", 1 } } } }.ToString();
+            var sort = new JObject { { "$sort", new JObject { { "lastUpdateTime", -1 } } } }.ToString();
             var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
             var limit = new JObject { { "$limit", pageSize } }.ToString();
             var list = new List<string> { match, sort, skip, limit, lookup };
@@ -355,7 +355,7 @@ namespace NEL_FutureDao_API.Service
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 
             var match = new JObject { { "$match", findJo } }.ToString();
-            var sort = new JObject { { "$sort", new JObject { { "time", 1 } } } }.ToString();
+            var sort = new JObject { { "$sort", new JObject { { "lastUpdateTime", -1 } } } }.ToString();
             var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
             var limit = new JObject { { "$limit", pageSize } }.ToString();
             var lookup = new JObject { { "$lookup", new JObject {
@@ -408,7 +408,7 @@ namespace NEL_FutureDao_API.Service
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 
             var match = new JObject { { "$match", findJo } }.ToString();
-            var sort = new JObject { { "$sort", new JObject { { "time", 1 } } } }.ToString();
+            var sort = new JObject { { "$sort", new JObject { { "lastUpdateTime", -1 } } } }.ToString();
             var skip = new JObject { { "$skip", pageSize * (pageNum - 1) } }.ToString();
             var limit = new JObject { { "$limit", pageSize } }.ToString();
             var lookup = new JObject { { "$lookup", new JObject {
@@ -447,6 +447,26 @@ namespace NEL_FutureDao_API.Service
             }).ToArray();
 
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
+        }
+        public JArray queryProjCount(Controller controller)
+        {
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "userId", userId } }.ToString();
+            var manageCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+            var starCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
+            findStr = new JObject { { "userId", userId },{ "balance", new JObject { { "$gt", 0} } } }.ToString();
+            var joinCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projBalanceInfoCol, findStr);
+
+            var res = new JObject {
+                { "joinCount", joinCount},
+                { "starCount", starCount},
+                { "manageCount", manageCount},
+            };
+            return getRes(res);
         }
 
         private bool checkProjNameLen(string name) => name.Length <= 30;

@@ -322,6 +322,7 @@ namespace NEL_FutureDao_API.Service
                 var jo = new JObject {
                     { "projId", ps["projId"]},
                     { "projName", ps["projName"]},
+                    { "projType", ps["projType"] },
                     { "projBrief", ps["projBrief"]},
                     { "projCoverUrl", ps["projCoverUrl"]},
                     //{ "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
@@ -374,6 +375,7 @@ namespace NEL_FutureDao_API.Service
                 var jo = new JObject {
                     { "projId", ps["projId"]},
                     { "projName", ps["projName"]},
+                    { "projType", ps["projType"] },
                     { "projBrief", ps["projBrief"]},
                     { "projCoverUrl", ps["projCoverUrl"]},
                     //{ "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},
@@ -427,6 +429,7 @@ namespace NEL_FutureDao_API.Service
                 var jo =  new JObject {
                     { "projId", ps["projId"]},
                     { "projName", ps["projName"]},
+                    { "projType", ps["projType"] },
                     { "projBrief", ps["projBrief"]},
                     { "projCoverUrl", ps["projCoverUrl"]},
                     //{ "tokenTotal", ps["tokenTotal"] == null ? 0:int.Parse(ps["tokenTotal"].ToString())},

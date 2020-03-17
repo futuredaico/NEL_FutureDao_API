@@ -228,13 +228,20 @@ namespace NEL.Comm
                         result = fs2.queryProjCount(controller);
                         break;
                     case "queryProjListAtJoin":
-                        result = fs2.queryProjListAtJoin(controller);
+                        result = fs2.queryProjListAtJoin(controller, 
+                            int.Parse(req.@params[0].ToString()),
+                            int.Parse(req.@params[1].ToString())
+                            );
                         break;
                     case "queryProjListAtStar":
-                        result = fs2.queryProjListAtStar(controller);
+                        result = fs2.queryProjListAtStar(controller,
+                            int.Parse(req.@params[0].ToString()),
+                            int.Parse(req.@params[1].ToString()));
                         break;
                     case "queryProjListAtManage":
-                        result = fs2.queryProjListAtManage(controller);
+                        result = fs2.queryProjListAtManage(controller,
+                            int.Parse(req.@params[0].ToString()),
+                            int.Parse(req.@params[1].ToString()));
                         break;
                     case "queryProj":
                         result = fs2.queryProj(controller,

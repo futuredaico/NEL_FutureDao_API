@@ -403,7 +403,7 @@ namespace NEL_FutureDao_API.Service
                 return getErrorRes(code);
             }
 
-            var findJo = new JObject { { "address", userAddress }, { "balance", new JObject { { "$gt", 0 } } } };
+            var findJo = new JObject { { "address", userAddress }, { "type", "0"}, { "balance", new JObject { { "$gt", 0 } } } };
             var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projBalanceInfoCol, findJo.ToString());
             if (count == 0) return getRes(new JObject { { "count", 0 }, { "list", new JArray() } });
 
@@ -458,7 +458,7 @@ namespace NEL_FutureDao_API.Service
             var findStr = new JObject { { "userId", userId } }.ToString();
             var manageCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
             var starCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
-            findStr = new JObject { { "address", userAddress },{ "balance", new JObject { { "$gt", 0} } } }.ToString();
+            findStr = new JObject { { "address", userAddress }, { "type", "0" }, { "balance", new JObject { { "$gt", 0} } } }.ToString();
             var joinCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projBalanceInfoCol, findStr);
 
             var res = new JObject {

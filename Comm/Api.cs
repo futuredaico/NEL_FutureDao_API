@@ -168,6 +168,13 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // 
+                    case "getFuturedaoProjDetail":
+                        result = fs2.queryProjDetail(controller, req.@params[0].ToString());
+                        break;
+                    case "getFuturedaoProjList":
+                        // 共用getProjList();
+                        break;
                     //
                     case "queryUpdateList":
                         result = fs2.queryUpdateList(controller,

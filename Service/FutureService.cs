@@ -451,14 +451,14 @@ namespace NEL_FutureDao_API.Service
         public JArray queryProjCount(Controller controller)
         {
             // 权限
-            if (!us.getUserInfo(controller, out string code, out string userId))
+            if (!us.getUserInfo(controller, out string code, out string userId, out string userAddress))
             {
                 return getErrorRes(code);
             }
             var findStr = new JObject { { "userId", userId } }.ToString();
             var manageCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
             var starCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
-            findStr = new JObject { { "userId", userId },{ "balance", new JObject { { "$gt", 0} } } }.ToString();
+            findStr = new JObject { { "address", userAddress },{ "balance", new JObject { { "$gt", 0} } } }.ToString();
             var joinCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projBalanceInfoCol, findStr);
 
             var res = new JObject {

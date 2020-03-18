@@ -1107,7 +1107,7 @@ namespace NEL_FutureDao_API.Service
         }
         private void processProjTeam(string projId, string summonerAddress, long time)
         {
-            fs.processProjTeam(projId, summonerAddress, time);
+            //fs.processProjTeam(projId, summonerAddress, time);
         }
         private void processPendings(string projId, JArray contractHashs, bool waitRunAfter = false)
         {

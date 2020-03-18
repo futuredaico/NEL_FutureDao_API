@@ -168,11 +168,82 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    //
+                    case "queryRewardDetail":
+                        result = fs2.queryRewardDetail(
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "queryRewardList":
+                        result = fs2.queryRewardList(
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "getRewardInfo":
+                        result = fs2.getRewardInfo(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "saveRewardInfo":
+                        result = fs2.saveRewardInfo(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            JObject.Parse(req.@params[3].ToString())
+                            );
+                        break;
+                    case "getFContractInfo":
+                        result = fs2.getContractInfo(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "saveFContractInfo":
+                        result = fs2.saveContractInfo(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            JArray.Parse(req.@params[7].ToString()),
+                            req.@params[8].ToString(),
+                            req.@params[9].ToString()
+                            );
+                        break;
+                    case "queryJoinOrgAddressList":
+                        result = fs2.queryJoinOrgAddressList(controller,
+                            int.Parse(req.@params[0].ToString()),
+                            int.Parse(req.@params[1].ToString())
+                            );
+                        break;
                     // 
-                    case "getFuturedaoProjDetail":
+                    case "queryProjUpdateDetail":
+                        result = fs2.queryProjUpdateDetail(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "queryProjUpdateList":
+                        result = fs2.queryProjUpdateList(
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "queryProjTeam":
+                        result = fs2.queryProjTeam(
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString())
+                            );
+                        break;
+                    case "queryProjDetail"://getProjdetailV3
                         result = fs2.queryProjDetail(controller, req.@params[0].ToString());
                         break;
-                    case "getFuturedaoProjList":
+                    case "queryFProjList":
                         // 共用getProjList();
                         break;
                     //

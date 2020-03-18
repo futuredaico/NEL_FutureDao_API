@@ -1393,6 +1393,7 @@ namespace NEL_FutureDao_API.Service
         public const string CrowdFunding = "crowdfunding";  // 众筹中，已去掉
         public const string Trading = "trading";       // 交易中
         public const string ClearUp = "clearup";       // 清退
+        public const string DAICO = "daico";    //DAICO融资
     }
     class ProjSubState
     {

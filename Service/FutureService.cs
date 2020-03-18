@@ -1107,6 +1107,7 @@ namespace NEL_FutureDao_API.Service
                         || p["distributeTimeFixYes"] == null
                         || p["distributeTimeFixNot"] == null
                         || p["distributeWay"] == null
+                        || p["tokenSymbol"] == null
                         || p["note"] == null)
                     {
                         return false;
@@ -1177,6 +1178,7 @@ namespace NEL_FutureDao_API.Service
                         && item["distributeTimeFixYes"].ToString() == tItem["distributeTimeFixYes"].ToString()
                         && item["distributeTimeFixNot"].ToString() == tItem["distributeTimeFixNot"].ToString()
                         && item["distributeWay"].ToString() == tItem["distributeWay"].ToString()
+                        && item["tokenSymbol"].ToString() == tItem["tokenSymbol"].ToString()
                         ;
                     if (eq) continue;
                     findStr = new JObject { { "rewardId", item["rewardId"] } }.ToString();
@@ -1253,6 +1255,7 @@ namespace NEL_FutureDao_API.Service
                 jo["distributeTimeFixYes"] = p["distributeTimeFixYes"];
                 jo["distributeTimeFixNot"] = p["distributeTimeFixNot"];
                 jo["distributeWay"] = p["distributeWay"];
+                jo["tokenSymbol"] = p["tokenSymbol"];
                 jo["note"] = p["note"];
                 return jo;
             }).ToArray();

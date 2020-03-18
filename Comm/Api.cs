@@ -209,8 +209,7 @@ namespace NEL.Comm
                             req.@params[5].ToString(),
                             req.@params[6].ToString(),
                             JArray.Parse(req.@params[7].ToString()),
-                            req.@params[8].ToString(),
-                            req.@params[9].ToString()
+                            req.@params[8].ToString()
                             );
                         break;
                     case "queryJoinOrgAddressList":

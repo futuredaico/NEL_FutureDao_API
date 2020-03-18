@@ -1019,7 +1019,7 @@ namespace NEL_FutureDao_API.Service
             string fundHash/*融资代币*/, string fundName/*融资名称*/,
             string tokenName/*项目代币名称*/, string tokenSymbol/*项目代币符号*/,
             string reserveRundRatio/*储备比例*/, JArray faucetJA/*水龙头列表*/, 
-            string adminAddress, string txid
+            string txid
             )
         {
             // 权限
@@ -1043,7 +1043,6 @@ namespace NEL_FutureDao_API.Service
             data["tokenSymbol"] = tokenSymbol;
             data["reserveRundRatio"] = reserveRundRatio;
             data["faucetJA"] = faucetJA;
-            data["adminAddress"] = adminAddress;
             data["txid"] = txid;
             data["time"] = now;
             data["lastUpdateTime"] = now;
@@ -1082,7 +1081,6 @@ namespace NEL_FutureDao_API.Service
             res["tokenSymbol"] = item["tokenSymbol"];
             res["reserveRundRatio"] = item["reserveRundRatio"];
             res["faucetJA"] = item["faucetJA"];
-            res["adminAddress"] = item["adminAddress"];
             return getRes(res);
         }
         public JArray saveRewardInfo(Controller controller, 

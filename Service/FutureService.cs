@@ -1075,7 +1075,7 @@ namespace NEL_FutureDao_API.Service
             res["projId"] = item["projId"];
             res["recvAddress"] = item["recvAddress"];
             res["fundHash"] = item["fundHash"];
-            res["fundName"] = item["fundName"];
+            res["fundSymbol"] = item["fundSymbol"];
             res["fundDecimals"] = item["fundDecimals"];
             res["tokenName"] = item["tokenName"];
             res["tokenSymbol"] = item["tokenSymbol"];

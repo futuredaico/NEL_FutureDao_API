@@ -843,6 +843,7 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject();
             res["projId"] = item["projId"];
             res["projName"] = item["projName"];
+            res["projTitle"] = item["projTitle"];
             res["projType"] = item["projType"];
             res["projVersion"] = "";
             if(item["projVersion"] != null)

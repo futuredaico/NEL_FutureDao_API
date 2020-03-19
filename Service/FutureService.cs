@@ -841,6 +841,7 @@ namespace NEL_FutureDao_API.Service
             getStarState(projId, userId, out bool isStar, out bool isJoin);
 
             var res = new JObject();
+            res["projId"] = item["projId"];
             res["projName"] = item["projName"];
             res["projType"] = item["projType"];
             res["projVersion"] = "";
@@ -848,13 +849,18 @@ namespace NEL_FutureDao_API.Service
             {
                 res["projVersion"] = item["projVersion"];
             }
+            res["projState"] = item["projState"];
             res["projBrief"] = item["projBrief"];
             res["projDetail"] = item["projDetail"];
+            res["projCoverUrl"] = item["projCoverUrl"];
+            res["projVideoUrl"] = item["projVideoUrl"];
             res["officialWeb"] = item["officialWeb"];
             res["isStar"] = isStar;
             res["contractAddress"] = "";
-            res["creatorAddress"] = "";
-            
+            res["creatorAddress"] = ""; // 融资后新增
+            res["discussCount"] = item["discussCount"];
+            res["updateCount"] = item["updateCount"];
+
             return getRes(res);
         }
         public JArray queryProjTeam(string projId, int pageNum=1, int pageSize=10)
@@ -1321,6 +1327,42 @@ namespace NEL_FutureDao_API.Service
             res["note"] = item["note"];
             return getRes(res);
         }
+
+        //
+        public JArray saveSettlementPerMonthInfo(Controller controller, string projId, string txid)
+        {
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            // 
+            if (!hasStartFinance(projId))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            // 管理权限
+            if (!isProjMember(projId, userId))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            var findStr = new JObject { { "lastSettlementTxid", txid } }.ToString();
+            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, findStr) > 0)
+            {
+                return getErrorRes(DaoReturnCode.RepeatOperate);
+            }
+            findStr = new JObject { { "projId", projId } }.ToString();
+            var updateStr = new JObject { { "$set", new JObject {
+                { "lastSettlementTxid", txid},
+                { "lastSettlementTime", TimeHelper.GetTimeStamp() },
+                { "lastSettlementRes", "" }
+            } } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, updateStr, findStr);
+            return getRes();
+        }
+
+
+
 
         private bool checkConnectorName(string name) => name.Length <= 40;
         private bool checkConnectorTel(string tel) => tel.Length <= 40;

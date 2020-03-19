@@ -814,6 +814,8 @@ namespace NEL_FutureDao_API.Service
 
             var list = queryRes.Select(p => {
                 return new JObject {
+                    {"projId", p["projId"]},
+                    {"updateId", p["updateId"]},
                     {"updateTitle", p["updateTitle"]},
                     { "updateDetail",p["updateDetail"]},
                     { "lastUpdateTime",p["lastUpdateTime"]}

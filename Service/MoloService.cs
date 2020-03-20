@@ -1370,25 +1370,98 @@ namespace NEL_FutureDao_API.Service
 
 
         // 手动添加moloch项目
-        public JArray manualAddProj(Controller controller, string projName, string projTitle, string projType, string projVersion, string projDetail, string projCoverUrl, string minimumTribute, string approved, string email, string summoner, string molochDaoAddress, JArray contractHash)
+        public JArray manualAddProj(Controller controller,
+            string projVersion, string projName, string projBrief, string projDetail, string projCoverUrl, string officailWeb,
+            string fundHash, string fundSymbol, long fundDecimals,
+            long periodDuration, /* 单位:秒 */
+            long votingPeriodLength, long notingPeriodLength, long cancelPeriodLength, /* 单位:个 */
+            string proposalDeposit, string proposalReward, string summonerAddress, JArray contractHashs
+            )
         {
-            /*
-             * 
-查子合约哈希
-查支持资产哈希
-查资产 哈希/精度/名称
-查 时间段/投票期长度/公示期长度/取消期长度/押金/奖励
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            // 资产处理
+            if (fundHash.ToLower().Trim().Length == 0)
+            {
+                return getErrorRes(DaoReturnCode.C_InvalidParamFmt);
+            }
+            // 封面
+            if (!DaoInfoHelper.StoreFile(oss, bucketName, "", projCoverUrl, out string newHeadIconUrl))
+            {
+                return getErrorRes(DaoReturnCode.headIconNotUpload);
+            }
+            projCoverUrl = newHeadIconUrl;
+            // 详情中url处理
+            var nlist = projDetail.catchFileUrl();
+            foreach (var ii in nlist)
+            {
+                if (ii.Trim().Length == 0) continue;
+                if (!DaoInfoHelper.StoreFile(oss, bucketName, "", ii, out string newUrl))
+                {
+                    return getErrorRes(DaoReturnCode.headIconNotUpload);
+                }
+                projDetail = projDetail.Replace(ii, newUrl);
+            }
 
-            入库项目表
-            入库项目团队表 ---> 管理中项目列表显示
-            入库项目哈希表
-            入库项目股份余额表
-            入库项目资金余额表
-            入库项目代币信息表
-             */
-            
+            var projId = DaoInfoHelper.genProjId(projName, projVersion);
+            var now = TimeHelper.GetTimeStamp();
+            var date = DateTime.Now;
+            summonerAddress = summonerAddress.ToLower();
 
-            return getRes();
+            // 项目哈希表
+            processProjHash(projId, fundDecimals, contractHashs);
+            // 项目代币表 + 项目资金表
+            processProjTokenAndFund(projId, new JArray { new JObject {
+                { "hash", fundHash },
+                { "symbol", fundSymbol },
+                { "decimals", fundDecimals }
+            } });
+            // 项目股份余额表
+            processProjSummonerEventBalance(projId, summonerAddress);
+            // 项目团队表 --> 管理中列表显示
+            processProjTeam(projId, summonerAddress, now);
+            //
+            // 项目信息表
+            var newdata = new JObject {
+                {"projId", projId},
+                {"projName", projName},
+                {"projType", "moloch"},
+                {"projBrief", projBrief},
+                {"projDetail", projDetail},
+                {"projCoverUrl", projCoverUrl},
+                {"projVersion", projVersion},
+                {"officailWeb", officailWeb},
+                {"fundHash", fundHash},
+                {"fundSymbol", fundSymbol},
+                {"fundDecimals", fundDecimals},
+                {"periodDuration", periodDuration},
+                {"votingPeriodLength", votingPeriodLength},
+                {"notingPeriodLength", notingPeriodLength},
+                {"cancelPeriodLength", cancelPeriodLength},
+                {"votePeriod", periodDuration * votingPeriodLength},
+                {"notePeriod", periodDuration * notingPeriodLength},
+                {"cancelPeriod", periodDuration * cancelPeriodLength},
+                {"proposalDeposit", proposalDeposit},
+                {"proposalReward", proposalReward},
+                {"summonerAddress", summonerAddress},
+                {"contractHashs", contractHashs},
+                {"userId", userId},
+                {"lastUpdatorId", userId},
+                {"tokenTotal", 1},
+                {"hasTokenCount", 1},
+                {"discussCount", 0},
+                {"time", now},
+                {"lastUpdateTime", now}
+            }.ToString();
+            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, newdata);
+
+            // pendings
+            processPendings(projId, contractHashs, true);
+
+            return getRes(new JObject { { "projId", projId } });
         }
 
     }

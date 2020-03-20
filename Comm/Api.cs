@@ -168,6 +168,19 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // 
+                    case "cancelStarProj":
+                        result = fs2.cancelStarProj(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "startStarProj":
+                        result = fs2.startStarProj(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "":
+                        break;
                     //
                     case "queryRewardDetail":
                         result = fs2.queryRewardDetail(

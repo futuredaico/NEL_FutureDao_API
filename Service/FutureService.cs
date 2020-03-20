@@ -1414,10 +1414,6 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.S_InvalidProjId);
             }
-            if (queryRes[0]["startFinanceFlag"] == null)
-            {
-                return getErrorRes(DaoReturnCode.InvalidOperate);
-            }
             var starState = isCancel ? StarState.StarNot : StarState.StarYes;
             findStr = new JObject { { "projId", projId }, { "userId", userId } }.ToString();
             queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);

@@ -31,6 +31,7 @@ namespace NEL_FutureDao_API.Service
         public string projFinanceInfoCol { get; set; } = "daoprojfinanceinfos";
         public string projFinanceRewardInfoCol { get; set; } = "daoprojfinancerewardinfos";
         public string projFinanceFundPoolCol { get; set; } = "daoprojfinancefundpoolinfos";
+        public string projFinanceOrderInfoCol { get; set; } = "daoprojfinanceorderinfos";
 
         public string projBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
 
@@ -993,6 +994,7 @@ namespace NEL_FutureDao_API.Service
 
 
         // ------------------------------------------------------------------------------->
+        // 融资模块
         public JArray queryJoinOrgAddressList(Controller controller, int pageNum=1, int pageSize=10)
         {
             // 权限
@@ -1394,6 +1396,9 @@ namespace NEL_FutureDao_API.Service
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, updateStr, findStr);
             return getRes();
         }
+
+        // ------------------------------------------------------------------------------->
+        // 关注模块
         public JArray startStarProj(Controller controller, string projId)
         {
             return starYesOrNot(controller, projId);
@@ -1445,7 +1450,97 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
-        
+
+        // ------------------------------------------------------------------------------->
+        // 订单模块
+        public JArray addBuyOrder(Controller controller,
+            string projId,
+            string rewardId,
+            string amount,
+            string rewardAmount,
+            string connectorName,
+            string connectorTel,
+            string connectorAddress,
+            string connectorEmail,
+            string connectorMessage
+            )
+        {
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "rewardId", rewardId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceRewardInfoCol, findStr);
+            if (queryRes.Count == 0
+                || queryRes[0]["activeState"].ToString() != RewardActiveState.Valid_Yes
+                || queryRes[0]["projId"].ToString() != projId
+                )
+            {
+                // 无效回报id
+                return getErrorRes(DaoReturnCode.Invalid_RewardId);
+            }
+            var item = queryRes[0];
+
+            if (!getProjTokenName(projId, out string tokenName, out string fundName))
+            {
+                return getErrorRes(DaoReturnCode.S_InvalidProjId);
+            }
+            string projName = getProjName(projId);
+            var orderId = DaoInfoHelper.genProjRewardOrderId(projId, rewardId, userId);
+            var now = TimeHelper.GetTimeStamp();
+            var newdata = new JObject {
+                { "projId", projId},
+                { "projName", projName},
+                { "rewardId", rewardId},
+                { "orderId", orderId},
+                { "orderState", OrderState.WaitingPay},
+                { "rewardName", item["rewardName"]},
+                { "price", item["price"]},
+                { "priceUnit", fundName },
+                { "amount", amount},
+                { "totalCost", (decimal.Parse(item["price"].ToString()) * decimal.Parse(amount)).ToString()},
+                { "totalCostUnit", fundName },
+                { "rewardAmount", rewardAmount },
+                { "rewardAmountUnit", tokenName },
+                { "senderNote", ""},
+                { "connectorName", connectorName},
+                { "connectorTel", connectorTel},
+                { "connectorEmail", connectorEmail},
+                { "connectorAddress", connectorAddress},
+                { "connectorMessage", connectorMessage},
+                { "distributeWay", item["distributeWay"]},
+                { "txid", ""},
+                { "userId", userId},
+                { "originInfo", item},
+                { "markTime",  now},
+                { "time",  now},
+                { "lastUpdateTime", now}
+            };
+            mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, newdata);
+            return getRes(new JObject { { "orderId", orderId }, { "time", now } });
+        }
+        private bool getProjTokenName(string projId, out string tokenSymbol, out string fundSymbol)
+        {
+            tokenSymbol = "";
+            fundSymbol = "";
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var fieldStr = new JObject { { "tokenSymbol", 1 }, { "fundSymbol", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return false;
+
+            var item = queryRes[0];
+            tokenSymbol = item["tokenSymbol"].ToString();
+            fundSymbol = item["fundSymbol"].ToString();
+            return true;
+        }
+        private string getProjName(string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var fieldStr = new JObject { { "projName", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return "";
+            return queryRes[0]["projName"].ToString();
+        }
 
 
         private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal)

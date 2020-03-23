@@ -90,6 +90,8 @@ namespace NEL.Comm
                         dao_mongodbConnStr = mh.dao_mongodbConnStr_testnet,
                         dao_mongodbDatabase = mh.dao_mongodbDatabase_testnet,
                         us = usV3,
+                        oss = oss,
+                        bucketName = mh.bucketName_testnet
                     };
                     ms = new MoloService
                     {

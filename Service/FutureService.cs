@@ -465,6 +465,7 @@ namespace NEL_FutureDao_API.Service
             }
             var findStr = new JObject { { "userId", userId } }.ToString();
             var manageCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projTeamInfoCol, findStr);
+            findStr = new JObject { { "userId", userId },{ "starState", StarState.StarYes } }.ToString();
             var starCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projStarInfoCol, findStr);
             findStr = new JObject { { "address", userAddress }, { "type", "0" }, { "balance", new JObject { { "$gt", 0} } } }.ToString();
             var joinCount = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projBalanceInfoCol, findStr);

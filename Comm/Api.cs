@@ -101,7 +101,6 @@ namespace NEL.Comm
                         us = usV3,
                         oss = oss,
                         bucketName = mh.bucketName_testnet,
-                        fs = fs2
                     };
                     ss = new ShellService
                     {

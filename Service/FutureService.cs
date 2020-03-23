@@ -34,15 +34,15 @@ namespace NEL_FutureDao_API.Service
         public string projFinanceOrderInfoCol { get; set; } = "daoprojfinanceorderinfos";
 
         public string projBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
-
-        public string tokenUrl { get; set; } = "";
+        //
+        public UserServiceV3 us { get; set; }
         public OssHelper oss { get; set; }
         public string bucketName { get; set; }
-        public UserServiceV3 us { get; set; }
 
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
         private JArray getRes(JToken res = null) => RespHelper.getRes(res);
 
+        #region 项目/团队/更新模块
         //1. create + delete + modify + query
         public JArray createProj(Controller controller, string projName, string projTitle, string projBrief, string officialWeb, string projCoverUrl, string projVideoUrl, string projDetail)
         {
@@ -990,11 +990,9 @@ namespace NEL_FutureDao_API.Service
             long count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projUpdateInfoCol, findStr);
             return count + 1;
         }
+        #endregion
 
-
-
-        // ------------------------------------------------------------------------------->
-        // 融资模块
+        #region 融资模块
         public JArray queryJoinOrgAddressList(Controller controller, int pageNum=1, int pageSize=10)
         {
             // 权限
@@ -1396,9 +1394,9 @@ namespace NEL_FutureDao_API.Service
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, updateStr, findStr);
             return getRes();
         }
+        #endregion
 
-        // ------------------------------------------------------------------------------->
-        // 关注模块
+        #region 关注模块
         public JArray startStarProj(Controller controller, string projId)
         {
             return starYesOrNot(controller, projId);
@@ -1450,9 +1448,9 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
+        #endregion
 
-        // ------------------------------------------------------------------------------->
-        // 订单模块
+        #region 订单模块
         public JArray initBuyOrder(Controller controller,
             string projId,
             string rewardId,
@@ -1848,27 +1846,11 @@ namespace NEL_FutureDao_API.Service
             connectorTel = item["connectorTel"].ToString();
             return true;
         }
+        #endregion
 
-
-
-        private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal)
-        {
-            hasIssueAmt = "";
-            hasSellAmt = "";
-            hasSupport = "";
-            fundReservePoolTotal = "";
-
-            var findStr = new JObject { { "projId", projId } }.ToString();
-            var fieldStr = new JObject { { "hasOnBuyFundTotal", 1 }, { "hasIssueTokenTotal", 1 }, { "hasSupport", 1 }, { "fundReservePoolTotal", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceFundPoolCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return false;
-
-            hasIssueAmt = queryRes[0]["hasIssueTokenTotal"].ToString().formatDecimal();
-            hasSellAmt = queryRes[0]["hasOnBuyFundTotal"].ToString().formatDecimal().formatEth();
-            hasSupport = queryRes[0]["hasSupport"].ToString();
-            fundReservePoolTotal = queryRes[0]["fundReservePoolTotal"].ToString().formatDecimal().formatEth();
-            return true;
-        }
+        #region 评论模块
+        // 与molo共用
+        #endregion
     }
 
     class TeamRole

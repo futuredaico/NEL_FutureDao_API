@@ -26,16 +26,16 @@ namespace NEL_FutureDao_API.Service
         public string projMoloProposalDiscussInfoCol { get; set; } = "moloproposaldiscussinfos";
         public string projMoloProposalDiscussZanInfoCol { get; set; } = "moloproposaldiscusszaninfos";
         public string userInfoCol { get; set; } = "daouserinfos";
+        //
         public OssHelper oss { get; set; }
         public string bucketName { get; set; }
-
         public UserServiceV3 us { get; set; }
-        public FutureService fs { get; set; }
 
         //
         private JArray getErrorRes(string code) => RespHelper.getErrorRes(code);
         private JArray getRes(JToken res = null) => RespHelper.getRes(res);
-        // 项目
+        
+        #region 项目模块
         public JArray getProjList(int pageNum, int pageSize)
         {
             var findStr = "{}";
@@ -144,7 +144,9 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "price", "168.14" } };
             return getRes(res);
         }
-        // 提案
+        #endregion
+
+        #region 提案模块
         public JArray getProjProposalList(string projId, int pageNum, int pageSize, string address = "", string type="1")
         {
             var findJo = new JObject { { "projId", projId } };
@@ -294,7 +296,9 @@ namespace NEL_FutureDao_API.Service
             var findStr = new JObject { { "projId", projId }, { "proposalQueueIndex", proposalIndex }, { "address", address } }.ToString();
             return mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr) > 0;
         }
-        // 投票
+        #endregion
+
+        #region 投票模块
         public JArray getVoteInfo(string projId, string proposalIndex, string address)
         {
             address = address.ToLower();
@@ -388,9 +392,9 @@ namespace NEL_FutureDao_API.Service
             }).ToArray();
             return getRes(new JObject { { "count", count }, { "list", new JArray { rr } } });
         }
+        #endregion
 
-
-        #region 评论接口
+        #region 评论模块
         //molo.discuss
         private string getRootId(string preDiscussId, string discussId = "", bool isProposal=false)
         {
@@ -877,8 +881,8 @@ namespace NEL_FutureDao_API.Service
             return getRes(new JObject { { "count", count }, { "list", new JArray { res } } });
         }
         #endregion
-        
-        //
+
+        #region 合约模块
         public JArray querySupportVersion(Controller controller)
         {
             if (!us.getUserInfo(controller, out string code, out string userId))
@@ -1015,6 +1019,24 @@ namespace NEL_FutureDao_API.Service
 
             return getRes(new JObject { { "projId", projId } });
         }
+        public JArray queryContractInfo(Controller controller, string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            var res = new JObject {
+                { "periodDuration",item["periodDuration"]},
+                { "votingPeriodLength",item["votingPeriodLength"]},
+                { "notingPeriodLength",item["notingPeriodLength"]},
+                { "cancelPeriodLength",item["cancelPeriodLength"]},
+                { "emergencyExitWait",item["emergencyExitWait"]},
+                { "contractHashs",item["contractHashs"]}
+            };
+            return getRes(res);
+        }
+
         private void processProjHash(string projId, long fundDecimals, JArray contractHashs)
         {
             foreach (var item in contractHashs)
@@ -1122,24 +1144,6 @@ namespace NEL_FutureDao_API.Service
             }
         }
 
-
-        public JArray queryContractInfo(Controller controller, string projId)
-        {
-            var findStr = new JObject { { "projId", projId } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloInfoCol, findStr);
-            if (queryRes.Count == 0) return getRes();
-
-            var item = queryRes[0];
-            var res = new JObject {
-                { "periodDuration",item["periodDuration"]},
-                { "votingPeriodLength",item["votingPeriodLength"]},
-                { "notingPeriodLength",item["notingPeriodLength"]},
-                { "cancelPeriodLength",item["cancelPeriodLength"]},
-                { "emergencyExitWait",item["emergencyExitWait"]},
-                { "contractHashs",item["contractHashs"]}
-            };
-            return getRes(res);
-        }
         // 
         public JArray getTokenBalance(Controller controller, string projId, string address)
         {
@@ -1367,7 +1371,7 @@ namespace NEL_FutureDao_API.Service
             };
             return getRes(res);
         }
-
+        #endregion
 
         // 手动添加moloch项目
         public JArray manualAddProj(Controller controller,

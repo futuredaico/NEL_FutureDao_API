@@ -1453,7 +1453,7 @@ namespace NEL_FutureDao_API.Service
 
         // ------------------------------------------------------------------------------->
         // 订单模块
-        public JArray addBuyOrder(Controller controller,
+        public JArray initBuyOrder(Controller controller,
             string projId,
             string rewardId,
             string amount,
@@ -1579,13 +1579,13 @@ namespace NEL_FutureDao_API.Service
             mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, updateStr, findStr);
             return getRes();
         }
-        public JArray confirmDeliverBuyOrder(string userId, string accessToken, string projId, string orderId, string note)
+        public JArray confirmDeliverBuyOrder(Controller controller, string projId, string orderId, string note)
         {
-            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
             }
-
             if (!isProjMember(projId, userId, true))
             {
                 return getErrorRes(DaoReturnCode.InvalidOperate);
@@ -1610,10 +1610,11 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes();
         }
-
-        public JArray queryBuyOrderList(string userId, string accessToken, int pageNum, int pageSize)
+        // 买家
+        public JArray queryBuyOrderList(Controller controller, int pageNum, int pageSize)
         {
-            if (!TokenHelper.checkAccessToken(tokenUrl, userId, accessToken, out string code))
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
             {
                 return getErrorRes(code);
             }
@@ -1622,16 +1623,203 @@ namespace NEL_FutureDao_API.Service
             if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
 
             var sortStr = new JObject { { "time", -1 } }.ToString();
-            var fieldStr = MongoFieldHelper.toReturn(new string[] { "projId", "projName", "rewardId", "rewardName","orderId",
-                "price","priceUnit","amount","totalCost","totalCostUnit","orderState","time","connectorName"
-            }).ToString();
-            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, findStr, sortStr, pageSize * (pageNum - 1), pageSize, fieldStr);
+            var skip = pageSize * (pageNum - 1);
+            var limit = pageSize;
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, findStr, sortStr, skip, limit);
             if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", queryRes } });
 
-            return getRes(new JObject { { "count", count }, { "list", queryRes } });
+            var rlist = queryRes.Select(p => {
+                var jo = new JObject();
+                jo["projId"] = p["projId"];
+                jo["projName"] = p["projName"];
+                jo["rewardId"] = p["rewardId"];
+                jo["rewardName"] = p["rewardName"];
+                jo["orderId"] = p["orderId"];
+                jo["price"] = p["price"];
+                jo["priceUnit"] = p["priceUnit"];
+                jo["amount"] = p["amount"];
+                jo["totalCost"] = p["totalCost"];
+                jo["totalCostUnit"] = p["totalCostUnit"];
+                jo["orderState"] = p["orderState"];
+                jo["time"] = p["time"];
+                jo["connectorName"] = p["connectorName"];
+                return jo;
+            }).ToArray();
+            return getRes(new JObject { { "count", count }, { "list", new JArray { rlist } } });
         }
-        
+        public JArray queryBuyOrder(Controller controller, string projId, string orderId)
+        {
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            var findStr = new JObject { { "projId", projId }, { "orderId", orderId },{ "userId", userId} }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
 
+            var item = queryRes[0];
+            getProjRewardConnector(projId, out string senderName, out string senderTel);
+
+            var res = new JObject {
+                {"projId", projId},
+                {"projName", item["projName"]},
+                {"rewardId", item["rewardId"]},
+                {"rewardName", item["rewardName"]},
+                {"orderId", item["orderId"]},
+                {"orderState", item["orderState"]},
+                {"price", item["price"]},
+                {"priceUnit", item["priceUnit"]},
+                {"amount", item["amount"]},
+                {"totalCost", item["totalCost"]},
+                {"totalCostUnit", item["totalCostUnit"]},
+                {"time", item["time"]},
+                { "connectorName", item["connectorName"]},
+                { "connectorTel", item["connectorTel"]},
+                { "connectorAddress", item["connectorAddress"]},
+                { "connectorEmail", item["connectorEmail"]},
+                { "connectorMessage", item["connectorMessage"]},
+                { "senderName", senderName},
+                { "senderTel", senderTel},
+                { "senderNote", item["senderNote"]},
+            };
+            return getRes(res);
+        }
+        // 卖家
+        public JArray queryProjBuyOrderList(Controller controller, string projId, int pageNum, int pageSize, int isDelivery, string buyerName, string orderId, int orderType)
+        {
+            //卖家角度
+            //待发货/已发货
+            //收件人名称 + 买家名称 + 订单编号 + 订单类型(实物/虚拟)
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            // 管理员
+            if (!isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+            var findJo = new JObject { { "projId", projId } };
+            // 待发货/已发货(没有则默认待发货)
+            if (isDelivery == 0)
+            {
+                findJo.Add("orderState", OrderState.WaitingDeliverGoods);
+            }
+            else if (isDelivery == 1)
+            {
+                findJo.Add("orderState", OrderState.hasDeliverGoods);
+            }
+            else
+            {
+                findJo.Add("orderState", OrderState.WaitingDeliverGoods);
+            }
+
+            // 买价姓名(没有则为全部)
+            if (buyerName != "")
+            {
+                findJo.Add("connectorName", buyerName);
+            }
+
+            // 订单编号(已优先处理)
+            if(orderId.Trim().Length != 0)
+            {
+                findJo.Add("orderId", orderId);
+            }
+
+            // 订单发放类型(没有则为全部)
+            if (orderType == 0)
+            {
+                findJo.Add("distributeWay", SelectKey.Not);
+            }
+            else if (orderType == 1)
+            {
+                findJo.Add("distributeWay", SelectKey.Yes);
+            }
+            //
+            var findStr = findJo.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, findStr);
+            if (count == 0) return getRes(new JObject { { "count", count }, { "list", new JArray() } });
+
+            var sortStr = new JObject { { "time", -1 } }.ToString();
+            var skip = pageSize * (pageNum - 1);
+            var limit = pageSize;
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, findStr, sortStr, skip, limit);
+            if (queryRes.Count == 0) return getRes(new JObject { { "count", count }, { "list", queryRes } });
+
+            var rlist = queryRes.Select(p => {
+                var jo = new JObject();
+                jo["projId"] = p["projId"];
+                jo["projName"] = p["projName"];
+                jo["rewardId"] = p["rewardId"];
+                jo["rewardName"] = p["rewardName"];
+                jo["orderId"] = p["orderId"];
+                jo["price"] = p["price"];
+                jo["priceUnit"] = p["priceUnit"];
+                jo["amount"] = p["amount"];
+                jo["totalCost"] = p["totalCost"];
+                jo["totalCostUnit"] = p["totalCostUnit"];
+                jo["orderState"] = p["orderState"];
+                jo["time"] = p["time"];
+                jo["connectorName"] = p["connectorName"];
+                return jo;
+            }).ToArray();
+            return getRes(new JObject { { "count", count }, { "list", new JArray { rlist } } });
+        }
+        public JArray queryProjBuyOrder(Controller controller, string projId, string orderId)
+        {
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+            // 管理员
+            if (!isProjMember(projId, userId, true))
+            {
+                return getErrorRes(DaoReturnCode.InvalidOperate);
+            }
+
+            var findStr = new JObject { { "projId", projId }, { "orderId", orderId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceOrderInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            getProjRewardConnector(projId, out string senderName, out string senderTel);
+
+            var res = new JObject {
+                {"projId", projId},
+                {"projName", item["projName"]},
+                {"rewardId", item["rewardId"]},
+                {"rewardName", item["rewardName"]},
+                {"orderId", item["orderId"]},
+                {"orderState", item["orderState"]},
+                {"price", item["price"]},
+                {"priceUnit", item["priceUnit"]},
+                {"amount", item["amount"]},
+                {"totalCost", item["totalCost"]},
+                {"totalCostUnit", item["totalCostUnit"]},
+                {"time", item["time"]},
+                { "connectorName", item["connectorName"]},
+                { "connectorTel", item["connectorTel"]},
+                { "connectorAddress", item["connectorAddress"]},
+                { "connectorEmail", item["connectorEmail"]},
+                { "connectorMessage", item["connectorMessage"]},
+                { "senderName", senderName},
+                { "senderTel", senderTel},
+                { "senderNote", item["senderNote"]}
+            };
+            return getRes(res);
+        }
+
+        private string getProjName(string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var fieldStr = new JObject { { "projName", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return "";
+            return queryRes[0]["projName"].ToString();
+        }
         private bool getProjTokenName(string projId, out string tokenSymbol, out string fundSymbol)
         {
             tokenSymbol = "";
@@ -1646,14 +1834,21 @@ namespace NEL_FutureDao_API.Service
             fundSymbol = item["fundSymbol"].ToString();
             return true;
         }
-        private string getProjName(string projId)
+        private bool getProjRewardConnector(string projId, out string connectorName, out string connectorTel)
         {
+            connectorName = "";
+            connectorTel = "";
             var findStr = new JObject { { "projId", projId } }.ToString();
-            var fieldStr = new JObject { { "projName", 1 } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr, fieldStr);
-            if (queryRes.Count == 0) return "";
-            return queryRes[0]["projName"].ToString();
+            var fieldStr = new JObject { { "connectorName", 1 }, { "connectorTel", 1 } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, findStr, fieldStr);
+            if (queryRes.Count == 0) return false;
+
+            var item = queryRes[0];
+            connectorName = item["connectorName"].ToString();
+            connectorTel = item["connectorTel"].ToString();
+            return true;
         }
+
 
 
         private bool getProjFinanceInfo(string projId, out string hasIssueAmt, out string hasSellAmt, out string hasSupport, out string fundReservePoolTotal)

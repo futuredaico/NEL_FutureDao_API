@@ -170,6 +170,68 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    //
+                    case "queryProjBuyOrder":
+                        result = fs2.queryProjBuyOrder(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "queryProjBuyOrderList":
+                        result = fs2.queryProjBuyOrderList(controller,
+                            req.@params[0].ToString(),
+                            int.Parse(req.@params[1].ToString()),
+                            int.Parse(req.@params[2].ToString()),
+                            int.Parse(req.@params[3].ToString()),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            int.Parse(req.@params[6].ToString())
+                            );
+                        break;
+                    case "queryBuyOrder":
+                        result = fs2.queryBuyOrder(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "queryBuyOrderList":
+                        result = fs2.queryBuyOrderList(controller,
+                            int.Parse(req.@params[0].ToString()),
+                            int.Parse(req.@params[1].ToString())
+                            );
+                        break;
+                    case "confirmDeliverBuyOrder":
+                        result = fs2.confirmDeliverBuyOrder(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString()
+                            );
+                        break;
+                    case "cancelBuyOrder":
+                        result = fs2.cancelBuyOrder(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
+                    case "confirmBuyOrder":
+                        result = fs2.confirmBuyOrder(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
+                    case "initBuyOrder":
+                        result = fs2.initBuyOrder(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString(),
+                            req.@params[2].ToString(),
+                            req.@params[3].ToString(),
+                            req.@params[4].ToString(),
+                            req.@params[5].ToString(),
+                            req.@params[6].ToString(),
+                            req.@params[7].ToString(),
+                            req.@params[8].ToString()
+                            );
+                        break;
+                    
                     // 
                     case "cancelStarProj":
                         result = fs2.cancelStarProj(controller,

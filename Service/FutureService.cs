@@ -1022,6 +1022,7 @@ namespace NEL_FutureDao_API.Service
             var res = queryRes.Select(p => {
                 var ps = ((JArray)p["ps"])[0];
                 var jo = new JObject();
+                jo["projId"] = ps["projId"];
                 jo["projName"] = ps["projName"];
                 jo["molochHash"] = "";
                 if(ps["contractHashs"] != null)

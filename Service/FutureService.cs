@@ -1072,6 +1072,8 @@ namespace NEL_FutureDao_API.Service
             data["lastUpdateTime"] = now;
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, data.ToString());
 
+            // TODO: 入库合约哈希到pendings表中，以供爬虫使用
+
             //
             var findStr = new JObject { { "projId", projId } }.ToString();
             var updateStr = new JObject { { "$set", new JObject { { "startFinanceFlag", 1 },{ "projState", ProjState.DAICO } } } }.ToString();

@@ -25,6 +25,7 @@ namespace NEL_FutureDao_API.Service
         public string projMoloProposalInfoCol { get; set; } = "moloproposalinfos";
         public string projMoloProposalDiscussInfoCol { get; set; } = "moloproposaldiscussinfos";
         public string projMoloProposalDiscussZanInfoCol { get; set; } = "moloproposaldiscusszaninfos";
+        public string pendingInfoCol = "pendingapprovalprojs";
         public string userInfoCol { get; set; } = "daouserinfos";
         //
         public OssHelper oss { get; set; }
@@ -1048,24 +1049,12 @@ namespace NEL_FutureDao_API.Service
                         { "projId", projId},
                         { "contractName", item["name"]},
                         { "contractHash", item["hash"].ToString().ToLower()},
-                        { "fundDecimals", fundDecimals},
-                        { "type", "1"},
+                        //{ "fundDecimals", fundDecimals},
+                        //{ "type", "1"},
                         //{ "createdAt", date},
                         //{ "updatedAt", date},
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
-                }
-                else
-                {
-                    var updateStr = new JObject { { "$set", new JObject {
-                        { "projId", projId},
-                        { "contractName", item["name"]},
-                        { "fundDecimals", fundDecimals},
-                        { "type", "1"},
-                        //{ "createdAt", date},
-                        //{ "updatedAt", date},
-                    } } }.ToString();
-                    mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, updateStr, findStr);
                 }
             }
         }
@@ -1105,8 +1094,7 @@ namespace NEL_FutureDao_API.Service
             var sharesBalance = 1L;
             var now = TimeHelper.GetTimeStamp();
             var findStr = new JObject { { "projId", projId},{ "address", address } }.ToString();
-            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr);
-            if(queryRes.Count == 0)
+            if(mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloBalanceInfoCol, findStr) == 0)
             {
                 var newdata = new JObject {
                     { "projId", projId},
@@ -1133,14 +1121,21 @@ namespace NEL_FutureDao_API.Service
         }
         private void processPendings(string projId, JArray contractHashs, bool waitRunAfter = false)
         {
-            foreach(var item in contractHashs)
+            var approved = waitRunAfter ? ApprovedState.WaitRunAfter : ApprovedState.OverRunAfter;
+            foreach (var item in contractHashs)
             {
-                var jo = new JObject();
-                jo["projId"] = projId;
-                jo["contractHash"] = item["hash"];
-                jo["contractName"] = item["name"];
-                jo["approved"] = waitRunAfter ? ApprovedState.WaitRunAfter : ApprovedState.OverRunAfter;
-                mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, "pendingapprovalprojs", jo.ToString());
+                var findStr = new JObject { { "projId", projId }, { "contractHash", item["hash"] } }.ToString();
+                if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, pendingInfoCol, findStr) == 0)
+                {
+                    var data = new JObject {
+                        { "projId", projId}, 
+                        { "contractHash", item["hash"]}, 
+                        { "contractName", item["name"]}, 
+                        { "approved", approved}, 
+                    }.ToString();
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, pendingInfoCol, data);
+                }
+                    
             }
         }
 
@@ -1457,6 +1452,7 @@ namespace NEL_FutureDao_API.Service
                 {"tokenTotal", 1},
                 {"hasTokenCount", 1},
                 {"discussCount", 0},
+                {"manualAddFlag",1 }, // 手动添加标识
                 {"time", now},
                 {"lastUpdateTime", now}
             }.ToString();

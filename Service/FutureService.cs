@@ -34,6 +34,8 @@ namespace NEL_FutureDao_API.Service
         public string projFinanceOrderInfoCol { get; set; } = "daoprojfinanceorderinfos";
 
         public string projBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
+        public string projMoloHashInfoCol { get; set; } = "moloprojhashinfos";
+        public string pendingInfoCol = "pendingapprovalprojs";
         //
         public UserServiceV3 us { get; set; }
         public OssHelper oss { get; set; }
@@ -1043,7 +1045,7 @@ namespace NEL_FutureDao_API.Service
             string fundHash/*融资代币*/, string fundSymbol/*融资符号*/,
             string tokenName/*项目代币名称*/, string tokenSymbol/*项目代币符号*/,
             string reserveRundRatio/*储备比例*/, JArray faucetJA/*水龙头列表*/, 
-            string txid
+            JArray contractHashs
             )
         {
             // 权限
@@ -1067,19 +1069,62 @@ namespace NEL_FutureDao_API.Service
             data["tokenSymbol"] = tokenSymbol;
             data["reserveRundRatio"] = reserveRundRatio;
             data["faucetJA"] = faucetJA;
-            data["txid"] = txid;
+            data["txid"] = "";
             data["time"] = now;
             data["lastUpdateTime"] = now;
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, data.ToString());
 
-            // TODO: 入库合约哈希到pendings表中，以供爬虫使用
-
+            processProjHash(projId, contractHashs);
             //
-            var findStr = new JObject { { "projId", projId } }.ToString();
-            var updateStr = new JObject { { "$set", new JObject { { "startFinanceFlag", 1 },{ "projState", ProjState.DAICO } } } }.ToString();
-            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, updateStr, findStr);
+            processProjFinanceFlag(projId);
+            //
+            processPendings(projId, contractHashs);
+
             return getRes();
         }
+        private void processProjHash(string projId, JArray contractHashs)
+        {
+            foreach (var item in contractHashs)
+            {
+                var findStr = new JObject { { "contractHash", item["hash"].ToString().ToLower() } }.ToString();
+                if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, findStr) == 0)
+                {
+                    var data = new JObject {
+                        { "projId", projId},
+                        { "contractName", item["name"]},
+                        { "contractHash", item["hash"].ToString().ToLower()},
+                    }.ToString();
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
+                }
+            }
+        }
+        private void processProjFinanceFlag(string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var updateStr = new JObject { { "$set", new JObject { { "startFinanceFlag", 1 }, { "projState", ProjState.DAICO } } } }.ToString();
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, updateStr, findStr);
+        }
+        private void processPendings(string projId, JArray contractHashs, bool waitRunAfter = false)
+        {
+            var approved = waitRunAfter ? ApprovedState.WaitRunAfter : ApprovedState.OverRunAfter;
+            foreach (var item in contractHashs)
+            {
+                var findStr = new JObject { { "projId", projId }, { "contractHash", item["hash"] } }.ToString();
+                if (mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, pendingInfoCol, findStr) == 0)
+                {
+                    var data = new JObject {
+                        { "projId", projId},
+                        { "contractHash", item["hash"]},
+                        { "contractName", item["name"]},
+                        { "approved", approved},
+                    }.ToString();
+                    mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, pendingInfoCol, data);
+                }
+
+            }
+        }
+
+
         public JArray getContractInfo(Controller controller, string projId)
         {
             // 权限

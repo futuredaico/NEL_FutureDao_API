@@ -1093,6 +1093,7 @@ namespace NEL_FutureDao_API.Service
                         { "projId", projId},
                         { "contractName", item["name"]},
                         { "contractHash", item["hash"].ToString().ToLower()},
+                        { "txid", item["txid"]},
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);
                 }
@@ -1152,6 +1153,8 @@ namespace NEL_FutureDao_API.Service
             res["tokenSymbol"] = item["tokenSymbol"];
             res["reserveRundRatio"] = item["reserveRundRatio"];
             res["faucetJA"] = item["faucetJA"];
+            res["fundTotal"] = "0";
+            res["fundReserveTotal"] = "0";
             return getRes(res);
         }
         public JArray saveRewardInfo(Controller controller, 

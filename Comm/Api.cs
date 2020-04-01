@@ -270,6 +270,11 @@ namespace NEL.Comm
                             JObject.Parse(req.@params[3].ToString())
                             );
                         break;
+                    case "getProjFundAndTokenInfo":
+                        result = fs2.getProjFundAndTokenInfo(
+                            req.@params[0].ToString()
+                            );
+                        break;
                     case "getFContractInfo":
                         result = fs2.getContractInfo(controller,
                             req.@params[0].ToString()

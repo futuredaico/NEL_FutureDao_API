@@ -1422,6 +1422,7 @@ namespace NEL_FutureDao_API.Service
             res["distributeTimeFixYes"] = item["distributeTimeFixYes"];
             res["distributeTimeFixNot"] = item["distributeTimeFixNot"];
             res["distributeWay"] = item["distributeWay"];
+            res["activeState"] = item["activeState"];
             res["note"] = item["note"];
             return getRes(res);
         }

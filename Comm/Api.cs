@@ -275,6 +275,11 @@ namespace NEL.Comm
                             req.@params[0].ToString()
                             );
                         break;
+                    case "getFContractHash":
+                        result = fs2.getContractHash(controller,
+                            req.@params[0].ToString()
+                            );
+                        break;
                     case "getFContractInfo":
                         result = fs2.getContractInfo(controller,
                             req.@params[0].ToString()

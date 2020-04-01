@@ -1178,7 +1178,32 @@ namespace NEL_FutureDao_API.Service
             res["fundReserveTotal"] = "0";
             return getRes(res);
         }
-        
+        public JArray getContractHash(Controller controller, string projId)
+        {
+            // 权限
+            if (!us.getUserInfo(controller, out string code, out string userId))
+            {
+                return getErrorRes(code);
+            }
+
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+
+            var hashArr = 
+            ((JArray)item["contractHashArr"]).Select(p => {
+                var jo = (JObject)p;
+                jo.Remove("txid");
+                return jo;
+            }).ToArray();
+            var res = new JObject();
+            res["hashArr"] = new JArray { hashArr };
+            res["hashLen"] = hashArr.Length;
+            return getRes(res);
+        }
+
         public JArray getProjFundAndTokenInfo(string projId)
         {
             var findStr = new JObject { { "projId", projId } }.ToString();

@@ -1091,7 +1091,6 @@ namespace NEL_FutureDao_API.Service
             data["faucetJA"] = faucetJA;
             data["creatorAddress"] = creatorAddress;
             data["contractHashArr"] = contractHashs;
-            data["txid"] = "";
             data["time"] = now;
             data["lastUpdateTime"] = now;
             mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, data.ToString());

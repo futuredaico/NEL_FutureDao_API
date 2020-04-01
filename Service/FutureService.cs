@@ -1311,7 +1311,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return getErrorRes(DaoReturnCode.InvalidOperate);
             }
-            var findStr = new JObject { { "projId", projId } }.ToString();
+            var findStr = new JObject { { "projId", projId },{ "activeState", RewardActiveState.Valid_Yes} }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
             if (queryRes.Count == 0) return getRes();
 

@@ -863,6 +863,11 @@ namespace NEL_FutureDao_API.Service
             res["isStar"] = isStar;
             res["contractAddress"] = "";
             res["creatorAddress"] = ""; // 融资后新增
+            if(getProjContractInfo(projId, out string creatorAddress, out string contractAddress))
+            {
+                res["contractAddress"] = contractAddress;
+                res["creatorAddress"] = creatorAddress;
+            }
             res["discussCount"] = item["discussCount"];
             res["updateCount"] = item["updateCount"];
 
@@ -980,6 +985,21 @@ namespace NEL_FutureDao_API.Service
             isStar = queryRes[0]["starState"].ToString() == StarState.StarYes;
             return;
         }
+        private bool getProjContractInfo(string projId, out string creatorAddress, out string contractAddress)
+        {
+            creatorAddress = "";
+            contractAddress = "";
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, findStr);
+            if (queryRes.Count == 0) return false;
+
+            var item = queryRes[0];
+            creatorAddress = item["creatorAddress"]?.ToString();
+
+            var rr = ((JArray)item["contractHashArr"]).Where(p => p["name"].ToString() == "TradeFundPool").Select(p => p["hash"].ToString()).ToArray();
+            if (rr.Length > 0) contractAddress = rr[0];
+            return true;
+        }
         private bool isZanUpdate(string updateId, string userId)
         {
             if (userId == "") return false;
@@ -1045,7 +1065,7 @@ namespace NEL_FutureDao_API.Service
             string fundHash/*融资代币*/, string fundSymbol/*融资符号*/,
             string tokenName/*项目代币名称*/, string tokenSymbol/*项目代币符号*/,
             string reserveRundRatio/*储备比例*/, JArray faucetJA/*水龙头列表*/, 
-            JArray contractHashs
+            string creatorAddress, JArray contractHashs
             )
         {
             // 权限
@@ -1069,6 +1089,8 @@ namespace NEL_FutureDao_API.Service
             data["tokenSymbol"] = tokenSymbol;
             data["reserveRundRatio"] = reserveRundRatio;
             data["faucetJA"] = faucetJA;
+            data["creatorAddress"] = creatorAddress;
+            data["contractHashArr"] = contractHashs;
             data["txid"] = "";
             data["time"] = now;
             data["lastUpdateTime"] = now;

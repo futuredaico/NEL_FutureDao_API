@@ -1276,7 +1276,7 @@ namespace NEL_FutureDao_API.Service
                 { "connectorName", connectorName },
                 { "connectorTel", connectorTel }
             } } }.ToString();
-            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, updateStr, findStr);
+            mh.UpdateData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, updateStr, findStr);
 
             // 增删改
             var nlist = new List<JToken>();

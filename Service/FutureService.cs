@@ -870,6 +870,7 @@ namespace NEL_FutureDao_API.Service
             }
             res["discussCount"] = item["discussCount"];
             res["updateCount"] = item["updateCount"];
+            res["hasIssueAmt"] = 0;
 
             return getRes(res);
         }

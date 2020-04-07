@@ -169,6 +169,12 @@ namespace NEL.Comm
             {
                 switch (req.method)
                 {
+                    // 
+                    case "queryProjFinanceInfo":
+                        result = fs2.queryProjFinanceInfo(
+                            req.@params[0].ToString()
+                            );
+                        break;
                     //
                     case "queryProjBuyOrder":
                         result = fs2.queryProjBuyOrder(controller,

@@ -290,7 +290,7 @@ namespace NEL_FutureDao_API.Service
             {
                 return ProposalType.ApplyShare;
             }
-            return "notKwon";
+            return "NotKnown";
         }
         private bool isVote(string projId, string proposalIndex, string address)
         {

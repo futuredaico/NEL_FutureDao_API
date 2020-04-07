@@ -870,8 +870,8 @@ namespace NEL_FutureDao_API.Service
             }
             res["discussCount"] = item["discussCount"];
             res["updateCount"] = item["updateCount"];
-            res["hasIssueAmt"] = 0;
-
+            res["hasIssueAmt"] = 0; // 新增已发送token数量
+            
             return getRes(res);
         }
         public JArray queryProjTeam(string projId, int pageNum=1, int pageSize=10)
@@ -1001,6 +1001,7 @@ namespace NEL_FutureDao_API.Service
             if (rr.Length > 0) contractAddress = rr[0];
             return true;
         }
+        
         private bool isZanUpdate(string updateId, string userId)
         {
             if (userId == "") return false;
@@ -1083,6 +1084,7 @@ namespace NEL_FutureDao_API.Service
             var data = new JObject();
             data["projId"] = projId;
             data["recvAddress"] = recvAddress;
+            data["recvAddressName"] = getMoloProjName(recvAddress);
             data["fundHash"] = fundHash;
             data["fundSymbol"] = fundSymbol;
             data["fundDecimals"] = 0;
@@ -1103,6 +1105,14 @@ namespace NEL_FutureDao_API.Service
             processPendings(projId, contractHashs);
 
             return getRes();
+        }
+        private string getMoloProjName(string recvAddr)
+        {
+            var findStr = new JObject { { "contractHashs.hash", recvAddr } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projInfoCol, findStr);
+            if (queryRes.Count == 0) return "";
+
+            return queryRes[0]["projName"].ToString();
         }
         private void processProjHash(string projId, JArray contractHashs)
         {
@@ -1959,6 +1969,45 @@ namespace NEL_FutureDao_API.Service
 
         #region 评论模块
         // 与molo共用
+        #endregion
+
+        #region 交易模块
+        #endregion
+
+        #region 治理模块
+        public JArray queryProjFinanceInfo(string projId)
+        {
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            var res = new JObject();
+            res["recvAddress"] = item["recvAddress"];
+            res["recvAddressName"] = getMoloProjName(item["recvAddress"].ToString());
+            res["fundSymbol"] = item["fundSymbol"];
+            var faucetJO = ((JArray)item["faucetJA"])[0];
+            res["percent"] = faucetJO["percent"];
+            res["min"] = faucetJO["min"];
+            res["max"] = faucetJO["max"];
+            res["reserveRundRatio"] = item["reserveRundRatio"];
+            res["fundPoolTotal"] = "0";
+            res["fundReservePoolTotal"] = "0";
+            if(getFinanceFundPoolInfo(out string fundPoolTotal, out string fundReservePoolTotal))
+            {
+                res["fundPoolTotal"] = fundPoolTotal;
+                res["fundReservePoolTotal"] = fundReservePoolTotal;
+            }
+            return getRes(res);
+        }
+        private bool getFinanceFundPoolInfo(out string fundPoolTotal, out string fundReservePoolTotal)
+        {
+            fundPoolTotal = "0";
+            fundReservePoolTotal = "0";
+
+            return false;
+        }
+
         #endregion
     }
 

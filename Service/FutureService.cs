@@ -1984,7 +1984,7 @@ namespace NEL_FutureDao_API.Service
             var item = queryRes[0];
             var res = new JObject();
             res["recvAddress"] = item["recvAddress"];
-            res["recvAddressName"] = getMoloProjName(item["recvAddress"].ToString());
+            res["recvAddressName"] = item["recvAddressName"];
             res["fundSymbol"] = item["fundSymbol"];
             var faucetJO = ((JArray)item["faucetJA"])[0];
             res["percent"] = faucetJO["percent"];

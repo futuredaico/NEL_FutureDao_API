@@ -1064,7 +1064,7 @@ namespace NEL_FutureDao_API.Service
         }
         public JArray saveContractInfo(Controller controller,
             string projId, string recvAddress, 
-            string fundHash/*融资代币*/, string fundSymbol/*融资符号*/,
+            string fundHash/*融资代币*/, string fundSymbol/*融资符号*/, long fundDecimals/*融资精度*/,
             string tokenName/*项目代币名称*/, string tokenSymbol/*项目代币符号*/,
             string reserveRundRatio/*储备比例*/, JArray faucetJA/*水龙头列表*/, 
             string creatorAddress, JArray contractHashs
@@ -1087,7 +1087,7 @@ namespace NEL_FutureDao_API.Service
             data["recvAddressName"] = getMoloProjName(recvAddress);
             data["fundHash"] = fundHash;
             data["fundSymbol"] = fundSymbol;
-            data["fundDecimals"] = 0;
+            data["fundDecimals"] = fundDecimals;
             data["tokenName"] = tokenName;
             data["tokenSymbol"] = tokenSymbol;
             data["reserveRundRatio"] = reserveRundRatio;

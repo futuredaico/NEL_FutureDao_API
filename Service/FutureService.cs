@@ -1224,6 +1224,7 @@ namespace NEL_FutureDao_API.Service
             var item = queryRes[0];
             var res = new JObject();
             res["fundSymbol"] = item["fundSymbol"];
+            res["fundHash"] = item["fundHash"];
             res["tokenSymbol"] = item["tokenSymbol"];
             return getRes(res);
         }

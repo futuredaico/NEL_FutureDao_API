@@ -1038,7 +1038,7 @@ namespace NEL_FutureDao_API.Service
             return getRes(res);
         }
 
-        private void processProjHash(string projId, long fundDecimals, JArray contractHashs)
+        private void processProjHash(string projId, long fundDecimals, JArray contractHashs, string owner="molochdao")
         {
             foreach (var item in contractHashs)
             {
@@ -1049,6 +1049,7 @@ namespace NEL_FutureDao_API.Service
                         { "projId", projId},
                         { "contractName", item["name"]},
                         { "contractHash", item["hash"].ToString().ToLower()},
+                        { "owner", owner },
                         //{ "fundDecimals", fundDecimals},
                         //{ "type", "1"},
                         //{ "createdAt", date},

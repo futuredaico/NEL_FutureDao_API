@@ -3,7 +3,6 @@ using NEL.NNS.lib;
 using NEL_FutureDao_API.lib;
 using NEL_FutureDao_API.Service.Help;
 using NEL_FutureDao_API.Service.State;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
@@ -1114,7 +1113,7 @@ namespace NEL_FutureDao_API.Service
 
             return queryRes[0]["projName"].ToString();
         }
-        private void processProjHash(string projId, JArray contractHashs)
+        private void processProjHash(string projId, JArray contractHashs, string owner="futuredao")
         {
             foreach (var item in contractHashs)
             {
@@ -1125,6 +1124,7 @@ namespace NEL_FutureDao_API.Service
                         { "projId", projId},
                         { "contractName", item["name"]},
                         { "contractHash", item["hash"].ToString().ToLower()},
+                        { "owner", owner },
                         { "txid", item["txid"]},
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, projMoloHashInfoCol, data);

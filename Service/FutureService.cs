@@ -35,7 +35,7 @@ namespace NEL_FutureDao_API.Service
 
         public string projBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
         public string projMoloHashInfoCol { get; set; } = "moloprojhashinfos";
-        public string pendingInfoCol = "pendingapprovalprojs";
+        public string pendingInfoCol = "contractNeeds";//"pendingapprovalprojs";
         //
         public UserServiceV3 us { get; set; }
         public OssHelper oss { get; set; }
@@ -1139,7 +1139,7 @@ namespace NEL_FutureDao_API.Service
         }
         private void processPendings(string projId, JArray contractHashs, bool waitRunAfter = false)
         {
-            var approved = waitRunAfter ? ApprovedState.WaitRunAfter : ApprovedState.OverRunAfter;
+            var approved = waitRunAfter ? ApprovedState.runAfterFlag : ApprovedState.continueFlag;
             foreach (var item in contractHashs)
             {
                 var findStr = new JObject { { "projId", projId }, { "contractHash", item["hash"] } }.ToString();
@@ -1149,7 +1149,7 @@ namespace NEL_FutureDao_API.Service
                         { "projId", projId},
                         { "contractHash", item["hash"]},
                         { "contractName", item["name"]},
-                        { "approved", approved},
+                        { "type", approved},
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, pendingInfoCol, data);
                 }

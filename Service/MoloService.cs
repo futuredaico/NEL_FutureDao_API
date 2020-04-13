@@ -25,7 +25,7 @@ namespace NEL_FutureDao_API.Service
         public string projMoloProposalInfoCol { get; set; } = "moloproposalinfos";
         public string projMoloProposalDiscussInfoCol { get; set; } = "moloproposaldiscussinfos";
         public string projMoloProposalDiscussZanInfoCol { get; set; } = "moloproposaldiscusszaninfos";
-        public string pendingInfoCol = "pendingapprovalprojs";
+        public string pendingInfoCol = "contractNeeds";//"pendingapprovalprojs";
         public string userInfoCol { get; set; } = "daouserinfos";
         //
         public OssHelper oss { get; set; }
@@ -1121,7 +1121,7 @@ namespace NEL_FutureDao_API.Service
         }
         private void processPendings(string projId, JArray contractHashs, bool waitRunAfter = false)
         {
-            var approved = waitRunAfter ? ApprovedState.WaitRunAfter : ApprovedState.OverRunAfter;
+            var approved = waitRunAfter ? ApprovedState.runAfterFlag : ApprovedState.continueFlag;
             foreach (var item in contractHashs)
             {
                 var findStr = new JObject { { "projId", projId }, { "contractHash", item["hash"] } }.ToString();
@@ -1131,7 +1131,7 @@ namespace NEL_FutureDao_API.Service
                         { "projId", projId}, 
                         { "contractHash", item["hash"]}, 
                         { "contractName", item["name"]}, 
-                        { "approved", approved}, 
+                        { "type", approved}, 
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, pendingInfoCol, data);
                 }
@@ -1474,6 +1474,8 @@ namespace NEL_FutureDao_API.Service
     }
     class ApprovedState
     {
+        public const int continueFlag = 1; //现在爬，不追
+        public const int runAfterFlag = 2; //追赶
         public const string WaitRunAfter = "4";
         public const string OverRunAfter = "5";
         public const string ActingRunAfter = "6";

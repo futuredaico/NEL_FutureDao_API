@@ -1147,7 +1147,7 @@ namespace NEL_FutureDao_API.Service
                 {
                     var data = new JObject {
                         { "projId", projId},
-                        { "contractHash", item["hash"]},
+                        { "contractHash", item["hash"].ToString().ToLower()},
                         { "contractName", item["name"]},
                         { "type", approved},
                     }.ToString();

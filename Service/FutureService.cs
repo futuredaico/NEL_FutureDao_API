@@ -1090,6 +1090,9 @@ namespace NEL_FutureDao_API.Service
             data["tokenName"] = tokenName;
             data["tokenSymbol"] = tokenSymbol;
             data["reserveRundRatio"] = reserveRundRatio;
+            data["percent"] = faucetJA[0]["percent"];
+            data["min"] = faucetJA[0]["min"];
+            data["max"] = faucetJA[0]["max"];
             data["faucetJA"] = faucetJA;
             data["creatorAddress"] = creatorAddress;
             data["contractHashArr"] = contractHashs;
@@ -1153,7 +1156,6 @@ namespace NEL_FutureDao_API.Service
                     }.ToString();
                     mh.PutData(dao_mongodbConnStr, dao_mongodbDatabase, pendingInfoCol, data);
                 }
-
             }
         }
 
@@ -1987,28 +1989,22 @@ namespace NEL_FutureDao_API.Service
             res["recvAddress"] = item["recvAddress"];
             res["recvAddressName"] = item["recvAddressName"];
             res["fundSymbol"] = item["fundSymbol"];
-            var faucetJO = ((JArray)item["faucetJA"])[0];
-            res["percent"] = faucetJO["percent"];
-            res["min"] = faucetJO["min"];
-            res["max"] = faucetJO["max"];
+            res["percent"] = item["percent"];
+            res["min"] = item["min"];
+            res["max"] = item["max"];
             res["reserveRundRatio"] = item["reserveRundRatio"];
             res["fundPoolTotal"] = "0";
-            res["fundReservePoolTotal"] = "0";
-            if(getFinanceFundPoolInfo(out string fundPoolTotal, out string fundReservePoolTotal))
+            if(item["fundPoolTotal"] != null)
             {
-                res["fundPoolTotal"] = fundPoolTotal;
-                res["fundReservePoolTotal"] = fundReservePoolTotal;
+                res["fundPoolTotal"] = item["fundPoolTotal"].ToString().formatDecimal();
+            }
+            res["fundReservePoolTotal"] = "0";
+            if (item["fundReservePoolTotal"] != null)
+            {
+                res["fundReservePoolTotal"] = item["fundReservePoolTotal"].ToString().formatDecimal();
             }
             return getRes(res);
         }
-        private bool getFinanceFundPoolInfo(out string fundPoolTotal, out string fundReservePoolTotal)
-        {
-            fundPoolTotal = "0";
-            fundReservePoolTotal = "0";
-
-            return false;
-        }
-
         #endregion
     }
 

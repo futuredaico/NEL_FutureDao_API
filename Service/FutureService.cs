@@ -31,6 +31,8 @@ namespace NEL_FutureDao_API.Service
         public string projFinanceRewardInfoCol { get; set; } = "daoprojfinancerewardinfos";
         public string projFinanceFundPoolCol { get; set; } = "daoprojfinancefundpoolinfos";
         public string projFinanceOrderInfoCol { get; set; } = "daoprojfinanceorderinfos";
+        public string projFinanceProposalInfoCol { get; set; } = "daoprojfinanceproposalinfos";
+        public string projFinanceProposalVoteInfoCol { get; set; } = "daoprojfinanceproposalvoteinfos";
 
         public string projBalanceInfoCol { get; set; } = "moloprojbalanceinfos";
         public string projMoloHashInfoCol { get; set; } = "moloprojhashinfos";
@@ -2020,7 +2022,60 @@ namespace NEL_FutureDao_API.Service
             }
             return getRes(res);
         }
+        public JArray queryProjProposalList(Controller controller, string projId, int pageNum, int pageSize)
+        {
+            us.getUserInfo(controller, out string code, out string userId, out string address);
+            //
+            var findStr = new JObject { { "projId", projId } }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceProposalInfoCol, findStr);
+            if (count == 0) return getRes();
+
+            var sortStr = new JObject { { "blockTime", -1 } }.ToString();
+            var skip = pageSize * (pageNum - 1);
+            var limit = pageSize;
+            var queryRes = mh.GetDataPages(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceProposalInfoCol, findStr, sortStr, skip, limit);
+            if (queryRes.Count == 0) return getRes();
+
+            var rr = queryRes.Select(p =>
+            {
+                var jo = new JObject();
+                jo["index"] = p["index"];
+                jo["proposalType"] = p["proposalType"];
+                jo["ratio"] = "0";
+                jo["minValue"] = "0";
+                jo["maxValue"] = "0";
+                jo["startTime"] = p["votingStartTime"];
+                jo["proposalState"] = p["proposalState"];
+                jo["voteYesCount"] = p["voteYesCount"];
+                jo["voteNotCount"] = p["voteNotCount"];
+                jo["hasVote"] = hasVote(address, projId, jo["index"].ToString());
+                var pType = jo["proposalType"].ToString();
+                if(pType == ProposalTypeF.ChangeMonthlyAllocation)
+                {
+                    jo["ratio"] = p["ratio"];
+                    jo["minValue"] = p["minValue"];
+                    jo["maxValue"] = p["maxValue"];
+                }
+                return jo;
+            }).ToArray();
+
+            var res = new JObject { { "count", count }, { "list", new JArray { rr } } };
+            return getRes(res);
+        }
+        private bool hasVote(string address, string projId, string index)
+        {
+            if (address == "") return false;
+
+            var findStr = new JObject { { "projId", projId},{ "index",index},{ "address", address} }.ToString();
+            var count = mh.GetDataCount(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceProposalVoteInfoCol, findStr);
+            return count > 0;
+        }
         #endregion
+    }
+    class ProposalTypeF
+    {
+        public const string ChangeMonthlyAllocation = "ChangeM";
+        public const string ApplyClearingProposal = "ApplyC";
     }
 
     class TeamRole

@@ -336,6 +336,7 @@ namespace NEL_FutureDao_API.Service
         private string getUsername(string address, out string headIconUrl)
         {
             headIconUrl = "";
+            if (address == "") return "";
             var findStr = new JObject { { "address", address } }.ToString();
             var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr);
             if (queryRes.Count() == 0) return "";

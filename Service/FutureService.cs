@@ -2041,11 +2041,11 @@ namespace NEL_FutureDao_API.Service
                 var jo = new JObject();
                 jo["index"] = p["index"];
                 jo["proposalType"] = p["proposalType"];
+                jo["proposalState"] = p["proposalState"];
                 jo["ratio"] = "0";
                 jo["minValue"] = "0";
                 jo["maxValue"] = "0";
                 jo["startTime"] = p["votingStartTime"];
-                jo["proposalState"] = p["proposalState"];
                 jo["voteYesCount"] = p["voteYesCount"];
                 jo["voteNotCount"] = p["voteNotCount"];
                 jo["hasVote"] = hasVote(address, projId, jo["index"].ToString());
@@ -2073,11 +2073,16 @@ namespace NEL_FutureDao_API.Service
             var item = queryRes[0];
             var res = new JObject { {"projId",projId}, {"index",index} };
             res["proposalType"] = item["proposalType"];
+            res["proposalState"] = item["proposalState"];
+            res["proposaler"] = item["proposaler"];
+            var username = getUsername(res["proposaler"].ToString(), out string headIconUrl);
+            res["username"] = username;
+            res["headIconUrl"] = headIconUrl;
             res["ratio"] = "0";
             res["minValue"] = "0";
             res["maxValue"] = "0";
             res["startTime"] = item["votingStartTime"];
-            res["proposalState"] = item["proposalState"];
+            res["handleState"] = item["handleState"];
             res["voteYesCount"] = item["voteYesCount"];
             res["voteNotCount"] = item["voteNotCount"];
             res["hasVote"] = hasVote(address, projId, index);
@@ -2089,6 +2094,18 @@ namespace NEL_FutureDao_API.Service
                 res["maxValue"] = item["maxValue"];
             }
             return getRes(res);
+        }
+        private string getUsername(string address, out string headIconUrl)
+        {
+            headIconUrl = "";
+            if (address == "") return "";
+            var findStr = new JObject { { "address", address } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, userInfoCol, findStr);
+            if (queryRes.Count() == 0) return "";
+
+            var item = queryRes[0];
+            headIconUrl = item["headIconUrl"].ToString();
+            return item["username"].ToString();
         }
         private bool hasVote(string address, string projId, string index)
         {

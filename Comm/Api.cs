@@ -170,6 +170,12 @@ namespace NEL.Comm
                 switch (req.method)
                 {
                     // 
+                    case "queryProjProposalDetail":
+                        result = fs2.queryProjProposalDetail(controller,
+                            req.@params[0].ToString(),
+                            req.@params[1].ToString()
+                            );
+                        break;
                     case "queryProjProposalList":
                         result = fs2.queryProjProposalList(controller,
                             req.@params[0].ToString(),

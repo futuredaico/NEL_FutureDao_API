@@ -2062,6 +2062,34 @@ namespace NEL_FutureDao_API.Service
             var res = new JObject { { "count", count }, { "list", new JArray { rr } } };
             return getRes(res);
         }
+        public JArray queryProjProposalDetail(Controller controller, string projId, string index)
+        {
+            us.getUserInfo(controller, out string code, out string userId, out string address);
+            //
+            var findStr = new JObject { { "projId", projId },{ "index", index } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projFinanceProposalInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            var res = new JObject { {"projId",projId}, {"index",index} };
+            res["proposalType"] = item["proposalType"];
+            res["ratio"] = "0";
+            res["minValue"] = "0";
+            res["maxValue"] = "0";
+            res["startTime"] = item["votingStartTime"];
+            res["proposalState"] = item["proposalState"];
+            res["voteYesCount"] = item["voteYesCount"];
+            res["voteNotCount"] = item["voteNotCount"];
+            res["hasVote"] = hasVote(address, projId, index);
+            var pType = res["proposalType"].ToString();
+            if (pType == ProposalTypeF.ChangeMonthlyAllocation)
+            {
+                res["ratio"] = item["ratio"];
+                res["minValue"] = item["minValue"];
+                res["maxValue"] = item["maxValue"];
+            }
+            return getRes(res);
+        }
         private bool hasVote(string address, string projId, string index)
         {
             if (address == "") return false;

@@ -1975,7 +1975,22 @@ namespace NEL_FutureDao_API.Service
         #endregion
 
         #region 交易模块
+        public JArray queryShareBalance(string projId, string address)
+        {
+            var findStr = new JObject { { "projId", projId }, { "type", "6" }, { "address", address } }.ToString();
+            var queryRes = mh.GetData(dao_mongodbConnStr, dao_mongodbDatabase, projBalanceInfoCol, findStr);
+            if (queryRes.Count == 0) return getRes();
+
+            var item = queryRes[0];
+            var res = new JObject {
+                {"balance", item["balance"] },
+                {"balanceCanUse", item["balanceLockNot"] },
+                {"balanceLock", item["balanceLockYes"] },
+            };
+            return getRes(res);
+        }
         #endregion
+
 
         #region 治理模块
         public JArray queryProjFinanceInfo(string projId)
